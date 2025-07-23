@@ -317,7 +317,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1326165643}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: FirePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -333,7 +333,7 @@ Transform:
   m_GameObject: {fileID: 1326165642}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -356,7 +356,7 @@ GameObject:
   - component: {fileID: 1518045067}
   - component: {fileID: 1518045068}
   - component: {fileID: 1518045069}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: PlayerTest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -470,7 +470,7 @@ Transform:
   m_GameObject: {fileID: 1518045060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.451, y: 1.2306441, z: -1.1957268}
+  m_LocalPosition: {x: 0.5, y: 1, z: -1.1957268}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -534,7 +534,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shootingRange: 15
   fireRate: 1
-  bulletSpeed: 100
+  bulletSpeed: 20
   bulletPrefab: {fileID: 2887157346546390277, guid: 85a2658ad0a6e4d46a61cdf9581f0821, type: 3}
   firePoint: {fileID: 1326165643}
 --- !u!114 &1518045069
@@ -756,7 +756,7 @@ Transform:
   m_GameObject: {fileID: 1906633872}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.04, y: 1.05, z: -1.6}
+  m_LocalPosition: {x: -3.04, y: 1, z: -1.6}
   m_LocalScale: {x: 0.42548, y: 0.42548, z: 0.42548}
   m_ConstrainProportionsScale: 0
   m_Children: []
