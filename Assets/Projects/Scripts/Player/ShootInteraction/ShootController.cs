@@ -44,27 +44,27 @@ public class ShootController : MonoBehaviour
 
     void FindAndTargetEnemy()
     {
-        // 找到场景中所有带有 Enemy 脚本的对象
-        Enemy[] enemies = FindObjectsOfType<Enemy>();
+        // 找到场景中所有带有 Shootable 脚本的对象
+        Shootable[] shootables = FindObjectsOfType<Shootable>();
         
-        Transform nearestEnemy = null;
+        Transform nearestShootable = null;
         float minDistance = Mathf.Infinity;
 
         // 遍历所有敌人，找到最近的一个
-        foreach (Enemy enemy in enemies)
+        foreach (Shootable shootable in shootables)
         {
-            float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
+            float distanceToEnemy = Vector3.Distance(transform.position, shootable.transform.position);
             if (distanceToEnemy < minDistance)
             {
                 minDistance = distanceToEnemy;
-                nearestEnemy = enemy.transform;
+                nearestShootable = shootable.transform;
             }
         }
 
         // 如果最近的敌人在射程内，就将它设为目标，否则没有目标
-        if (nearestEnemy != null && minDistance <= shootingRange)
+        if (nearestShootable != null && minDistance <= shootingRange)
         {
-            targetEnemy = nearestEnemy;
+            targetEnemy = nearestShootable;
             // (可选) 让玩家朝向敌人
             //transform.LookAt(targetEnemy);
             Vector3 directionToLook = targetEnemy.position - transform.position;
@@ -83,18 +83,18 @@ public class ShootController : MonoBehaviour
 
     void Shoot()
     {
-        // --- 添加以下调试代码 ---
-    if (bulletPrefab == null)
-    {
-        Debug.LogError("ShootController: bulletPrefab 引用丢失！请在 Inspector 中重新设置。");
-        return; // 提前退出，避免报错
-    }
-    if (firePoint == null)
-    {
-        Debug.LogError("ShootController: firePoint 引用丢失！请在 Inspector 中重新设置。");
-        return; // 提前退出，避免报错
-    }
-    // --- 调试代码结束 ---
+        // --- 调试代码 ---
+        if (bulletPrefab == null)
+        {
+            Debug.LogError("ShootController: bulletPrefab 引用丢失！请在 Inspector 中重新设置。");
+            return; // 提前退出，避免报错
+        }
+        if (firePoint == null)
+        {
+            Debug.LogError("ShootController: firePoint 引用丢失！请在 Inspector 中重新设置。");
+            return; // 提前退出，避免报错
+        }
+        // --- 调试代码结束 ---
 
         // 1. 创建子弹实例
         // Instantiate(要创建的预制体, 创建的位置, 创建时的旋转)
