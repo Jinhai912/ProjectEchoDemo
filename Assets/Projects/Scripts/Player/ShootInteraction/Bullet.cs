@@ -19,8 +19,8 @@ public class Bullet : MonoBehaviour
         // 检查碰到的物体是否是敌人 (假设敌人身上有 Shootable 脚本)
         if (collision.gameObject.GetComponent<Shootable>() != null)
         {
-            // 如果是敌人，销毁敌人对象
-            //Destroy(collision.gameObject);
+            // 如果是敌人，销毁敌人对象,之后应该修改成伤害结算
+            Destroy(collision.gameObject);
             
             // 敌人被销毁后，子弹也应该销毁，而不是继续飞行
             Destroy(gameObject);
