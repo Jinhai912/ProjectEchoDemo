@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6062542036782374210}
   - component: {fileID: 5874237645067542849}
   - component: {fileID: 2869083282956546814}
+  - component: {fileID: 7097725679764597688}
   m_Layer: 0
   m_Name: EnemyTest
   m_TagString: Untagged
@@ -164,3 +165,16 @@ MonoBehaviour:
   stopChasingRange: 25
   attackRange: 2
   targetFindInterval: 0.5
+--- !u!114 &7097725679764597688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4413850821519583235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8370c661803f54d43bb2e86b1f756f2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 15

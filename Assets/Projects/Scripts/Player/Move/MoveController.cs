@@ -4,7 +4,7 @@ using UnityEngine.InputSystem; // 确保引入命名空间
 // 脚本名建议与类名一致，这里假设文件名是 MoveControll.cs
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInput))] // 最好也把PlayerInput加到依赖中
-public class MoveControll : MonoBehaviour
+public class MoveController : MonoBehaviour
 {
     public float moveSpeed = 5f;
     private Rigidbody rb;
