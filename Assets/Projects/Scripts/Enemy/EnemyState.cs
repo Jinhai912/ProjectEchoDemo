@@ -7,6 +7,7 @@ public class EnemyState : MonoBehaviour
 {
     public float maxHealth = 10f;
     private float currentHealth;
+    public GameObject expGemPrefab; // 在敌人的Inspector中设置
 
     // --- 事件定义 ---
     // 当敌人受到伤害时触发的事件
@@ -44,6 +45,9 @@ public class EnemyState : MonoBehaviour
         Debug.Log(gameObject.name + " has died.");
         // 广播死亡事件
         OnDeath?.Invoke();
+
+        // 在敌人死亡的位置生成一个经验球
+        Instantiate(expGemPrefab, transform.position, Quaternion.identity);
 
         // 销毁自身
         // 可以在这里加一些死亡特效或动画

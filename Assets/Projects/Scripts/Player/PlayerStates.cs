@@ -9,6 +9,7 @@ public class PlayerStates : MonoBehaviour
     public float baseDamage = 10f;
     public float critRate = 0.1f; // 10% 暴击率
     public float critDamage = 1.5f; // 150% 暴击伤害
+    private int currentExperience = 0;//经验值
 
     [Header("伤害加成 (乘区)")]
     public float totalDamageBonus = 1.0f; // 1.0f 表示没有加成
@@ -34,4 +35,19 @@ public class PlayerStates : MonoBehaviour
 
         return finalDamage;
     }
+
+    //获得经验
+    public void AddExperience(int amount)
+    {
+        currentExperience += amount;
+        Debug.Log("获得经验: " + amount + " | 当前总经验: " + currentExperience);
+
+        // --- 新的逻辑：广播一个显示反馈的请求 ---
+        // 参数：要显示的消息，是否特殊，事件发生的世界位置（就是玩家的位置）
+        if (PlayerFeedbackManager.OnFeedbackRequested != null)
+        {
+            PlayerFeedbackManager.OnFeedbackRequested.Invoke("+" + amount + " XP", false, transform.position);
+        }
+    }
+    
 }
