@@ -23,22 +23,41 @@ public class GameManager : MonoBehaviour
             return;
         }
         Instance = this;
-        PlayerStates.OnPlayerDied += HandlePlayerDeath;
-        // 让 GameManager 在切换场景时不被销毁
         DontDestroyOnLoad(gameObject);
     }
 
     void Start()
     {
         // 游戏开始时，默认进入主菜单状态
-        // 假设你的初始场景就是主菜单
-        UpdateGameState(GameState.MainMenu);
+        //SceneManager.LoadScene("MainFightScene");
+        
     }
 
-    void OnDestroy()
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (currentState == GameState.Playing)
+            {
+                PauseGame();
+            }
+            else if (currentState == GameState.Paused)
+            {
+                ResumeGame();
+            }
+        }
+    }
+    void OnEnable()
+    {
+        PlayerStates.OnPlayerDied += HandlePlayerDeath;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+    void OnDisable()
     {
         PlayerStates.OnPlayerDied -= HandlePlayerDeath;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
+    
     // --- 核心方法：更新游戏状态 ---
     public void UpdateGameState(GameState newState)
     {
@@ -72,11 +91,35 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        // 假设你的游戏主场景名为 "MainLevel"
-        // SceneManager.LoadScene("MainLevel"); 
+        Debug.LogWarning("StartGame() 方法被调用了！即将加载 MainFightScene。", this.gameObject);
+        //Debug.Break(); // 这是一个非常强大的调试工具！
 
-        // 为了简单起见，我们先不切换场景，直接改变状态
-        UpdateGameState(GameState.Playing);
+        // 如果游戏当前不是在 MainMenu 状态，就阻止切换，以防万一
+        if (currentState != GameState.MainMenu)
+        {
+            Debug.LogWarning("尝试在非 MainMenu 状态下启动游戏，已阻止。当前状态: " + currentState);
+            return;
+        }
+
+        // 加载你的主战斗场景
+        SceneManager.LoadScene("MainFightScene");
+    
+        // 我们需要在场景加载完成后再更新状态
+        // 这里我们用一个简单的监听
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+    // 场景加载完成后的回调函数
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // 检查加载的是否是我们的主战斗场景
+        if (scene.name == "MainFightScene")
+        {
+            // 场景加载完毕，现在可以安全地将状态切换到 Playing
+            UpdateGameState(GameState.Playing);
+        
+            // （重要）取消订阅，避免重复调用
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
     }
 
     public void PauseGame()
@@ -97,11 +140,10 @@ public class GameManager : MonoBehaviour
 
     public void GoToMainMenu()
     {
-        // SceneManager.LoadScene("MainMenu");
-        UpdateGameState(GameState.MainMenu);
+        SceneManager.LoadScene("MainMenu");
     }
     private void HandlePlayerDeath()
     {
-        UpdateGameState(GameState.GameOver);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

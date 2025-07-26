@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - UIPanel_HUD
+  - UIPanel_GameOver
+  - UIPanel_Pause
+  - UIPanel_MainMenu
   layers:
   - Default
   - TransparentFX
