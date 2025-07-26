@@ -5,17 +5,56 @@ using UnityEngine;
 public class PlayerStates : MonoBehaviour
 {
     // --- 核心属性 ---
-    [Header("基础属性")]
+    [Header("生命与经验")]
+    public int maxHealth = 100;
+    public int currentHealth;
+    private int currentExperience = 0;
+
+    [Header("战斗属性")]
     public float baseDamage = 10f;
-    public float critRate = 0.1f; // 10% 暴击率
-    public float critDamage = 1.5f; // 150% 暴击伤害
-    private int currentExperience = 0;//经验值
+    public float critRate = 0.1f;
+    public float critDamage = 1.5f;
 
     [Header("伤害加成 (乘区)")]
     public float totalDamageBonus = 1.0f; // 1.0f 表示没有加成
 
-    // --- 计算伤害的公共方法 ---
-    // isCritical: out 参数，用于告诉外部这次攻击是否暴击
+    // 定义一个静态事件，当玩家死亡时广播
+    public static event System.Action OnPlayerDied;
+    // 受伤事件，方便未来做受击效果
+    public static event System.Action<int> OnPlayerDamaged; // 参数<int>可以传递伤害数值
+
+    void Start()
+    {
+        // 游戏开始时，将当前生命值设置为最大生命值
+        currentHealth = maxHealth;
+    }
+
+    /// <summary>
+    /// 玩家承受伤害的公共方法。所有对玩家的攻击都应调用此方法。
+    /// </summary>
+    /// <param name="damageAmount">受到的伤害量</param>
+    public void TakeDamage(int damageAmount)
+    {
+        // 如果已经死亡，或者伤害为负数，则不执行任何操作
+        if (currentHealth <= 0 || damageAmount < 0) return;
+
+        currentHealth -= damageAmount;
+        Debug.Log("玩家受到 " + damageAmount + " 点伤害，剩余生命: " + currentHealth);
+
+        // 广播受伤事件，并传递伤害数值
+        OnPlayerDamaged?.Invoke(damageAmount);
+
+        // 检查生命值是否降到0或以下
+        if (currentHealth <= 0)
+        {
+            currentHealth = 0; // 避免出现负数生命值
+            Die();
+        }
+    }
+
+    /// <summary>
+    /// 计算最终造成的伤害
+    /// </summary>
     public float CalculateFinalDamage(out bool isCritical)
     {
         float finalDamage = baseDamage;
@@ -36,7 +75,9 @@ public class PlayerStates : MonoBehaviour
         return finalDamage;
     }
 
-    //获得经验
+    /// <summary>
+    /// 获得经验
+    /// </summary>
     public void AddExperience(int amount)
     {
         currentExperience += amount;
@@ -48,6 +89,17 @@ public class PlayerStates : MonoBehaviour
         {
             PlayerFeedbackManager.OnFeedbackRequested.Invoke("+" + amount + " XP", false, transform.position);
         }
+    }
+
+    /// <summary>
+    /// 私有的死亡处理方法
+    /// </summary>
+    void Die()
+    {
+        Debug.Log("玩家死亡，广播 OnPlayerDied 事件。");
+
+        // 广播死亡事件。GameManager 等脚本会监听这个事件。
+        OnPlayerDied?.Invoke();
     }
     
 }

@@ -9,6 +9,7 @@ public class MoveController : MonoBehaviour
     public float moveSpeed = 5f;
     private Rigidbody rb;
     private Vector2 rawMoveInput; // 使用 Vector2 来存储原始输入
+    private bool canMove = true; // 新增一个控制开关
 
     void Start()
     {
@@ -17,10 +18,23 @@ public class MoveController : MonoBehaviour
         // 并且 Use Gravity 已取消勾选
     }
 
+    void OnEnable() { GameManager.OnGameStateChanged += HandleGameStateChange; }
+    void OnDisable() { GameManager.OnGameStateChanged -= HandleGameStateChange; }
+    private void HandleGameStateChange(GameManager.GameState newState)
+    {
+        // 只有在 Playing 状态下才允许移动
+        canMove = (newState == GameManager.GameState.Playing);
+    }
+
     // 由 PlayerInput 组件在输入变化时调用
     private void OnMove(InputValue value)
     {
         // 从输入事件中获取 Vector2 值并存储
+        if (!canMove) // 检查开关
+        {
+            rawMoveInput = Vector2.zero; // 如果不能移动，清空输入
+            return;
+        }
         rawMoveInput = value.Get<Vector2>();
     }
 
@@ -28,6 +42,11 @@ public class MoveController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!canMove) // 检查开关
+        {
+            rb.velocity = Vector3.zero; // 如果不能移动，将速度清零
+            return;
+        }
         // 1. 将二维输入转换为三维世界移动方向
         Vector3 moveDirection = new Vector3(rawMoveInput.x, 0f, rawMoveInput.y);
 

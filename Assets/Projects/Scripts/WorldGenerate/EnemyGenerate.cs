@@ -21,6 +21,18 @@ public class EnemyGenerate : MonoBehaviour
     private int currentEnemyCount = 0;        // 当前场上敌人数量
     private float spawnTimer = 0f;
 
+    private bool canSpawn = true; // 控制是否允许生成的开关
+
+    // 订阅事件
+    void OnEnable() { GameManager.OnGameStateChanged += HandleGameStateChange; }
+    // 取消订阅
+    void OnDisable() { GameManager.OnGameStateChanged -= HandleGameStateChange; }
+
+    private void HandleGameStateChange(GameManager.GameState newState)
+    {
+        // 只有在 Playing 状态下才允许生成敌人
+        canSpawn = (newState == GameManager.GameState.Playing);
+    }
     void Start()
     {
         // 如果没有手动指定玩家，尝试自动寻找
@@ -45,6 +57,11 @@ public class EnemyGenerate : MonoBehaviour
 
     void Update()
     {
+        // 如果当前状态不允许生成，则直接退出 Update
+        if (!canSpawn)
+        {
+            return;
+        }
         // 更新计时器
         spawnTimer -= Time.deltaTime;
 

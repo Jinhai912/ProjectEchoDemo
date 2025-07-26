@@ -13,9 +13,14 @@ public class EnemyMoveControl : MonoBehaviour
     [Header("索敌参数")]
     public float targetFindInterval = 0.5f; // 寻找目标的频率（0.5秒一次，避免每帧都找）
 
+    [Header("攻击参数")]
+    public int attackDamage = 10;           // 每次攻击造成的伤害
+    public float attackCooldown = 1.5f;     // 攻击的冷却时间（秒）
+
     private Rigidbody rb;
     private Transform target;             // 当前追击的目标
     private float findTargetTimer;        // 寻找目标的计时器
+    private float attackTimer;              // 用于计算攻击冷却
 
     // 敌人的状态枚举
     private enum EnemyState { Idle, Chasing, Attacking }
@@ -26,9 +31,10 @@ public class EnemyMoveControl : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         // 推荐在 Inspector 中冻结旋转，防止敌人翻滚
         // rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-        
+
         currentState = EnemyState.Idle; // 初始状态为空闲
         findTargetTimer = targetFindInterval;
+        attackTimer = 0f;//初始时，敌人可以立即攻击
     }
 
     void Update()
@@ -39,6 +45,11 @@ public class EnemyMoveControl : MonoBehaviour
         {
             FindTargetPlayer();
             findTargetTimer = targetFindInterval;
+        }
+        //更新攻击计时器
+        if (attackTimer > 0)
+        {
+            attackTimer -= Time.deltaTime;
         }
 
         // 根据当前状态执行不同的逻辑
@@ -103,8 +114,15 @@ public class EnemyMoveControl : MonoBehaviour
                 {
                     currentState = EnemyState.Chasing;
                 }
-                // 在这里可以执行攻击逻辑
-                // Debug.Log("正在攻击 " + target.name);
+                else
+                {
+                    // --- 新增：执行攻击逻辑 ---
+                    // 如果攻击冷却时间结束，则进行攻击
+                    if (attackTimer <= 0)
+                    {
+                        AttackTarget();
+                    }
+                }
                 break;
         }
     }
@@ -163,6 +181,29 @@ public class EnemyMoveControl : MonoBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(direction);
             // 平滑转向，避免瞬间转身
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, 0.1f));
+        }
+    }
+
+    /// <summary>
+    /// 攻击方法
+    /// </summary>
+    void AttackTarget()
+    {
+        Debug.Log(gameObject.name + " 正在攻击 " + target.name);
+
+        // 重置攻击冷却计时器
+        attackTimer = attackCooldown;
+
+        // 尝试从目标（玩家）身上获取 PlayerStates 脚本
+        PlayerStates playerStates = target.GetComponent<PlayerStates>();
+        if (playerStates != null)
+        {
+            // 调用玩家的 TakeDamage 方法
+            playerStates.TakeDamage(attackDamage);
+        }
+        else
+        {
+            Debug.LogWarning("攻击目标 " + target.name + " 身上没有找到 PlayerStates 脚本！");
         }
     }
 }

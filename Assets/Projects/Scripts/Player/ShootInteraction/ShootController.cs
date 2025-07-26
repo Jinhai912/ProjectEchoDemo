@@ -17,6 +17,18 @@ public class ShootController : MonoBehaviour
     private Transform targetEnemy;       // 当前锁定的敌人
     private float fireCooldown = 0f;     // 射击冷却计时器
     private Rigidbody rb;
+    private bool canShoot = true; // 控制是否允许射击的开关
+
+    // 订阅事件
+    void OnEnable() { GameManager.OnGameStateChanged += HandleGameStateChange; }
+    // 取消订阅
+    void OnDisable() { GameManager.OnGameStateChanged -= HandleGameStateChange; }
+
+    private void HandleGameStateChange(GameManager.GameState newState)
+    {
+        // 只有在 Playing 状态下才允许射击
+        canShoot = (newState == GameManager.GameState.Playing);
+    }
 
     void Start()
     {
@@ -24,6 +36,11 @@ public class ShootController : MonoBehaviour
     }
     void Update()
     {
+        // 如果当前状态不允许射击，则直接退出 Update
+        if (!canShoot)
+        {
+            return;
+        }
         // 更新射击冷却时间
         if (fireCooldown > 0)
         {
