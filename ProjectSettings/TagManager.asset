@@ -8,6 +8,8 @@ TagManager:
   - UIPanel_GameOver
   - UIPanel_Pause
   - UIPanel_MainMenu
+  - UI_HealthBar
+  - UI_HealthText
   layers:
   - Default
   - TransparentFX

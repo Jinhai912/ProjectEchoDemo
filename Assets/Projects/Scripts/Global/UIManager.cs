@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement; // 用于重新加载场景
+using TMPro;
 
 public class UIManager : MonoBehaviour
 {
@@ -9,6 +10,9 @@ public class UIManager : MonoBehaviour
     public GameObject pauseMenuPanel;
     public GameObject gameOverPanel;
     public GameObject inGameHUD; // 游戏中的平视显示器 (如血条、分数)
+    // --- 新增 HUD 元素引用 ---
+    private Slider healthSlider;
+    private TextMeshProUGUI healthText;
 
     void OnEnable()
     {
@@ -16,6 +20,8 @@ public class UIManager : MonoBehaviour
         GameManager.OnGameStateChanged += HandleGameStateChange;
         // --- 新增：监听场景加载事件 ---
         SceneManager.sceneLoaded += OnSceneLoaded;
+        //订阅生命之变化事件
+        PlayerStates.OnHealthChanged += UpdateHealthUI;
     }
 
     void OnDisable()
@@ -24,6 +30,7 @@ public class UIManager : MonoBehaviour
         GameManager.OnGameStateChanged -= HandleGameStateChange;
         // --- 新增：取消监听 ---
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        PlayerStates.OnHealthChanged -= UpdateHealthUI;
     }
 
     // 当新场景加载完成时调用
@@ -50,8 +57,30 @@ public class UIManager : MonoBehaviour
         {
             Debug.LogWarning("在当前场景中寻找 UI 面板时出错 (某些面板可能不存在): " + e.Message);
         }
+        // --- 新增：寻找 HUD 元素 ---
+        GameObject healthBarGO = GameObject.FindWithTag("UI_HealthBar");
+        if (healthBarGO != null) healthSlider = healthBarGO.GetComponent<Slider>();
+
+        GameObject healthTextGO = GameObject.FindWithTag("UI_HealthText");
+        if (healthTextGO != null) healthText = healthTextGO.GetComponent<TextMeshProUGUI>();
 
         
+    }
+    // --- 新增：更新血条 UI 的方法 ---
+    private void UpdateHealthUI(int currentHealth, int maxHealth)
+    {
+        // 更新 Slider
+        if (healthSlider != null)
+        {
+            // 计算比例 (0到1之间)
+            healthSlider.value = (float)currentHealth / maxHealth;
+        }
+
+        // 更新文本
+        if (healthText != null)
+        {
+            healthText.text = currentHealth + " / " + maxHealth;
+        }
     }
     // 事件处理函数
     private void HandleGameStateChange(GameManager.GameState newState)
@@ -61,7 +90,7 @@ public class UIManager : MonoBehaviour
         if (pauseMenuPanel != null) pauseMenuPanel.SetActive(newState == GameManager.GameState.Paused);
         if (gameOverPanel != null) gameOverPanel.SetActive(newState == GameManager.GameState.GameOver);
         if (inGameHUD != null) inGameHUD.SetActive(newState == GameManager.GameState.Playing);
-        
+
     }
 
     // --- 公共方法，给 UI 按钮调用 ---

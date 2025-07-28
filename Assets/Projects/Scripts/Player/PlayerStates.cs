@@ -22,6 +22,7 @@ public class PlayerStates : MonoBehaviour
     public static event System.Action OnPlayerDied;
     // 受伤事件，方便未来做受击效果
     public static event System.Action<int> OnPlayerDamaged; // 参数<int>可以传递伤害数值
+    public static event System.Action<int, int> OnHealthChanged;//当前生命、最大生命
 
     void Start()
     {
@@ -43,6 +44,9 @@ public class PlayerStates : MonoBehaviour
 
         // 广播受伤事件，并传递伤害数值
         OnPlayerDamaged?.Invoke(damageAmount);
+
+        // --- 在受到伤害后，广播新的生命值 ---
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
         // 检查生命值是否降到0或以下
         if (currentHealth <= 0)
