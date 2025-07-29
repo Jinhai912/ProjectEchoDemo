@@ -8,6 +8,7 @@ public class EnemyState : MonoBehaviour
     public float maxHealth = 10f;
     private float currentHealth;
     public GameObject expGemPrefab; // 在敌人的Inspector中设置
+    private RoomController roomController;
 
     // --- 事件定义 ---
     // 当敌人受到伤害时触发的事件
@@ -19,6 +20,12 @@ public class EnemyState : MonoBehaviour
     void Start()
     {
         currentHealth = maxHealth;
+        // 在开始时，自动寻找场景中的 RoomController
+        roomController = FindObjectOfType<RoomController>();
+        if (roomController == null)
+        {
+            Debug.LogError("场景中找不到 RoomController!");
+        }
     }
 
     public void TakeDamage(float damage, bool isCritical)
@@ -45,6 +52,11 @@ public class EnemyState : MonoBehaviour
         Debug.Log(gameObject.name + " has died.");
         // 广播死亡事件
         OnDeath?.Invoke();
+        // 在死亡时，通知 RoomController
+        if (roomController != null)
+        {
+            roomController.OnEnemyDied();
+        }
 
         // 在敌人死亡的位置生成一个经验球
         Instantiate(expGemPrefab, transform.position, Quaternion.identity);

@@ -10,6 +10,7 @@ TagManager:
   - UIPanel_MainMenu
   - UI_HealthBar
   - UI_HealthText
+  - Interactable
   layers:
   - Default
   - TransparentFX
@@ -18,7 +19,7 @@ TagManager:
   - Water
   - UI
   - PlayerBullet
-  - 
+  - Interactable
   - 
   - 
   - 

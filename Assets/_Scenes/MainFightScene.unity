@@ -1424,13 +1424,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.30878386, y: -0, z: -0, w: 0.9511323}
-  m_LocalPosition: {x: 0, y: 6.73, z: -10}
+  m_LocalRotation: {x: 0.4640618, y: -0, z: -0, w: 0.8858028}
+  m_LocalPosition: {x: 0, y: 10.48, z: -10.432}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 35.972, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 55.299, y: 0, z: 0}
 --- !u!1 &989883381
 GameObject:
   m_ObjectHideFlags: 0
@@ -1709,8 +1709,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1139477302}
   - component: {fileID: 1139477301}
+  - component: {fileID: 1139477303}
   m_Layer: 0
-  m_Name: EnemySpawner
+  m_Name: RoomController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1728,10 +1729,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d2e04702282b62429051fe9e69b37f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
-  maxEnemies: 20
-  spawnInterval: 2
-  enemiesPerSpawn: 1
+  waves:
+  - waveName: 1
+    enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
+    enemyCount: 2
+    spawnInterval: 2
   spawnAreaCenter: {x: 0, y: 0, z: 0}
   spawnAreaSize: {x: 20, y: 0, z: 20}
   playerTransform: {fileID: 1518045065}
@@ -1751,6 +1753,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1139477303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1139477300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a27d6751452cf5e418e2c4af855af2fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lootPrefab: {fileID: 4371314140085582112, guid: 94e1d41e9041a7343bff98adaf178376, type: 3}
+  lootSpawnPoint: {fileID: 0}
 --- !u!1 &1162131108
 GameObject:
   m_ObjectHideFlags: 0

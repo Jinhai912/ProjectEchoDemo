@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 1206665594515948263}
   - component: {fileID: 9167985165414982047}
   - component: {fileID: 8447333895402232086}
+  - component: {fileID: 76853072135035802}
   m_Layer: 3
   m_Name: PlayerTest
   m_TagString: Player
@@ -223,10 +224,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19a4ff8d69e42ad4d94d1b11f554d64a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 0
   baseDamage: 10
   critRate: 0.1
   critDamage: 1.5
   totalDamageBonus: 1
+--- !u!114 &76853072135035802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1827327482653836058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09e4587fb52e4c24996ac8faaf2d20de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactionDistance: 2
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!1 &2360920202308399476
 GameObject:
   m_ObjectHideFlags: 0
