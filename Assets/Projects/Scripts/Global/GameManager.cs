@@ -3,11 +3,15 @@ using UnityEngine.SceneManagement; // 用于场景管理
 
 public class GameManager : MonoBehaviour
 {
+    [Header("关卡流程")]
+    public EncounterData startingEncounter; // 在 Inspector 中拖入你的第一个关卡数据
+    public EncounterData nextEncounter { get; private set; }
+
     // --- 单例模式 ---
     public static GameManager Instance { get; private set; }
 
     // --- 游戏状态 ---
-    public enum GameState { MainMenu, Playing, Paused, GameOver }
+    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection }
     public GameState currentState;
 
     // --- 事件 ---
@@ -24,13 +28,26 @@ public class GameManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        PlayerStates.OnPlayerDied += HandlePlayerDeath;
+        PlayerStates.OnHealthChanged += HandleHealthChange; // GameManager 也需要监听血量变化
+    }
+
+    void OnDestroy()
+    {
+        PlayerStates.OnPlayerDied -= HandlePlayerDeath;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        PlayerStates.OnHealthChanged -= HandleHealthChange;
     }
 
     void Start()
     {
         // 游戏开始时，默认进入主菜单状态
         //SceneManager.LoadScene("MainFightScene");
-        
+
     }
 
     void Update()
@@ -47,17 +64,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-    void OnEnable()
-    {
-        PlayerStates.OnPlayerDied += HandlePlayerDeath;
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-    void OnDisable()
-    {
-        PlayerStates.OnPlayerDied -= HandlePlayerDeath;
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-    
+
     // --- 核心方法：更新游戏状态 ---
     public void UpdateGameState(GameState newState)
     {
@@ -91,34 +98,25 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        Debug.LogWarning("StartGame() 方法被调用了！即将加载 MainFightScene。", this.gameObject);
-        //Debug.Break(); // 这是一个非常强大的调试工具！
-
-        // 如果游戏当前不是在 MainMenu 状态，就阻止切换，以防万一
-        if (currentState != GameState.MainMenu)
-        {
-            Debug.LogWarning("尝试在非 MainMenu 状态下启动游戏，已阻止。当前状态: " + currentState);
-            return;
-        }
-
-        // 加载你的主战斗场景
-        SceneManager.LoadScene("MainFightScene");
-    
-        // 我们需要在场景加载完成后再更新状态
-        // 这里我们用一个简单的监听
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        StartEncounter(startingEncounter);
     }
     // 场景加载完成后的回调函数
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // 检查加载的是否是我们的主战斗场景
+        // 1. 命令 UIManager 重新寻找UI
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.OnSceneLoaded(scene, mode);
+        }
+
+        // 2. 决定新场景的状态
         if (scene.name == "MainFightScene")
         {
-            // 场景加载完毕，现在可以安全地将状态切换到 Playing
             UpdateGameState(GameState.Playing);
-        
-            // （重要）取消订阅，避免重复调用
-            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+        else if (scene.name == "MainMenu")
+        {
+            UpdateGameState(GameState.MainMenu);
         }
     }
 
@@ -144,6 +142,41 @@ public class GameManager : MonoBehaviour
     }
     private void HandlePlayerDeath()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        UpdateGameState(GameState.GameOver);
     }
+
+    public void RestartGame()
+    {
+        // 恢复时间流速，以防是从暂停或地图界面过来的
+        Time.timeScale = 1f;
+
+        // 重新加载当前的战斗场景
+        // GetActiveScene().name 会获取到 "MainFightScene"
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+        // OnSceneLoaded 事件会自动处理后续的状态切换 (切换到 Playing)
+    }
+
+    // --- 修改：创建一个新的方法来启动指定的关卡 ---
+    public void StartEncounter(EncounterData encounterData)
+    {
+        if (encounterData == null)
+        {
+            Debug.LogError("尝试开始一个空的 Encounter! 检查 GameManager 的 startingEncounter 是否设置。");
+            return;
+        }
+
+        nextEncounter = encounterData;
+        SceneManager.LoadScene("MainFightScene");
+    }
+
+    // GameManager 负责监听血量变化，然后转告 UIManager
+    private void HandleHealthChange(int current, int max)
+    {
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateHealthUI(current, max);
+        }
+    }
+    
 }

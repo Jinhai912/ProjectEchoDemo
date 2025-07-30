@@ -13,22 +13,16 @@ public class DamageNumberManager : MonoBehaviour
     void Awake()
     {
         FindRequiredComponents();
-    }
-    
-    void OnEnable()
-    {
-        // 这里的 EnemyState.OnDamageTaken 需要确保 EnemyState 脚本也存在
-        // 或者将事件定义为 public static，就像 PlayerFeedbackManager 那样
-        // 假设 EnemyState.cs 中有 public static event System.Action<...> OnDamageTaken;
         EnemyState.OnDamageTaken += HandleDamageTaken;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    void OnDisable()
+    void OnDestroy()
     {
         EnemyState.OnDamageTaken -= HandleDamageTaken;
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
+    
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {

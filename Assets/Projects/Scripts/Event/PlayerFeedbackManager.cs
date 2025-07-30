@@ -14,21 +14,18 @@ public class PlayerFeedbackManager : MonoBehaviour
     {
         // Awake 在对象第一次被创建时调用，在这里进行初始设置
         FindRequiredComponents();
-    }
-
-    void OnEnable()
-    {
         OnFeedbackRequested += HandleFeedbackRequest;
         // 监听场景加载事件
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    void OnDisable()
+    void OnDestroy()
     {
         OnFeedbackRequested -= HandleFeedbackRequest;
         // 取消监听
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
+    
     
     // 当新场景加载完成时调用
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

@@ -40,7 +40,7 @@ public class RoomController : MonoBehaviour
     private void HandleGameStateChange(GameManager.GameState newState)
     {
         canOperate = (newState == GameManager.GameState.Playing);
-        
+
         // 当游戏暂停时，我们也应该停止协程，恢复时再继续
         // (这是一个进阶功能，我们先简化处理)
         if (!canOperate && encounterCoroutine != null)
@@ -58,25 +58,36 @@ public class RoomController : MonoBehaviour
             if (player != null) playerTransform = player.transform;
             else { this.enabled = false; return; }
         }
-        
-        // 在 Start 中启动主协程
-        encounterCoroutine = StartCoroutine(RunEncounter());
+
+        // --- 核心修改：从 GameManager 获取关卡数据 ---
+        if (GameManager.Instance != null && GameManager.Instance.nextEncounter != null)
+        {
+            // 从 GameManager 的手提箱里拿出数据，并开始战斗
+            StartCoroutine(RunEncounter(GameManager.Instance.nextEncounter));
+        }
+        else
+        {
+            Debug.LogError("RoomController 无法从 GameManager 获取关卡数据！");
+            // (可选) 在这里可以加载一个默认的或测试用的关卡
+        }
     }
 
     // 我们不再需要 Update 来控制生成了，协程会处理一切
     // void Update() { ... }
 
     // --- 核心波次控制协程 ---
-    private IEnumerator RunEncounter()
+    private IEnumerator RunEncounter(EncounterData encounter)
     {
+        Wave[] waves = encounter.waves; // 使用传入的数据
+        
         // 等待一帧，确保其他所有 Start 都已执行
-        yield return null; 
+        yield return null;
 
         // 遍历所有配置的波次
         for (int i = 0; i < waves.Length; i++)
         {
             // 等待，直到游戏状态是 Playing
-            while(!canOperate)
+            while (!canOperate)
             {
                 yield return null;
             }
@@ -93,7 +104,7 @@ public class RoomController : MonoBehaviour
                     // 如果在生成过程中游戏暂停或结束了，就卡在这里等待
                     yield return new WaitUntil(() => canOperate);
                 }
-                
+
                 SpawnEnemy(currentWave.enemyPrefab);
                 yield return new WaitForSeconds(currentWave.spawnInterval);
             }
@@ -156,9 +167,10 @@ public class RoomController : MonoBehaviour
         if (playerTransform != null)
         {
             // 将Gizmo颜色切换为红色，半透明
-            Gizmos.color = new Color(1, 0, 0, 0.3f); 
+            Gizmos.color = new Color(1, 0, 0, 0.3f);
             // 以玩家位置为中心，safeRadius为半径，绘制一个球体
             Gizmos.DrawSphere(playerTransform.position, safeRadius);
         }
     }
-    }
+    
+}

@@ -11,6 +11,7 @@ TagManager:
   - UI_HealthBar
   - UI_HealthText
   - Interactable
+  - UIPanel_Map
   layers:
   - Default
   - TransparentFX
@@ -20,7 +21,7 @@ TagManager:
   - UI
   - PlayerBullet
   - Interactable
-  - 
+  - UIPanel_Map
   - 
   - 
   - 
