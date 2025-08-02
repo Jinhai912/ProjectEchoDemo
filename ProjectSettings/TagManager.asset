@@ -12,6 +12,7 @@ TagManager:
   - UI_HealthText
   - Interactable
   - UIPanel_Map
+  - UIPanel_LevelUp
   layers:
   - Default
   - TransparentFX

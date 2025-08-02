@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     // --- 游戏状态 ---
-    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection }
+    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection}
     public GameState currentState;
 
     // --- 事件 ---
@@ -87,10 +87,18 @@ public class GameManager : MonoBehaviour
                 Time.timeScale = 0f; // 游戏结束，时间静止
                 // 在这里可以处理显示游戏结束UI的逻辑
                 break;
+            case GameState.MapSelection:
+                Time.timeScale = 0f;
+                break;
         }
 
+        if (UIManager.Instance != null)
+        {
+            // 直接命令 UIManager 更新它的显示状态
+            UIManager.Instance.HandleGameStateChange(newState); // 假设方法名叫这个
+        }
         // 广播状态变化事件，通知所有监听者
-        OnGameStateChanged?.Invoke(newState);
+        //OnGameStateChanged?.Invoke(newState);
         Debug.Log("Game state changed to: " + newState);
     }
 
@@ -100,6 +108,7 @@ public class GameManager : MonoBehaviour
     {
         StartEncounter(startingEncounter);
     }
+
     // 场景加载完成后的回调函数
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
@@ -140,6 +149,7 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.LoadScene("MainMenu");
     }
+
     private void HandlePlayerDeath()
     {
         UpdateGameState(GameState.GameOver);

@@ -105,5 +105,70 @@ public class PlayerStates : MonoBehaviour
         // 广播死亡事件。GameManager 等脚本会监听这个事件。
         OnPlayerDied?.Invoke();
     }
+
+    /// <summary>
+    /// 应用能力
+    /// </summary>
+    /// <param name="ability"></param>
+    public void ApplyAbility(AbilityData ability)
+    {
+        Debug.Log("正在应用能力: " + ability.abilityName);
+
+        switch (ability.type)
+        {
+            // --- 基础数值 ---
+            case AbilityData.AbilityType.IncreaseMaxHealth:
+                IncreaseMaxHealth((int)ability.value);
+                break;
+            case AbilityData.AbilityType.IncreaseDefense:
+                // ... (未来实现)
+                break;
+            case AbilityData.AbilityType.IncreaseAttack:
+                IncreaseAttack(ability.value);
+                break;
+
+            // --- 衍生/乘区属性 ---
+            case AbilityData.AbilityType.IncreaseDamageBonus:
+                // 假设 value 是 0.1 (代表+10%)
+                totalDamageBonus += ability.value;
+                Debug.Log("总伤害加成提升了 " + (ability.value * 100) + "%，当前为: " + totalDamageBonus);
+                break;
+            case AbilityData.AbilityType.IncreaseCritRate:
+                critRate += ability.value;
+                Debug.Log("暴击率提升了 " + (ability.value * 100) + "%，当前为: " + critRate);
+                break;
+
+            // --- 通知其他组件 ---
+            case AbilityData.AbilityType.IncreaseMoveSpeed:
+                GetComponent<MoveController>()?.IncreaseSpeed(ability.value);
+                break;
+            case AbilityData.AbilityType.IncreaseAttackSpeed:
+                GetComponent<ShootController>()?.IncreaseFireRate(ability.value);
+                break;
+
+            // --- 质变能力 ---
+            // case AbilityData.AbilityType.AddProjectile:
+            //     GetComponent<ShootController>()?.AddProjectile();
+            //     break;
+
+            default:
+                Debug.LogWarning("未处理的能力类型: " + ability.type);
+                break;
+        }
+    }
+
+    // --- 具体的属性修改方法 ---
+    private void IncreaseMaxHealth(int amount)
+    {
+        maxHealth += amount;
+        currentHealth += amount; // 增加最大生命时，通常也恢复等量当前生命
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        Debug.Log("最大生命值提升了 " + amount + "，当前为: " + maxHealth);
+    }
     
+    private void IncreaseAttack(float amount)
+    {
+        baseDamage += amount;
+        Debug.Log("基础攻击力提升了 " + amount + "，当前为: " + baseDamage);
+    }
 }

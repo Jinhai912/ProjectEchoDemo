@@ -32,7 +32,7 @@ public class ShootController : MonoBehaviour
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>(); 
+        rb = GetComponent<Rigidbody>();
     }
     void Update()
     {
@@ -55,7 +55,7 @@ public class ShootController : MonoBehaviour
         {
             Shoot();
             // 重置冷却时间 (1 / 射速 = 每次射击的间隔时间)
-            fireCooldown = 1f / fireRate; 
+            fireCooldown = 1f / fireRate;
         }
     }
 
@@ -63,7 +63,7 @@ public class ShootController : MonoBehaviour
     {
         // 找到场景中所有带有 Shootable 脚本的对象
         Shootable[] shootables = FindObjectsOfType<Shootable>();
-        
+
         Transform nearestShootable = null;
         float minDistance = Mathf.Infinity;
 
@@ -87,7 +87,7 @@ public class ShootController : MonoBehaviour
             Vector3 directionToLook = targetEnemy.position - transform.position;
             directionToLook.y = 0; // 确保只在水平面上旋转
             Quaternion targetRotation = Quaternion.LookRotation(directionToLook);
-        
+
             // 在 FixedUpdate 中平滑旋转
             // 为了简单，我们可以在这里直接设置，但更好的方式是把旋转也放到 FixedUpdate
             rb.MoveRotation(targetRotation); // 使用 MoveRotation
@@ -128,4 +128,7 @@ public class ShootController : MonoBehaviour
         // 速度 = 方向 * 速率
         bulletRb.velocity = direction * bulletSpeed;
     }
+    
+    // public float fireRate;
+    public void IncreaseFireRate(float percentage) { fireRate *= (1 + percentage); }
 }

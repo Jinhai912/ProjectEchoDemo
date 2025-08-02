@@ -1903,6 +1903,8 @@ GameObject:
   - component: {fileID: 1162134983}
   - component: {fileID: 1162134987}
   - component: {fileID: 1162134986}
+  - component: {fileID: 1162134989}
+  - component: {fileID: 1162134988}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1982,6 +1984,36 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   feedbackTextPrefab: {fileID: 3484742558654410381, guid: 7a24bcd14e10e0f4cb14797bb3c6a726, type: 3}
+--- !u!114 &1162134988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162134982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88295a993342da14b8458b6c60fb30fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  abilityPool: {fileID: 1162134989}
+--- !u!114 &1162134989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162134982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aada65aeb607fa94b9ce5f892b127743, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allAbilities:
+  - {fileID: 11400000, guid: 3f5cfa4f923fbd84daf578474d34e2b2, type: 2}
+  - {fileID: 11400000, guid: 9fc25a38e325d1c4a892d9f4c0e312b9, type: 2}
+  - {fileID: 11400000, guid: b42d6042149f3a744a29ac22aa76f7f2, type: 2}
+  - {fileID: 11400000, guid: a53381f7661b5fc47b448b5b5e1d4650, type: 2}
 --- !u!1 &1245343403
 GameObject:
   m_ObjectHideFlags: 0

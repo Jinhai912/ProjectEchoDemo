@@ -12,6 +12,7 @@ public class UIManager : MonoBehaviour
     public GameObject gameOverPanel;
     public GameObject inGameHUD; // 游戏中的平视显示器 (如血条、分数)
     public GameObject mapPanel;
+    private GameObject levelUpPanel;
     // --- 新增 HUD 元素引用 ---
     private Slider healthSlider;
     private TextMeshProUGUI healthText;
@@ -76,6 +77,7 @@ public class UIManager : MonoBehaviour
             gameOverPanel = GameObject.FindWithTag("UIPanel_GameOver");
             inGameHUD = GameObject.FindWithTag("UIPanel_HUD");
             mapPanel = GameObject.FindWithTag("UIPanel_Map");
+            levelUpPanel = GameObject.FindWithTag("UIPanel_LevelUp");
         }
         catch (UnityException e)
         {
@@ -109,12 +111,45 @@ public class UIManager : MonoBehaviour
     // 事件处理函数
     public void HandleGameStateChange(GameManager.GameState newState)
     {
-        // 在操作前，先检查引用是否有效
-        if (mainMenuPanel != null) mainMenuPanel.SetActive(newState == GameManager.GameState.MainMenu);
-        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(newState == GameManager.GameState.Paused);
-        if (gameOverPanel != null) gameOverPanel.SetActive(newState == GameManager.GameState.GameOver);
-        if (inGameHUD != null) inGameHUD.SetActive(newState == GameManager.GameState.Playing);
-        if (mapPanel != null) mapPanel.SetActive(newState == GameManager.GameState.MapSelection);
+        // // 在操作前，先检查引用是否有效
+        // if (mainMenuPanel != null) mainMenuPanel.SetActive(newState == GameManager.GameState.MainMenu);
+        // if (pauseMenuPanel != null) pauseMenuPanel.SetActive(newState == GameManager.GameState.Paused);
+        // if (gameOverPanel != null) gameOverPanel.SetActive(newState == GameManager.GameState.GameOver);
+        // if (inGameHUD != null) inGameHUD.SetActive(newState == GameManager.GameState.Playing);
+        // if (mapPanel != null) mapPanel.SetActive(newState == GameManager.GameState.MapSelection);
+        // if (levelUpPanel != null && newState != GameManager.GameState.LevelUp) // 假设我们未来会有一个 LevelUp 状态
+        // {
+        //     levelUpPanel.SetActive(false);
+        // }
+        // 先隐藏所有面板
+        // 1. 先把所有面板都隐藏掉
+        if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
+        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(false);
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+        if (inGameHUD != null) inGameHUD.SetActive(false);
+        if (mapPanel != null) mapPanel.SetActive(false);
+        if (levelUpPanel != null) levelUpPanel.SetActive(false);
+
+        // 2. 然后，只根据新状态，激活需要的那一个
+        switch (newState)
+        {
+            case GameManager.GameState.MainMenu:
+                if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
+                break;
+            case GameManager.GameState.Playing:
+                if (inGameHUD != null) inGameHUD.SetActive(true);
+                break;
+            case GameManager.GameState.Paused:
+                if (pauseMenuPanel != null) pauseMenuPanel.SetActive(true);
+                break;
+            case GameManager.GameState.GameOver:
+                if (gameOverPanel != null) gameOverPanel.SetActive(true);
+                break;
+            case GameManager.GameState.MapSelection:
+                if (mapPanel != null) mapPanel.SetActive(true);
+                break;
+        }
+        Debug.Log("UI 面板更新完毕。");
     }
 
     // --- 公共方法，给 UI 按钮调用 ---

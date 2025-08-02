@@ -57,4 +57,8 @@ public class MoveController : MonoBehaviour
         // 3. 使用 MovePosition 执行移动
         rb.MovePosition(targetPosition);
     }
+
+
+    // public float moveSpeed;
+    public void IncreaseSpeed(float percentage) { moveSpeed *= (1 + percentage); }
 }
