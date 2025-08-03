@@ -106,6 +106,16 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
+        // --- 在开始新游戏时，重置玩家数据 ---
+        if (PlayerData.Instance != null)
+        {
+            PlayerData.Instance.InitializeForNewRun();
+        }
+        else
+        {
+            Debug.LogError("找不到 PlayerData 实例！无法初始化玩家数据。");
+        }
+        
         StartEncounter(startingEncounter);
     }
 

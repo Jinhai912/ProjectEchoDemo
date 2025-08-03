@@ -1905,6 +1905,7 @@ GameObject:
   - component: {fileID: 1162134986}
   - component: {fileID: 1162134989}
   - component: {fileID: 1162134988}
+  - component: {fileID: 1162134990}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2014,6 +2015,34 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9fc25a38e325d1c4a892d9f4c0e312b9, type: 2}
   - {fileID: 11400000, guid: b42d6042149f3a744a29ac22aa76f7f2, type: 2}
   - {fileID: 11400000, guid: a53381f7661b5fc47b448b5b5e1d4650, type: 2}
+--- !u!114 &1162134990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162134982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86edc44081296484ba20d7d314614ee4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  initialMaxHealth: 100
+  initialBaseDamage: 20
+  initialCritRate: 0.1
+  initialCritDamage: 1.5
+  initialTotalDamageBonus: 1
+  initialMoveSpeed: 8
+  initialFireRate: 1
+  maxHealth: 0
+  currentHealth: 0
+  baseDamage: 0
+  critRate: 0
+  critDamage: 0
+  totalDamageBonus: 0
+  moveSpeed: 0
+  fireRate: 0
+  acquiredAbilities: []
 --- !u!1 &1245343403
 GameObject:
   m_ObjectHideFlags: 0

@@ -6,7 +6,6 @@ using UnityEngine.InputSystem; // 确保引入命名空间
 [RequireComponent(typeof(PlayerInput))] // 最好也把PlayerInput加到依赖中
 public class MoveController : MonoBehaviour
 {
-    public float moveSpeed = 5f;
     private Rigidbody rb;
     private Vector2 rawMoveInput; // 使用 Vector2 来存储原始输入
     private bool canMove = true; // 新增一个控制开关
@@ -42,23 +41,24 @@ public class MoveController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!canMove) // 检查开关
+        if (!canMove) { rb.velocity = Vector3.zero; return; }
+
+        // --- 核心修改在这里 ---
+        // 1. 在执行移动前，从 PlayerData 获取当前应有的移动速度
+        float currentMoveSpeed = 5f; // 先给一个默认值，以防 PlayerData 不存在
+        if (PlayerData.Instance != null)
         {
-            rb.velocity = Vector3.zero; // 如果不能移动，将速度清零
-            return;
+            currentMoveSpeed = PlayerData.Instance.moveSpeed;
         }
-        // 1. 将二维输入转换为三维世界移动方向
+        // --- 修改结束 ---
+
         Vector3 moveDirection = new Vector3(rawMoveInput.x, 0f, rawMoveInput.y);
 
-        // 2. 计算本物理帧的目标位置
-        // moveDirection.normalized 确保斜向移动速度不会过快
-        Vector3 targetPosition = rb.position + moveDirection.normalized * moveSpeed * Time.fixedDeltaTime;
+        // 2. 在计算目标位置时，使用我们刚刚获取的 currentMoveSpeed
+        Vector3 targetPosition = rb.position + moveDirection.normalized * currentMoveSpeed * Time.fixedDeltaTime;
 
-        // 3. 使用 MovePosition 执行移动
         rb.MovePosition(targetPosition);
     }
 
 
-    // public float moveSpeed;
-    public void IncreaseSpeed(float percentage) { moveSpeed *= (1 + percentage); }
 }

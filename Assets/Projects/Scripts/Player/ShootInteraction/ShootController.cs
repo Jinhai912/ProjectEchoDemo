@@ -7,7 +7,7 @@ public class ShootController : MonoBehaviour
 {
     [Header("射击参数")]
     public float shootingRange = 15f;    // 射程
-    public float fireRate = 1f;          // 射速 (每秒1发)
+    //public float fireRate = 1f;          // 射速 (每秒1发)
     public float bulletSpeed = 20f;      // 子弹速度
 
     [Header("组件引用")]
@@ -36,26 +36,30 @@ public class ShootController : MonoBehaviour
     }
     void Update()
     {
-        // 如果当前状态不允许射击，则直接退出 Update
-        if (!canShoot)
-        {
-            return;
-        }
-        // 更新射击冷却时间
+        if (!canShoot) { return; }
+        
         if (fireCooldown > 0)
         {
             fireCooldown -= Time.deltaTime;
         }
 
-        // 寻找并锁定目标
         FindAndTargetEnemy();
 
-        // 如果有目标，并且冷却时间结束，则射击
         if (targetEnemy != null && fireCooldown <= 0)
         {
             Shoot();
-            // 重置冷却时间 (1 / 射速 = 每次射击的间隔时间)
-            fireCooldown = 1f / fireRate;
+
+            // --- 核心修改在这里 ---
+            // 1. 从 PlayerData 获取当前应有的射速
+            float currentFireRate = 1f; // 默认值
+            if (PlayerData.Instance != null)
+            {
+                currentFireRate = PlayerData.Instance.fireRate;
+            }
+
+            // 2. 使用获取到的 currentFireRate 来计算冷却时间
+            fireCooldown = 1f / currentFireRate;
+            // --- 修改结束 ---
         }
     }
 
@@ -129,6 +133,5 @@ public class ShootController : MonoBehaviour
         bulletRb.velocity = direction * bulletSpeed;
     }
     
-    // public float fireRate;
-    public void IncreaseFireRate(float percentage) { fireRate *= (1 + percentage); }
+
 }
