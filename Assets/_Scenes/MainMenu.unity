@@ -2012,9 +2012,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allAbilities:
   - {fileID: 11400000, guid: 3f5cfa4f923fbd84daf578474d34e2b2, type: 2}
-  - {fileID: 11400000, guid: 9fc25a38e325d1c4a892d9f4c0e312b9, type: 2}
+  - {fileID: 11400000, guid: 5e183ad89ed260548b7ba75fff3e1142, type: 2}
   - {fileID: 11400000, guid: b42d6042149f3a744a29ac22aa76f7f2, type: 2}
   - {fileID: 11400000, guid: a53381f7661b5fc47b448b5b5e1d4650, type: 2}
+  - {fileID: 11400000, guid: d2f9f394124a98045a2ebfaf7d08e386, type: 2}
+  - {fileID: 11400000, guid: ded0d6965999a0a4b8963ab1352498ca, type: 2}
+  - {fileID: 11400000, guid: 9fc25a38e325d1c4a892d9f4c0e312b9, type: 2}
+  - {fileID: 11400000, guid: 92364221faaae3e42a1972294203caec, type: 2}
 --- !u!114 &1162134990
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2029,19 +2033,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   initialMaxHealth: 100
   initialBaseDamage: 20
+  initialMoveSpeed: 8
+  initialFireRate: 1
   initialCritRate: 0.1
   initialCritDamage: 1.5
   initialTotalDamageBonus: 1
-  initialMoveSpeed: 8
-  initialFireRate: 1
+  initialExperience: 0
+  initialDefense: 0
+  initialPickupRadius: 5
   maxHealth: 0
   currentHealth: 0
   baseDamage: 0
+  moveSpeed: 0
+  fireRate: 0
   critRate: 0
   critDamage: 0
   totalDamageBonus: 0
-  moveSpeed: 0
-  fireRate: 0
+  currentExperience: 0
+  defense: 0
+  pickupRadius: 0
   acquiredAbilities: []
 --- !u!1 &1245343403
 GameObject:

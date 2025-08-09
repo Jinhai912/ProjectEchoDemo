@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fce596035ee80f4183ffc0abe2b6581, type: 3}
   m_Name: UPG_AtkSpd_Uncommon
   m_EditorClassIdentifier: 
-  id: 
-  rarity: 0
-  abilityName: 
-  description: 
+  id: UPG_0052
+  rarity: 1
+  abilityName: "\u5FEB\u901F\u62D4\u67AA"
+  description: "\u653B\u51FB\u901F\u5EA6\u63D0\u53475%"
   icon: {fileID: 0}
-  type: 0
-  value: 0
+  type: 4
+  value: 0.05

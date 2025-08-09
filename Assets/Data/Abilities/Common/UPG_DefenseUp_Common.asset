@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fce596035ee80f4183ffc0abe2b6581, type: 3}
   m_Name: UPG_DefenseUp_Common
   m_EditorClassIdentifier: 
-  id: 
+  id: UPG_0003
   rarity: 0
-  abilityName: 
-  description: 
+  abilityName: "\u575A\u97E7\u76AE\u80A4"
+  description: "\u9632\u5FA1\u529B\u63D0\u53472\u70B9"
   icon: {fileID: 0}
-  type: 0
-  value: 0
+  type: 1
+  value: 2
