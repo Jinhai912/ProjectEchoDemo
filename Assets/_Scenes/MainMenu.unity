@@ -1906,6 +1906,7 @@ GameObject:
   - component: {fileID: 1162134989}
   - component: {fileID: 1162134988}
   - component: {fileID: 1162134990}
+  - component: {fileID: 1162134991}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2053,6 +2054,21 @@ MonoBehaviour:
   defense: 0
   pickupRadius: 0
   acquiredAbilities: []
+--- !u!114 &1162134991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162134982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c18c35354608aa4cb4e412593f9ffb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  totalLayers: 5
+  minNodesPerLayer: 2
+  maxNodesPerLayer: 4
 --- !u!1 &1245343403
 GameObject:
   m_ObjectHideFlags: 0

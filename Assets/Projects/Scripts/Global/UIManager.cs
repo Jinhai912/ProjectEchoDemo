@@ -191,26 +191,14 @@ public class UIManager : MonoBehaviour
     /// </summary>
     public void ShowMapPanel()
     {
-        Debug.Log("--- ShowMapPanel 方法被调用 ---");
-    
-        if (mapPanel != null)
+        // 1. 先命令 MapManager 去寻找 MapView 并画图
+        if (MapManager.Instance != null)
         {
-            Debug.Log("mapPanel 引用正常，准备激活！当前激活状态: " + mapPanel.activeSelf);
-            mapPanel.SetActive(true);
-            Debug.Log("SetActive(true) 已执行。当前激活状态: " + mapPanel.activeSelf);
+            MapManager.Instance.PrepareAndDrawMap();
+        }
 
-            // // (可选) 暂时隐藏游戏内的 HUD，避免重叠
-            // if(inGameHUD != null) 
-            // {
-            //     inGameHUD.SetActive(false);
-            //     Debug.Log("已隐藏 InGameHUD。");
-            // }
-        }
-        else
-        {
-            // 如果执行到这里，就说明 FindWithTag 失败了
-            Debug.LogError("ShowMapPanel 失败：mapPanel 变量是 null！请检查 'UIPanel_Map' 标签是否已正确设置在 MapPanel 对象上！");
-        }
+        // 2. 然后再切换游戏状态，显示面板
+        GameManager.Instance.UpdateGameState(GameManager.GameState.MapSelection);
     }
     
     /// <summary>
