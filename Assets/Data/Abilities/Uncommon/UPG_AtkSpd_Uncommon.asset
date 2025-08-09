@@ -10,10 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7fce596035ee80f4183ffc0abe2b6581, type: 3}
-  m_Name: Ability_HealthUp_Common
+  m_Name: UPG_AtkSpd_Uncommon
   m_EditorClassIdentifier: 
-  abilityName: "\u751F\u547D\u503C\u63D0\u5347"
-  description: "\u4F60\u7684\u751F\u547D\u503C\u63D0\u5347"
+  id: 
+  rarity: 0
+  abilityName: 
+  description: 
   icon: {fileID: 0}
   type: 0
-  value: 10
+  value: 0

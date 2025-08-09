@@ -50,7 +50,10 @@ public class PlayerStates : MonoBehaviour
     {
         if (PlayerData.Instance == null || PlayerData.Instance.currentHealth <= 0) return;
 
-        int finalDamage = damageAmount; // 简化伤害计算
+         // 从 PlayerData 读取防御力
+        int defense = PlayerData.Instance.defense;
+        // 使用我们之前设计的“减法防御”公式
+        int finalDamage = Mathf.Max(1, damageAmount - defense);
 
         PlayerData.Instance.currentHealth -= finalDamage;
 

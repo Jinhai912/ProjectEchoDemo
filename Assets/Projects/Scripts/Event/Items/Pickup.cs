@@ -4,7 +4,7 @@ public class Pickup : MonoBehaviour
 {
     [Header("拾取参数")]
     public float moveSpeed = 15f;         // 飞向玩家的速度
-    public float pickupDistance = 5f;     // 玩家进入此范围后，开始被吸引
+    //public float pickupDistance = 5f;     // 玩家进入此范围后，开始被吸引
     
     private Transform player;             // 玩家的 Transform
     private bool isFollowing = false;     // 是否正在飞向玩家
@@ -23,19 +23,18 @@ public class Pickup : MonoBehaviour
     {
         if (player == null) return; // 如果找不到玩家，则不执行任何操作
 
-        // 计算与玩家的距离
+        // --- 从 PlayerData 读取拾取范围 ---
+        float currentPickupRadius = PlayerData.Instance.pickupRadius;
+        
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-        // 如果玩家进入拾取范围，则开始跟随
-        if (distanceToPlayer <= pickupDistance)
+        if (distanceToPlayer <= currentPickupRadius)
         {
             isFollowing = true;
         }
 
-        // 如果正在跟随，则飞向玩家
         if (isFollowing)
         {
-            // 使用 Vector3.MoveTowards 平滑地移动
             transform.position = Vector3.MoveTowards(transform.position, player.position, moveSpeed * Time.deltaTime);
         }
     }

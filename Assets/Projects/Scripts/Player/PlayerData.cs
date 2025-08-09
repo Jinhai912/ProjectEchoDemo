@@ -16,6 +16,8 @@ public class PlayerData : MonoBehaviour
     public float initialCritDamage = 1.5f;
     public float initialTotalDamageBonus = 1.0f;
     public int initialExperience = 0;
+    public int initialDefense = 0;
+    public float initialPickupRadius = 5f;
 
     [Header("运行时数据 (对其他脚本公开)")]
     public int maxHealth;
@@ -27,6 +29,8 @@ public class PlayerData : MonoBehaviour
     public float critDamage;
     public float totalDamageBonus;
     public int currentExperience;
+     public int defense;
+    public float pickupRadius;
     public List<AbilityData> acquiredAbilities = new List<AbilityData>();
 
     void Awake()
@@ -50,6 +54,8 @@ public class PlayerData : MonoBehaviour
         critDamage = initialCritDamage;
         totalDamageBonus = initialTotalDamageBonus;
         currentExperience = initialExperience;
+         defense = initialDefense;
+        pickupRadius = initialPickupRadius;
         acquiredAbilities.Clear();
         Debug.Log("--- 玩家局内数据已为新一局游戏初始化！ ---");
     }
@@ -97,6 +103,14 @@ public class PlayerData : MonoBehaviour
                 break;
             case AbilityData.AbilityType.IncreaseCritDamage:
                 critDamage += ability.value;
+                break;
+            case AbilityData.AbilityType.IncreaseDefense:
+                defense += (int)ability.value;
+                Debug.Log("防御力提升了 " + (int)ability.value + "，当前为: " + defense);
+                break;
+            case AbilityData.AbilityType.IncreasePickupRadius:
+                pickupRadius *= (1 + ability.value);
+                Debug.Log("拾取范围提升了 " + (ability.value * 100) + "%，当前为: " + pickupRadius);
                 break;
             default:
                 Debug.LogWarning("未处理的能力类型: " + ability.type);

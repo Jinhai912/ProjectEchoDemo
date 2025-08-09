@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fce596035ee80f4183ffc0abe2b6581, type: 3}
+  m_Name: UPG_DmgBonus_Uncommon
+  m_EditorClassIdentifier: 
+  id: UPG_051
+  rarity: 0
+  abilityName: "\u4F24\u5BB3\u63D0\u9AD8"
+  description: "\u4F60\u9020\u6210\u7684\u4F24\u5BB3\u63D0\u5347"
+  icon: {fileID: 0}
+  type: 7
+  value: 0.01
