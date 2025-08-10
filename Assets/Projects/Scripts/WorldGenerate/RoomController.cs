@@ -50,36 +50,51 @@ public class RoomController : MonoBehaviour
         }
     }
 
-    void Start()
+    
+    
+    public void StartEncounter(EncounterData encounter)
     {
-        if (playerTransform == null)
-        {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) playerTransform = player.transform;
-            else { this.enabled = false; return; }
-        }
+        Debug.Log("RoomController 收到命令，开始新的关卡: " + encounter.name);
 
-        // --- 核心修改：从 GameManager 获取关卡数据 ---
-        if (GameManager.Instance != null && GameManager.Instance.nextEncounter != null)
+        // --- 核心修改：在开始新战斗之前，先执行清场 ---
+        ClearPreviousEncounterObjects();
+        
+        // 在开始新关卡前，先停止可能正在运行的旧协程
+        if (encounterCoroutine != null)
         {
-            // 从 GameManager 的手提箱里拿出数据，并开始战斗
-            StartCoroutine(RunEncounter(GameManager.Instance.nextEncounter));
+            StopCoroutine(encounterCoroutine);
         }
-        else
-        {
-            Debug.LogError("RoomController 无法从 GameManager 获取关卡数据！");
-            // (可选) 在这里可以加载一个默认的或测试用的关卡
-        }
+        
+        // 启动新的战斗协程
+        encounterCoroutine = StartCoroutine(RunEncounter(encounter));
     }
 
-    // 我们不再需要 Update 来控制生成了，协程会处理一切
-    // void Update() { ... }
+    /// <summary>
+    /// 寻找并销毁场景中所有标记为 "TemporaryEncounterObject" 的物件。
+    /// </summary>
+    private void ClearPreviousEncounterObjects()
+    {
+        Debug.Log("正在清理上一关的临时物件...");
+        
+        // 1. 在整个场景中，寻找所有挂载了 TemporaryEncounterObject 脚本的组件
+        TemporaryEncounterObject[] oldObjects = FindObjectsOfType<TemporaryEncounterObject>();
+        
+        // 2. 遍历找到的所有“临时工牌”
+        foreach (TemporaryEncounterObject obj in oldObjects)
+        {
+            // 3. 销毁那个佩戴着工牌的 GameObject
+            Destroy(obj.gameObject);
+            Debug.Log("已清理: " + obj.gameObject.name);
+        }
+        
+        Debug.Log("清理完毕，共清理了 " + oldObjects.Length + " 个物件。");
+    }
 
     // --- 核心波次控制协程 ---
     private IEnumerator RunEncounter(EncounterData encounter)
     {
         Wave[] waves = encounter.waves; // 使用传入的数据
-        
+
         // 等待一帧，确保其他所有 Start 都已执行
         yield return null;
 

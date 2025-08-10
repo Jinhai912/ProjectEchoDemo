@@ -8,6 +8,7 @@ public class MapGenerator
     private int totalLayers; // 地图总层数
     private int minNodesPerLayer; // 每层最少节点数
     private int maxNodesPerLayer; // 每层最多节点数
+    private MapManager mapManager;
     
     // 我们可以把所有节点都存在一个列表里，方便管理
     private List<MapNode> allNodes = new List<MapNode>();
@@ -15,21 +16,74 @@ public class MapGenerator
     /// <summary>
     /// 生成地图的主入口方法
     /// </summary>
-    public List<MapNode> GenerateMap(int layers, int minNodes, int maxNodes)
+    public List<MapNode> GenerateMap(int layers, int minNodes, int maxNodes, MapManager manager)
     {
         totalLayers = layers;
         minNodesPerLayer = minNodes;
         maxNodesPerLayer = maxNodes;
+        mapManager = manager; // <-- 保存引用
 
         allNodes.Clear();
 
-        // --- 算法核心流程 ---
         GenerateLayers();
+        // --- 核心修改 2：在生成节点后，分配类型和数据 ---
+        AssignNodeTypesAndData();
         ConnectLayers();
-        // (可选) AssignNodeTypes(); // 分配节点类型，比如精英、商店等
-        // (可选) PruneDeadEnds(); // 修正地图，确保所有路径都能通往Boss
 
         return allNodes;
+    }
+
+    /// <summary>
+    /// 为已生成的节点分配类型和具体的关卡数据
+    /// </summary>
+    private void AssignNodeTypesAndData()
+    {
+        // 遍历所有中间层的节点 (不包括起点和终点Boss)
+        for (int i = 1; i < totalLayers - 1; i++)
+        {
+            List<MapNode> layerNodes = GetNodesInLayer(i);
+            
+            // --- 在这一层安插一个精英怪 ---
+            // 确保精英怪池不为空，并且节点数量足够
+            if (mapManager.eliteCombatEncounters.Count > 0 && layerNodes.Count > 0)
+            {
+                // 随机选择一个倒霉的节点，把它变成精英房
+                int eliteIndex = Random.Range(0, layerNodes.Count);
+                MapNode eliteNode = layerNodes[eliteIndex];
+                eliteNode.nodeType = NodeType.EliteCombat;
+                // 同样，从精英关卡池里随机选一个具体的关卡配置
+                eliteNode.encounterData = mapManager.eliteCombatEncounters[Random.Range(0, mapManager.eliteCombatEncounters.Count)];
+                
+                // 把这个节点从待处理列表里移除，避免它又被分配成其他类型
+                layerNodes.RemoveAt(eliteIndex);
+
+                Debug.Log("在第 " + i + " 层生成了一个精英节点。");
+            }
+            
+            // --- (未来) 在这里可以添加安插商店、事件房的逻辑 ---
+            // if (mapManager.eventEncounters.Count > 0 && layerNodes.Count > 0) { ... }
+        }
+
+        // --- 最后，为所有剩下的普通节点和Boss节点分配具体的关卡数据 ---
+        foreach (var node in allNodes)
+        {
+            // 如果这个节点还没有被分配关卡数据
+            if (node.encounterData == null)
+            {
+                switch (node.nodeType)
+                {
+                    case NodeType.NormalCombat:
+                        if (mapManager.normalCombatEncounters.Count > 0)
+                        {
+                            node.encounterData = mapManager.normalCombatEncounters[Random.Range(0, mapManager.normalCombatEncounters.Count)];
+                        }
+                        break;
+                    case NodeType.Boss:
+                        node.encounterData = mapManager.bossEncounter;
+                        break;
+                }
+            }
+        }
     }
 
     /// <summary>

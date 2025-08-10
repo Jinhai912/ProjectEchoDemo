@@ -43,12 +43,6 @@ public class GameManager : MonoBehaviour
         PlayerStates.OnHealthChanged -= HandleHealthChange;
     }
 
-    void Start()
-    {
-        // 游戏开始时，默认进入主菜单状态
-        //SceneManager.LoadScene("MainFightScene");
-
-    }
 
     void Update()
     {
@@ -129,8 +123,33 @@ public class GameManager : MonoBehaviour
         }
 
         // 2. 决定新场景的状态
+        // 根据场景名决定初始状态
         if (scene.name == "MainFightScene")
         {
+            // --- 核心修复：在这里启动第一场战斗 ---
+
+            // 1. 找到当前场景的 RoomController
+            RoomController roomController = FindObjectOfType<RoomController>();
+            
+            if (roomController != null)
+            {
+                // 2. 检查 GameManager 手里是否攥着下一关的数据
+                if (nextEncounter != null)
+                {
+                    // 3. 命令 RoomController 用这份数据开始战斗！
+                    roomController.StartEncounter(nextEncounter);
+                }
+                else
+                {
+                    Debug.LogError("GameManager: 场景已加载，但没有找到 nextEncounter 数据来开始战斗！");
+                }
+            }
+            else
+            {
+                Debug.LogError("GameManager: 在 MainFightScene 中找不到 RoomController！无法开始战斗。");
+            }
+
+            // 4. 最后，将游戏状态设置为 Playing
             UpdateGameState(GameState.Playing);
         }
         else if (scene.name == "MainMenu")

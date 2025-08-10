@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3953314798250962886}
   - component: {fileID: 4649286549298829027}
   - component: {fileID: 2021680372129536718}
+  - component: {fileID: -8162883129868104313}
   m_Layer: 7
   m_Name: Exit_Portal
   m_TagString: Interactable
@@ -116,5 +117,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 587b671eb926dda4d82de72b31436f35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-8162883129868104313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5157632713551628992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 882a8998c834e5244a89ae9aa3b06d3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

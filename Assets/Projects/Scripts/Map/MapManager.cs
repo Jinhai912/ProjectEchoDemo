@@ -15,6 +15,13 @@ public class MapManager : MonoBehaviour
     public int minNodesPerLayer = 2;
     public int maxNodesPerLayer = 4;
 
+    [Header("关卡数据池")]
+    public List<EncounterData> normalCombatEncounters;
+    public List<EncounterData> eliteCombatEncounters;
+    public List<EncounterData> storeEncounters; // (未来商店)
+    public List<EncounterData> eventEncounters; // (未来事件)
+    public EncounterData bossEncounter; // Boss 通常是固定的
+
     // --- 运行时数据 ---
     private List<MapNode> mapNodes;
     private MapNode currentNode;
@@ -70,7 +77,12 @@ public class MapManager : MonoBehaviour
 
     private void GenerateNewMap()
     {
-        mapNodes = mapGenerator.GenerateMap(totalLayers, minNodesPerLayer, maxNodesPerLayer);
+        mapNodes = mapGenerator.GenerateMap(
+            totalLayers, 
+            minNodesPerLayer, 
+            maxNodesPerLayer,
+            this // <-- 把 MapManager 自己传过去
+        );
         // 设置起点
         List<MapNode> startNodes = GetNodesInLayer(0);
         if (startNodes.Count > 0)
@@ -89,11 +101,23 @@ public class MapManager : MonoBehaviour
     // 公共方法：当玩家选择了一个新节点后，由 MapView 的按钮调用
     public void MoveToNode(MapNode nextNode)
     {
+        Debug.Log("玩家移动到新节点: " + nextNode.nodeType);
         currentNode = nextNode;
-        // （未来）nextNode.encounterData 应该在这里被赋值给 GameManager
-        // GameManager.Instance.nextEncounter = nextNode.encounterData;
 
-        // 命令 GameManager 切换到战斗状态
+        // --- 核心修复：直接命令 RoomController 开始战斗 ---
+        RoomController roomController = FindObjectOfType<RoomController>();
+        if (roomController != null && nextNode.encounterData != null)
+        {
+            // 命令当前场景的 RoomController 用新数据开始战斗
+            roomController.StartEncounter(nextNode.encounterData);
+        }
+        else
+        {
+            Debug.LogError("MapManager 找不到 RoomController 或关卡数据！");
+        }
+        
+        // --- 最后，将游戏状态切换回 Playing ---
+        // UIManager 会自动响应这个状态，隐藏地图，显示HUD
         GameManager.Instance.UpdateGameState(GameManager.GameState.Playing);
     }
 

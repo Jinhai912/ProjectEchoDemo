@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3370283279558040745}
   - component: {fileID: 3889717685118233691}
   - component: {fileID: -8057024012346242574}
+  - component: {fileID: -8349703989531180730}
   m_Layer: 7
   m_Name: Loot_Chest
   m_TagString: Interactable
@@ -116,5 +117,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7e5d803d67416304196352fda9fac50c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-8349703989531180730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4371314140085582112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 882a8998c834e5244a89ae9aa3b06d3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

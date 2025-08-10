@@ -2069,6 +2069,15 @@ MonoBehaviour:
   totalLayers: 5
   minNodesPerLayer: 2
   maxNodesPerLayer: 4
+  normalCombatEncounters:
+  - {fileID: 11400000, guid: 6093528807104b9448f1e27029e065ba, type: 2}
+  - {fileID: 11400000, guid: 6093528807104b9448f1e27029e065ba, type: 2}
+  - {fileID: 11400000, guid: 6093528807104b9448f1e27029e065ba, type: 2}
+  eliteCombatEncounters:
+  - {fileID: 11400000, guid: 2bcd6a9416425a14da021802825fb125, type: 2}
+  storeEncounters: []
+  eventEncounters: []
+  bossEncounter: {fileID: 11400000, guid: 7f25641799abc7840a3ca1325eaa4a7f, type: 2}
 --- !u!1 &1245343403
 GameObject:
   m_ObjectHideFlags: 0
