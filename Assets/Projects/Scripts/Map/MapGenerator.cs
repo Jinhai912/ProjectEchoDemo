@@ -63,29 +63,42 @@ public class MapGenerator
     /// 步骤 2: 将创建好的节点连接起来
     /// </summary>
     private void ConnectLayers()
-{
-    for (int i = 0; i < allNodes.Count; i++)
     {
-        MapNode currentNode = allNodes[i];
-        
-        if (currentNode.position.x >= totalLayers - 1) continue;
-
-        List<MapNode> nextLayerNodes = GetNodesInLayer((int)currentNode.position.x + 1);
-        
-        int connections = Random.Range(1, 3);
-        for (int j = 0; j < connections; j++)
+        // 从第0层开始，连接到最后一层的前一层
+        for (int i = 0; i < totalLayers - 1; i++)
         {
-            MapNode childNode = nextLayerNodes[Random.Range(0, nextLayerNodes.Count)];
+            List<MapNode> currentLayerNodes = GetNodesInLayer(i);
+            List<MapNode> nextLayerNodes = GetNodesInLayer(i + 1);
             
-            // --- 核心修改：找到子节点的索引并存储 ---
-            int childIndex = allNodes.IndexOf(childNode);
-            if (!currentNode.childrenIndices.Contains(childIndex))
+            // --- 核心修复：使用新的、更可靠的连接算法 ---
+            
+            // 1. 确保下一层的每个节点都至少有一个父节点
+            foreach (var nextNode in nextLayerNodes)
             {
-                currentNode.childrenIndices.Add(childIndex);
+                // 从当前层随机选择一个节点作为它的父节点
+                MapNode parentNode = currentLayerNodes[Random.Range(0, currentLayerNodes.Count)];
+                
+                int childIndex = allNodes.IndexOf(nextNode);
+                if (!parentNode.childrenIndices.Contains(childIndex))
+                {
+                    parentNode.childrenIndices.Add(childIndex);
+                }
+            }
+            
+            // 2. 确保当前层的每个节点都至少有一个子节点
+            foreach (var currentNode in currentLayerNodes)
+            {
+                // 如果这个节点在第一步之后，还没有任何子节点
+                if (currentNode.childrenIndices.Count == 0)
+                {
+                    // 就从下一层随机选一个作为它的子节点
+                    MapNode childNode = nextLayerNodes[Random.Range(0, nextLayerNodes.Count)];
+                    int childIndex = allNodes.IndexOf(childNode);
+                    currentNode.childrenIndices.Add(childIndex);
+                }
             }
         }
     }
-}
 
     /// <summary>
     /// 一个辅助方法，用于获取指定层的所有节点

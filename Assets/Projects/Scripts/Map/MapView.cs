@@ -23,8 +23,6 @@ public class MapView : MonoBehaviour
     [Header("路径线设置")]
     public float lineWidth = 10f; // 默认粗细为 10
 
-    [Header("布局微调")]
-    public float lineEdgeOffset = 40f; // 线的边缘偏移量，大约等于图标宽度的一半
 
     // 存储已创建的节点UI，方便查找
     public Dictionary<MapNode, GameObject> nodeObjects = new Dictionary<MapNode, GameObject>();
@@ -108,25 +106,19 @@ public class MapView : MonoBehaviour
         GameObject fromGO = nodeObjects[from];
         GameObject toGO = nodeObjects[to];
 
-        // --- 核心修改 3：线也实例化在【同一个】container下 ---
         GameObject lineGO = Instantiate(linePrefab, container);
         RectTransform lineRect = lineGO.GetComponent<RectTransform>();
-        
-        // --- 核心修改 4：让线段显示在所有节点的【下方】 ---
-        lineGO.transform.SetAsFirstSibling(); 
+        lineGO.transform.SetAsFirstSibling();
         
         Vector2 startPos = fromGO.GetComponent<RectTransform>().anchoredPosition;
         Vector2 endPos = toGO.GetComponent<RectTransform>().anchoredPosition;
         
-        startPos.x += lineEdgeOffset;
-        endPos.x += lineEdgeOffset;
-
-        Vector2 direction = (endPos - startPos).normalized;
-        float distance = Vector2.Distance(startPos, endPos);
+        Vector2 direction = endPos - startPos;
+        float distance = direction.magnitude;
         
-        lineRect.anchoredPosition = startPos; 
-        lineRect.transform.right = direction;
+        lineRect.anchoredPosition = (startPos + endPos) / 2f;
         lineRect.sizeDelta = new Vector2(distance, lineWidth);
+        lineRect.rotation = Quaternion.FromToRotation(Vector3.right, direction);
     }
 
     /// <summary>

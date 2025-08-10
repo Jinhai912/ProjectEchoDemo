@@ -25,19 +25,12 @@ public class MapManager : MonoBehaviour
 
     void Awake()
     {
-        Debug.LogError("!!!!!!!!!!!! MAP MANAGER AWAKE IS RUNNING !!!!!!!!!!!!");
         // 1. 实现单例模式
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
-        // 2. 订阅场景加载事件
     }
 
-    void OnDestroy()
-    {
-        // 3. 取消订阅
-    }
 
     // 4. 每次场景加载后，都会自动调用这个方法
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -106,23 +99,42 @@ public class MapManager : MonoBehaviour
 
     private void UpdateNodeStates()
     {
-        if (mapView == null || mapNodes == null) return;
-
+        if (mapView == null || mapNodes == null || currentNode == null) return;
+        
         foreach (var nodeObjectPair in mapView.nodeObjects)
         {
             MapNode node = nodeObjectPair.Key;
-            Button nodeButton = nodeObjectPair.Value.GetComponent<Button>();
-            if (nodeButton == null) continue;
+            GameObject nodeGO = nodeObjectPair.Value;
+            Button nodeButton = nodeGO.GetComponent<Button>();
+            Image nodeIcon = nodeGO.GetComponent<Image>(); // 我们需要获取 Image 来改变颜色
+            
+            if(nodeButton == null || nodeIcon == null) continue;
 
-            bool isInteractable = false;
-            // 确保 currentNode 存在，并且它的子节点列表也存在
-            if (currentNode != null && currentNode.childrenIndices != null)
+            // --- 核心修改 ---
+
+            // 规则 1：判断是否是当前节点
+            if (node == currentNode)
             {
-                int nodeIndex = mapNodes.IndexOf(node);
-                // 检查当前节点是否是 currentNode 的子节点之一
-                isInteractable = currentNode.childrenIndices.Contains(nodeIndex);
+                nodeButton.interactable = false; // 当前节点不可点击
+                nodeIcon.color = Color.yellow; // 用醒目的颜色（比如黄色）来高亮当前节点
+                continue; // 处理完这个节点，就跳到下一个
             }
+
+            // 规则 2：判断是否是可达的子节点
+            int nodeIndex = mapNodes.IndexOf(node);
+            bool isInteractable = currentNode.childrenIndices.Contains(nodeIndex);
+            
             nodeButton.interactable = isInteractable;
+            
+            // 规则 3：设置其他节点的外观
+            if (isInteractable)
+            {
+                nodeIcon.color = Color.white; // 可交互的节点是白色
+            }
+            else
+            {
+                nodeIcon.color = new Color(0.5f, 0.5f, 0.5f, 1f); // 不可交互的节点是半透明的灰色
+            }
         }
     }
 
