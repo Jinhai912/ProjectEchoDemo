@@ -3060,9 +3060,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a27d6751452cf5e418e2c4af855af2fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lootPrefab: {fileID: 4371314140085582112, guid: 94e1d41e9041a7343bff98adaf178376, type: 3}
+  defaultLootPrefab: {fileID: 4371314140085582112, guid: 94e1d41e9041a7343bff98adaf178376, type: 3}
   lootSpawnPoint: {fileID: 1847425949}
-  exitPrefab: {fileID: 5157632713551628992, guid: a7d37fbf40d86ea478ed0d5cd0360ee8, type: 3}
+  defaultExitPrefab: {fileID: 5157632713551628992, guid: a7d37fbf40d86ea478ed0d5cd0360ee8, type: 3}
 --- !u!1 &1162131108
 GameObject:
   m_ObjectHideFlags: 0

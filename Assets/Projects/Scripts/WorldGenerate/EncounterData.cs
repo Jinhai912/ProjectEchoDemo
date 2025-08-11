@@ -12,6 +12,9 @@ public class EncounterData : ScriptableObject
     // 注意：这里需要让 Wave 类变成 public
     public RoomController.Wave[] waves;
 
+    [Header("流程设置")]
+    [Tooltip("如果设置了这个预制体，关卡完成后会生成它，而不是默认的出口。")]
+    public GameObject customExitPrefab; 
     // (未来可以扩展)
     // public GameObject rewardPrefab; // 这个关卡完成后特定的奖励
     // public AudioClip backgroundMusic; // 这个关卡的背景音乐

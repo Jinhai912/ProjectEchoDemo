@@ -4,7 +4,8 @@ using System.Collections; // 引入协程所需的命名空间
 public class RoomController : MonoBehaviour
 {
     // --- 事件 ---
-    public static event System.Action OnEncounterComplete;
+    public static event System.Action<EncounterData> OnEncounterComplete;
+    private EncounterData currentEncounter; // 用来存储当前正在进行的关卡数据
 
     // --- 波次数据结构 (保持不变) ---
     [System.Serializable]
@@ -56,6 +57,8 @@ public class RoomController : MonoBehaviour
     {
         Debug.Log("RoomController 收到命令，开始新的关卡: " + encounter.name);
 
+        // 存储当前关卡数据
+        currentEncounter = encounter;
         // --- 核心修改：在开始新战斗之前，先执行清场 ---
         ClearPreviousEncounterObjects();
         
@@ -133,7 +136,7 @@ public class RoomController : MonoBehaviour
 
         // 3. 所有波次都已完成
         Debug.Log("关卡完成！广播 OnEncounterComplete 事件！");
-        OnEncounterComplete?.Invoke();
+        OnEncounterComplete?.Invoke(currentEncounter);
     }
 
     // --- 生成敌人的方法 (稍微修改以更新 enemiesAlive) ---

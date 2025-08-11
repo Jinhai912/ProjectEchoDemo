@@ -22,6 +22,19 @@ public class MapManager : MonoBehaviour
     public List<EncounterData> eventEncounters; // (未来事件)
     public EncounterData bossEncounter; // Boss 通常是固定的
 
+    [Header("地图基础配置 (第一层)")] // 修改了 Header 名字，更清晰
+    public int baseTotalLayers = 5;      // 基础层数
+    public int baseMinNodesPerLayer = 2; // 基础最少节点
+    public int baseMaxNodesPerLayer = 3; // 基础最多节点
+
+    public int CurrentMapTotalLayers { get; private set; }//存储实际层数
+
+    [Header("难度成长系数")]
+    [Tooltip("每进一层，地图增加多少层")]
+    public int layersIncreasePerFloor = 1;
+    [Tooltip("每进一层，每层最少/最多节点数增加多少")]
+    public int nodesIncreasePerFloor = 1;
+
     // --- 运行时数据 ---
     private List<MapNode> mapNodes;
     private MapNode currentNode;
@@ -77,10 +90,29 @@ public class MapManager : MonoBehaviour
 
     private void GenerateNewMap()
     {
+        // --- 在这里计算动态参数 ---
+        int floor = 1;
+        if (GameManager.Instance != null)
+        {
+            // 从 GameManager 读取当前是第几层
+            floor = GameManager.Instance.currentFloor;
+        }
+
+        // 1. 根据当前层数，计算本次生成的地图参数
+        // (floor - 1) 确保第一层使用基础值
+        CurrentMapTotalLayers = baseTotalLayers + (floor - 1) * layersIncreasePerFloor;
+        int minNodes = baseMinNodesPerLayer + (floor - 1) * nodesIncreasePerFloor;
+        int maxNodes = baseMaxNodesPerLayer + (floor - 1) * nodesIncreasePerFloor;
+
+        Debug.Log("正在为第 " + floor + " 层生成地图... 参数: " +
+                  "总层数=" + CurrentMapTotalLayers + ", " +
+                  "最少节点=" + minNodes + ", " +
+                  "最多节点=" + maxNodes);
+        
         mapNodes = mapGenerator.GenerateMap(
-            totalLayers, 
-            minNodesPerLayer, 
-            maxNodesPerLayer,
+            CurrentMapTotalLayers, 
+            minNodes, 
+            maxNodes,
             this // <-- 把 MapManager 自己传过去
         );
         // 设置起点

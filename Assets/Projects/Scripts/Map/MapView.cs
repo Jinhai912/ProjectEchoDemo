@@ -63,7 +63,7 @@ public class MapView : MonoBehaviour
             // c. 计算节点的 X 位置
             // node.position.x 的范围是 0 到 (totalLayers - 1)
             // 我们把它映射到 [0, 1] 的比例
-            float xRatio = node.position.x / (MapManager.Instance.totalLayers - 1);
+            float xRatio = node.position.x / (MapManager.Instance.CurrentMapTotalLayers - 1);
             // 将比例映射到可绘制宽度上，再加上左边界和边距
             float xPos = (leftBound + padding) + (xRatio * drawableWidth);
 

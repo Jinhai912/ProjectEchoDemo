@@ -11,8 +11,10 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     // --- 游戏状态 ---
-    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection}
+    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection }
     public GameState currentState;
+    public int currentFloor { get; private set; } = 1;
+    public int totalFloors = 3;//总共层数
 
     // --- 事件 ---
     // 定义事件，以便其他脚本可以响应状态变化
@@ -100,6 +102,10 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
+        // --- 在开始新游戏时，重置层数 ---
+        currentFloor = 1;
+        Debug.Log("新游戏开始，进入第 1 层。");
+
         // --- 在开始新游戏时，重置玩家数据 ---
         if (PlayerData.Instance != null)
         {
@@ -109,7 +115,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogError("找不到 PlayerData 实例！无法初始化玩家数据。");
         }
-        
+
         StartEncounter(startingEncounter);
     }
 
@@ -130,7 +136,7 @@ public class GameManager : MonoBehaviour
 
             // 1. 找到当前场景的 RoomController
             RoomController roomController = FindObjectOfType<RoomController>();
-            
+
             if (roomController != null)
             {
                 // 2. 检查 GameManager 手里是否攥着下一关的数据
@@ -174,9 +180,30 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 返回主菜单。现在它也负责清空所有局内进度。
+    /// </summary>
     public void GoToMainMenu()
     {
+        // 在返回主菜单前，确保所有局内数据都被清空，为下一轮游戏做准备
+        if (PlayerData.Instance != null)
+        {
+            // 我们可以创建一个新的方法来只清空数据而不重置为初始值
+            // 但为了简单，直接调用 InitializeForNewRun() 也可以
+            PlayerData.Instance.InitializeForNewRun(); 
+        }
+        if (MapManager.Instance != null)
+        {
+            MapManager.Instance.ClearMap();
+        }
+        
+        // 确保时间流速恢复正常
+        Time.timeScale = 1f;
+
+        // 加载主菜单场景
         SceneManager.LoadScene("MainMenu");
+        
+        // OnSceneLoaded 的逻辑会自动将游戏状态切换回 MainMenu
     }
 
     private void HandlePlayerDeath()
@@ -217,5 +244,60 @@ public class GameManager : MonoBehaviour
             UIManager.Instance.UpdateHealthUI(current, max);
         }
     }
+
+    /// <summary>
+    /// 进入下一层。由特殊出口（如楼梯）调用。
+    /// </summary>
+    public void GoToNextFloor()
+    {
+        // 1. 增加层数计数
+        currentFloor++;
+        Debug.Log("--- 准备进入第 " + currentFloor + " 层！ ---");
+
+        // 2. 检查是否已经通关整个周目
+        if (currentFloor > totalFloors)
+        {
+            WinTheEntireRun();
+            return; // 流程结束
+        }
+
+        // 3. (可选) 可以在这里给玩家一些“层间奖励”
+        // 比如，让 PlayerData 回复一定比例的生命值
+        // if (PlayerData.Instance != null) { PlayerData.Instance.HealPercentage(0.5f); }
+
+        // 4. 清空【旧】的地图数据，为新地图做准备
+        if (MapManager.Instance != null)
+        {
+            MapManager.Instance.ClearMap();
+        }
+        else
+        {
+            Debug.LogWarning("GoToNextFloor: 找不到 MapManager 实例来清空地图。");
+        }
+
+        // 5. 重新加载战斗场景，开始新的一层
+        // OnSceneLoaded 的逻辑会确保在新场景中：
+        // - MapManager 会因为 mapNodes 为空而生成一张全新的、更难的地图
+        // - 游戏状态会正确设置为 MapSelection，让玩家先看新地图
+        SceneManager.LoadScene("MainFightScene");
+    }
+
+    /// <summary>
+    /// 当玩家打通所有层后调用
+    /// </summary>
+    private void WinTheEntireRun()
+    {
+        Debug.Log("恭喜！你已通关整个周目！正在返回主菜单...");
+        
+        // (可选) 在这里可以设置一个全局的标志位，
+        // 告诉 MainMenu 场景：“我是从通关胜利回来的，请显示一个特别的祝贺信息！”
+        // например: PlayerPrefs.SetInt("LastRunWon", 1);
+
+        // 调用我们已有的返回主菜单的方法
+        GoToMainMenu();
+    }
+
+
     
+
 }
