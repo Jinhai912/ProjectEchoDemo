@@ -19,6 +19,8 @@ public class ShootController : MonoBehaviour
     private Rigidbody rb;
     private bool canShoot = true; // 控制是否允许射击的开关
 
+
+    private PlayerStates playerStates;
     // 订阅事件
     void OnEnable() { GameManager.OnGameStateChanged += HandleGameStateChange; }
     // 取消订阅
@@ -33,33 +35,27 @@ public class ShootController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        // 这一步只执行一次，性能很高
+        playerStates = GetComponent<PlayerStates>();
+        if (playerStates == null)
+        {
+            Debug.LogError("ShootController 无法在自身 GameObject 上找到 PlayerStates 组件！", this.gameObject);
+        }
     }
     void Update()
     {
         if (!canShoot) { return; }
-        
-        if (fireCooldown > 0)
-        {
-            fireCooldown -= Time.deltaTime;
-        }
-
+        if (fireCooldown > 0) { fireCooldown -= Time.deltaTime; }
         FindAndTargetEnemy();
 
         if (targetEnemy != null && fireCooldown <= 0)
         {
+            // Shoot() 方法现在变得更“干净”了
             Shoot();
 
-            // --- 核心修改在这里 ---
-            // 1. 从 PlayerData 获取当前应有的射速
-            float currentFireRate = 1f; // 默认值
-            if (PlayerData.Instance != null)
-            {
-                currentFireRate = PlayerData.Instance.fireRate;
-            }
-
-            // 2. 使用获取到的 currentFireRate 来计算冷却时间
+            float currentFireRate = 1f;
+            if (PlayerData.Instance != null) { currentFireRate = PlayerData.Instance.fireRate; }
             fireCooldown = 1f / currentFireRate;
-            // --- 修改结束 ---
         }
     }
 
@@ -104,33 +100,30 @@ public class ShootController : MonoBehaviour
 
     void Shoot()
     {
-        // --- 调试代码 ---
-        if (bulletPrefab == null)
+        if (bulletPrefab == null || firePoint == null || playerStates == null)
         {
-            Debug.LogError("ShootController: bulletPrefab 引用丢失！请在 Inspector 中重新设置。");
-            return; // 提前退出，避免报错
+            // 在检查中加入了 playerStates，确保一切都已准备就绪
+            return;
         }
-        if (firePoint == null)
-        {
-            Debug.LogError("ShootController: firePoint 引用丢失！请在 Inspector 中重新设置。");
-            return; // 提前退出，避免报错
-        }
-        // --- 调试代码结束 ---
 
+        // --- 核心修改 3：替换旧的发射逻辑 ---
+        
         // 1. 创建子弹实例
-        // Instantiate(要创建的预制体, 创建的位置, 创建时的旋转)
         GameObject bulletGO = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
 
-        // 2. 获取子弹的 Rigidbody 组件
-        Rigidbody bulletRb = bulletGO.GetComponent<Rigidbody>();
-
-        // 3. 计算射击方向
-        // 方向 = (目标位置 - 自身位置).normalized (归一化得到单位向量)
-        Vector3 direction = (targetEnemy.position - firePoint.position).normalized;
-
-        // 4. 给予子弹初速度
-        // 速度 = 方向 * 速率
-        bulletRb.velocity = direction * bulletSpeed;
+        // 2. 获取子弹身上的 Bullet 脚本
+        Bullet bulletScript = bulletGO.GetComponent<Bullet>();
+        
+        // 3. 调用子弹的 Initialize 方法，把所有需要的信息“递”给它
+        if (bulletScript != null)
+        {
+            Vector3 direction = (targetEnemy.position - firePoint.position).normalized;
+            bulletScript.Initialize(playerStates, direction, bulletSpeed);
+        }
+        else
+        {
+            Debug.LogError("发射失败：子弹预制体上没有挂载 Bullet.cs 脚本！", bulletPrefab);
+        }
     }
     
 

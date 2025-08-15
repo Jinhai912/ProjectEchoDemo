@@ -1943,7 +1943,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 855061c9c8c53bf4cb118657489905a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingEncounter: {fileID: 11400000, guid: 6093528807104b9448f1e27029e065ba, type: 2}
+  startingEncounter: {fileID: 11400000, guid: dd3aba9b59d75bc4c84edba028d17935, type: 2}
   currentState: 0
   totalFloors: 3
 --- !u!4 &1162134985
