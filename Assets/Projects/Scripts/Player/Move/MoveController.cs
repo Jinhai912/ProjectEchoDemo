@@ -48,7 +48,7 @@ public class MoveController : MonoBehaviour
         float currentMoveSpeed = 5f; // 先给一个默认值，以防 PlayerData 不存在
         if (PlayerData.Instance != null)
         {
-            currentMoveSpeed = PlayerData.Instance.moveSpeed;
+            currentMoveSpeed = PlayerData.Instance.MoveSpeed;
         }
         // --- 修改结束 ---
 

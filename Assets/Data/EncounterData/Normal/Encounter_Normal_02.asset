@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdb15f2495322d34f9ff726c46ebf48a, type: 3}
+  m_Name: Encounter_Normal_02
+  m_EditorClassIdentifier: 
+  encounterName: 
+  description: "\u666E\u901A\u5173\u5361\uFF0C\u8FDC\u7A0B\u5C0F\u5175"
+  waves:
+  - waveName: 
+    enemyPrefab: {fileID: 8620879191517598444, guid: 8e6ebd4c505d79640a1e97d6f0148bb4, type: 3}
+    enemyCount: 2
+    spawnInterval: 1
+  - waveName: 
+    enemyPrefab: {fileID: 8620879191517598444, guid: 8e6ebd4c505d79640a1e97d6f0148bb4, type: 3}
+    enemyCount: 3
+    spawnInterval: 0.3
+  customExitPrefab: {fileID: 0}

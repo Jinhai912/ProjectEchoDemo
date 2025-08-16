@@ -24,7 +24,7 @@ public class Pickup : MonoBehaviour
         if (player == null) return; // 如果找不到玩家，则不执行任何操作
 
         // --- 从 PlayerData 读取拾取范围 ---
-        float currentPickupRadius = PlayerData.Instance.pickupRadius;
+        float currentPickupRadius = PlayerData.Instance.PickupRadius;
         
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 

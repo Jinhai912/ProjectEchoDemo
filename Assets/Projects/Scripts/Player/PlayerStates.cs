@@ -21,6 +21,7 @@ public class PlayerStates : MonoBehaviour
     [Space(10)]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float fireRate;
+    [SerializeField] private float defense;
 
     #region Unity生命周期
     void Start()
@@ -30,8 +31,8 @@ public class PlayerStates : MonoBehaviour
             Debug.LogError("致命错误: PlayerData 实例不存在！", this);
             return;
         }
-        // 游戏开始时，广播一次初始血量，以启动UI的更新
-        OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.maxHealth);
+        // --- 核心修改：读取【计算后】的最终属性 ---
+        OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.MaxHealth); // 使用 MaxHealth 属性
     }
 
     void Update()
@@ -49,16 +50,14 @@ public class PlayerStates : MonoBehaviour
     public void TakeDamage(int damageAmount)
     {
         if (PlayerData.Instance == null || PlayerData.Instance.currentHealth <= 0) return;
-
-         // 从 PlayerData 读取防御力
-        int defense = PlayerData.Instance.defense;
-        // 使用我们之前设计的“减法防御”公式
-        int finalDamage = Mathf.Max(1, damageAmount - defense);
+        
+        // --- 核心修改：读取【计算后】的最终属性 ---
+        int finalDamage = Mathf.Max(1, damageAmount - PlayerData.Instance.Defense); // 使用 Defense 属性
 
         PlayerData.Instance.currentHealth -= finalDamage;
-
-        // 广播更新后的血量，以更新UI
-        OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.maxHealth);
+        
+        // --- 核心修改：读取【计算后】的最终属性 ---
+        OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.MaxHealth); // 使用 MaxHealth 属性
 
         if (PlayerData.Instance.currentHealth <= 0)
         {
@@ -74,14 +73,16 @@ public class PlayerStates : MonoBehaviour
         isCritical = false;
         if (PlayerData.Instance == null) return 0;
 
-        float finalDamage = PlayerData.Instance.baseDamage;
-        isCritical = Random.value < PlayerData.Instance.critRate;
+        // --- 核心修改：读取【计算后】的最终属性 ---
+        // 注意：这些名字的改变取决于你在 PlayerData.cs 中如何命名你的计算属性
+        float finalDamage = PlayerData.Instance.FinalAttack; // 假设最终攻击力属性叫这个
+        isCritical = Random.value < PlayerData.Instance.FinalCritRate; // 假设最终暴击率属性叫这个
 
         if (isCritical)
         {
-            finalDamage *= PlayerData.Instance.critDamage;
+            finalDamage *= PlayerData.Instance.FinalCritDamage; // 假设最终暴伤属性叫这个
         }
-        finalDamage *= PlayerData.Instance.totalDamageBonus;
+        finalDamage *= PlayerData.Instance.FinalDamageBonus; // 假设最终伤害加成属性叫这个
         return finalDamage;
     }
 
@@ -106,7 +107,7 @@ public class PlayerStates : MonoBehaviour
         // 应用能力后，特别是加血后，需要手动广播一次血量变化
         if(ability.type == AbilityData.AbilityType.IncreaseMaxHealth)
         {
-            OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.maxHealth);
+            OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.MaxHealth);
         }
     }
 
@@ -128,15 +129,17 @@ public class PlayerStates : MonoBehaviour
     {
         if (PlayerData.Instance == null) return;
 
-        maxHealth = PlayerData.Instance.maxHealth;
-        currentHealth = PlayerData.Instance.currentHealth;
-        currentExperience = PlayerData.Instance.currentExperience;
-        baseDamage = PlayerData.Instance.baseDamage;
-        critRate = PlayerData.Instance.critRate;
-        critDamage = PlayerData.Instance.critDamage;
-        totalDamageBonus = PlayerData.Instance.totalDamageBonus;
-        moveSpeed = PlayerData.Instance.moveSpeed;
-        fireRate = PlayerData.Instance.fireRate;
+        // --- 核心修改：所有读取操作，都从旧的变量名，改为新的【计算后】的属性名 ---
+        maxHealth = PlayerData.Instance.MaxHealth;
+        currentHealth = PlayerData.Instance.currentHealth; // currentHealth 是直接存储的，不用改
+        currentExperience = PlayerData.Instance.currentExperience; // 同上
+        baseDamage = PlayerData.Instance.FinalAttack; // 显示最终攻击力
+        critRate = PlayerData.Instance.FinalCritRate; // 显示最终暴击率
+        critDamage = PlayerData.Instance.FinalCritDamage; // 显示最终暴伤
+        totalDamageBonus = PlayerData.Instance.FinalDamageBonus; // 显示最终伤害加成
+        moveSpeed = PlayerData.Instance.MoveSpeed;
+        fireRate = PlayerData.Instance.FireRate;
+        defense = PlayerData.Instance.Defense;
     }
     #endregion
 }

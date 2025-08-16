@@ -23,8 +23,8 @@ TagManager:
   - PlayerBullet
   - Interactable
   - UIPanel_Map
-  - 
-  - 
+  - Enemy
+  - EnemyBullet
   - 
   - 
   - 

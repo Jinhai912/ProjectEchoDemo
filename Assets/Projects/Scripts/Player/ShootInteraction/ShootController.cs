@@ -54,7 +54,7 @@ public class ShootController : MonoBehaviour
             Shoot();
 
             float currentFireRate = 1f;
-            if (PlayerData.Instance != null) { currentFireRate = PlayerData.Instance.fireRate; }
+            if (PlayerData.Instance != null) { currentFireRate = PlayerData.Instance.FireRate; }
             fireCooldown = 1f / currentFireRate;
         }
     }

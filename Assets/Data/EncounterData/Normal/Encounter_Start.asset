@@ -10,12 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cdb15f2495322d34f9ff726c46ebf48a, type: 3}
-  m_Name: Encounter_Normal_01
+  m_Name: Encounter_Start
   m_EditorClassIdentifier: 
-  encounterName: Encounter_Normal_01
-  description: 
+  encounterName: "\u5F00\u59CB\u5173\u5361"
+  description: "\u5F00\u542F\u65F6\u5173\u5361"
   waves:
   - waveName: 
     enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
-    enemyCount: 5
-    spawnInterval: 3
+    enemyCount: 1
+    spawnInterval: 1
+  customExitPrefab: {fileID: 0}

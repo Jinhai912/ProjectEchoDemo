@@ -10,13 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cdb15f2495322d34f9ff726c46ebf48a, type: 3}
-  m_Name: Encounter_Boss_01
+  m_Name: Encounter_Elite_002
   m_EditorClassIdentifier: 
-  encounterName: Encounter_Boss_01
-  description: 
+  encounterName: "\u7CBE\u82F1\u5173\u5361-\u602A\u6D77"
+  description: "\u7CBE\u82F1\u5173\u5361\uFF0C\u602A\u6D77"
   waves:
   - waveName: 
     enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
-    enemyCount: 1
+    enemyCount: 20
     spawnInterval: 1
-  customExitPrefab: {fileID: 6736496365481086424, guid: b16711423b20a4f4d9a93c2d4397b078, type: 3}
+  - waveName: 
+    enemyPrefab: {fileID: 8620879191517598444, guid: 8e6ebd4c505d79640a1e97d6f0148bb4, type: 3}
+    enemyCount: 10
+    spawnInterval: 1
+  customExitPrefab: {fileID: 0}

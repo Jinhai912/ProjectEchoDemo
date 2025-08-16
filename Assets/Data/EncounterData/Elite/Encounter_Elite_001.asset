@@ -13,9 +13,18 @@ MonoBehaviour:
   m_Name: Encounter_Elite_001
   m_EditorClassIdentifier: 
   encounterName: Elite001
-  description: 
+  description: "\u7CBE\u82F1\u602A\u5173\u5361\uFF0C\u5305\u542B\u4E09\u4E2A\u6CE2\u6B21\n"
   waves:
   - waveName: 
     enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
-    enemyCount: 5
+    enemyCount: 10
     spawnInterval: 0.8
+  - waveName: 
+    enemyPrefab: {fileID: 8620879191517598444, guid: 8e6ebd4c505d79640a1e97d6f0148bb4, type: 3}
+    enemyCount: 3
+    spawnInterval: 0.8
+  - waveName: 
+    enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
+    enemyCount: 5
+    spawnInterval: 0.1
+  customExitPrefab: {fileID: 0}
