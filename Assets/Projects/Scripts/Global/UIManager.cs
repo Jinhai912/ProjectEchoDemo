@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement; // 用于重新加载场景
 using TMPro;
+using System.Collections.Generic;
 
 public class UIManager : MonoBehaviour
 {

@@ -100,29 +100,44 @@ public class ShootController : MonoBehaviour
 
     void Shoot()
     {
-        if (bulletPrefab == null || firePoint == null || playerStates == null)
+        if (bulletPrefab == null || firePoint == null || playerStates == null) return;
+
+        // 1. 获取子弹总数
+        int totalProjectiles = 1;
+        if (PlayerData.Instance != null)
         {
-            // 在检查中加入了 playerStates，确保一切都已准备就绪
-            return;
+            totalProjectiles = PlayerData.Instance.projectileCount;
         }
 
-        // --- 核心修改 3：替换旧的发射逻辑 ---
+        // 2. 计算扇形角度 (如果大于1发)
+        float spreadAngle = 15f; // 每发间隔15度
+        float startAngle = 0f;
         
-        // 1. 创建子弹实例
-        GameObject bulletGO = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
-
-        // 2. 获取子弹身上的 Bullet 脚本
-        Bullet bulletScript = bulletGO.GetComponent<Bullet>();
-        
-        // 3. 调用子弹的 Initialize 方法，把所有需要的信息“递”给它
-        if (bulletScript != null)
+        if (totalProjectiles > 1)
         {
-            Vector3 direction = (targetEnemy.position - firePoint.position).normalized;
-            bulletScript.Initialize(playerStates, direction, bulletSpeed);
+            // 比如 3 发：-15, 0, +15
+            startAngle = -(totalProjectiles - 1) * spreadAngle / 2f;
         }
-        else
+
+        // 3. 循环生成
+        for (int i = 0; i < totalProjectiles; i++)
         {
-            Debug.LogError("发射失败：子弹预制体上没有挂载 Bullet.cs 脚本！", bulletPrefab);
+            // 计算当前子弹的角度偏移
+            float currentAngleOffset = startAngle + (i * spreadAngle);
+            Quaternion rotationOffset = Quaternion.Euler(0, currentAngleOffset, 0);
+
+            // 结合开火点当前的朝向
+            Vector3 fireDirection = rotationOffset * (targetEnemy.position - firePoint.position).normalized;
+
+            // 生成子弹
+            GameObject bulletGO = Instantiate(bulletPrefab, firePoint.position, Quaternion.LookRotation(fireDirection));
+            
+            // 初始化
+            Bullet bulletScript = bulletGO.GetComponent<Bullet>();
+            if (bulletScript != null)
+            {
+                bulletScript.Initialize(playerStates, fireDirection, bulletSpeed);
+            }
         }
     }
     

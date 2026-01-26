@@ -28,6 +28,10 @@ public class PlayerData : MonoBehaviour
     public float critDamageBonus;
     public float damageBonusMultiplier = 1.0f;
     public float pickupRadiusMultiplier = 1.0f;
+
+    [Header("机制能力状态")]
+    public int projectileCount = 1;     // 默认发射 1 发
+    public int piercingCount = 0;       // 默认穿透 0 次 (0 = 碰到第一个就炸)
     
     [Header("运行时直接数据")]
     public int currentHealth;
@@ -70,6 +74,8 @@ public class PlayerData : MonoBehaviour
         currentHealth = MaxHealth; 
         currentExperience = 0;
         acquiredAbilities.Clear();
+        projectileCount = 1;
+        piercingCount = 0;
     }
 
     /// <summary>
@@ -86,75 +92,19 @@ public class PlayerData : MonoBehaviour
     /// 应用一个能力。所有能力效果的计算都在这里。
     /// </summary>
     public void ApplyAbility(AbilityData ability)
-{
-    if (ability == null) return;
-    
-    acquiredAbilities.Add(ability);
-    Debug.Log("正在应用能力到 PlayerData: " + ability.abilityName);
-    
-    // --- 核心修复：所有操作都针对【加成】变量进行 ---
-    switch (ability.type)
     {
-        case AbilityData.AbilityType.IncreaseMaxHealth:
-            // 增加【额外】生命值
-            bonusMaxHealth += (int)ability.value;
-            // 增加最大生命时也回等量当前生命
-            currentHealth += (int)ability.value;
-            Debug.Log("额外最大生命值增加了 " + (int)ability.value + "，最终最大生命: " + MaxHealth);
-            break;
+        if (ability == null) return;
+        
+        acquiredAbilities.Add(ability);
+        Debug.Log("正在应用能力: " + ability.abilityName);
 
-        case AbilityData.AbilityType.IncreaseAttack:
-            // 增加【额外】攻击力
-            bonusAttack += ability.value;
-            Debug.Log("额外攻击力增加了 " + ability.value + "，最终攻击力: " + FinalAttack);
-            break;
-
-        case AbilityData.AbilityType.IncreaseMoveSpeed:
-            // 增加【移动速度乘数】
-            // 假设 value 是 0.1 (代表+10%)
-            moveSpeedMultiplier += ability.value;
-            Debug.Log("移动速度乘数增加了 " + ability.value + "，最终移动速度: " + MoveSpeed);
-            break;
-
-        case AbilityData.AbilityType.IncreaseAttackSpeed:
-            // 增加【攻击速度乘数】
-            fireRateMultiplier += ability.value;
-            Debug.Log("攻击速度乘数增加了 " + ability.value + "，最终射速: " + FireRate + " 发/秒");
-            break;
-
-        case AbilityData.AbilityType.IncreaseDamageBonus:
-            // 增加【伤害加成乘数】
-            damageBonusMultiplier += ability.value;
-            Debug.Log("伤害加成乘数增加了 " + ability.value + "，最终伤害加成: " + FinalDamageBonus);
-            break;
-
-        case AbilityData.AbilityType.IncreaseCritRate:
-            // 增加【额外暴击率】
-            critRateBonus += ability.value;
-            Debug.Log("额外暴击率增加了 " + ability.value + "，最终暴击率: " + FinalCritRate);
-            break;
-
-        case AbilityData.AbilityType.IncreaseCritDamage:
-            // 增加【额外暴击伤害】
-            critDamageBonus += ability.value;
-            Debug.Log("额外暴击伤害增加了 " + ability.value + "，最终暴击伤害: " + FinalCritDamage);
-            break;
-
-        case AbilityData.AbilityType.IncreaseDefense:
-            // 增加【额外防御力】
-            bonusDefense += (int)ability.value;
-            Debug.Log("额外防御力增加了 " + (int)ability.value + "，最终防御力: " + Defense);
-            break;
-
-        case AbilityData.AbilityType.IncreasePickupRadius:
-            // 增加【拾取范围乘数】
-            pickupRadiusMultiplier += ability.value;
-            Debug.Log("拾取范围乘数增加了 " + ability.value);
-            break;
-            
-        default:
-            Debug.LogWarning("未处理的能力类型: " + ability.type);
-            break;
+        // --- 新架构核心：遍历效果列表，让每个效果自己去干活 ---
+        foreach (var effect in ability.effects)
+        {
+            if (effect != null)
+            {
+                effect.OnEquip(this);
+            }
+        }
     }
-}
 }

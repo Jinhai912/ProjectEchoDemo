@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     // --- 游戏状态 ---
-    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection }
+    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection, InEvent }
     public GameState currentState;
     public int currentFloor { get; private set; } = 1;
     public int totalFloors = 3;//总共层数

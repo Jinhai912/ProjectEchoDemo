@@ -17,5 +17,5 @@ MonoBehaviour:
   abilityName: "\u575A\u97E7\u76AE\u80A4"
   description: "\u9632\u5FA1\u529B\u63D0\u53472\u70B9"
   icon: {fileID: 0}
-  type: 1
-  value: 2
+  effects:
+  - {fileID: 11400000, guid: 96841ce802c3f9541a4ff3bb79527929, type: 2}

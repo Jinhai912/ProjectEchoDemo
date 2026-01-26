@@ -1,30 +1,28 @@
-// Bullet.cs (最小化、最清晰的修改)
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
     public float lifeTime = 3f;
-    private PlayerStates playerStats; // 这个引用将由外部传入
+    private PlayerStates playerStats;
+    private int currentPierceCount = 0; // 当前剩余穿透次数
 
-    // --- 移除 Start() 方法 ---
-    // void Start() { ... }
-    
-    // --- 新增一个 public 的初始化方法 ---
+    // 初始化时接收穿透数据
     public void Initialize(PlayerStates stats, Vector3 direction, float speed)
     {
-        // 1. 接收来自发射者的 PlayerStates 引用
         playerStats = stats;
-
-        // 2. 在这里设置飞行
         GetComponent<Rigidbody>().velocity = direction * speed;
-
-        // 3. 启动自毁计时器
         Destroy(gameObject, lifeTime);
+
+        // 从全局数据获取穿透次数
+        if (PlayerData.Instance != null)
+        {
+            currentPierceCount = PlayerData.Instance.piercingCount;
+        }
     }
 
-    // OnCollisionEnter 的逻辑是完美的，【一个字都不用改】！
     void OnCollisionEnter(Collision collision)
     {
+        // 碰到敌人
         EnemyState enemy = collision.gameObject.GetComponent<EnemyState>();
         if (enemy != null)
         {
@@ -34,9 +32,20 @@ public class Bullet : MonoBehaviour
                 float damage = playerStats.CalculateFinalDamage(out isCritical);
                 enemy.TakeDamage(damage, isCritical);
             }
-            Destroy(gameObject);
+
+            // --- 穿透逻辑 ---
+            if (currentPierceCount > 0)
+            {
+                currentPierceCount--; // 消耗一次穿透机会
+                // 不销毁，让子弹继续飞！
+            }
+            else
+            {
+                Destroy(gameObject); // 没次数了，销毁
+            }
         }
-        else
+        // 碰到墙壁总是销毁
+        else 
         {
             Destroy(gameObject);
         }

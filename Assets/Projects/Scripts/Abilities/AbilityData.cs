@@ -1,52 +1,21 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "UPG_NewAbility_Common", menuName = "Game/Ability Data")]
+[CreateAssetMenu(fileName = "NewAbility", menuName = "Game/Ability Data")]
 public class AbilityData : ScriptableObject
 {
-    [Header("核心标识 (策划用)")]
-    public string id; // 唯一ID，例如 UPG_001
-    public Rarity rarity; // 稀有度
+    [Header("核心标识")]
+    public string id;
+    public Rarity rarity;
 
-    [Header("显示信息 (玩家看)")]
+    [Header("显示信息")]
     public string abilityName;
-    [TextArea(3, 5)]
-    public string description;
+    [TextArea(3, 5)] public string description; // 暂时先保留手动填写，以后再做自动生成
     public Sprite icon;
 
-    [Header("能力效果 (程序用)")]
-    public AbilityType type;
-    public float value;
+    [Header("能力效果 (新架构)")]
+    // --- 核心修改：移除 Type 和 Value，改为 Effects 列表 ---
+    public List<AbilityEffectSO> effects = new List<AbilityEffectSO>();
 
-    // 定义稀有度等级
-    public enum Rarity
-    {
-        Common,
-        Uncommon,
-        Rare,
-        Epic,
-        Legendary
-    }
-
-    // 定义所有可能的能力类型
-    public enum AbilityType
-    {
-        // 基础数值
-        IncreaseMaxHealth,
-        IncreaseDefense,
-        IncreaseAttack,
-        IncreaseMoveSpeed,
-        IncreaseAttackSpeed,
-        IncreaseKnockback,
-        IncreasePickupRadius,
-        
-        // 衍生/乘区属性
-        IncreaseDamageBonus,
-        IncreaseCritRate,
-        IncreaseCritDamage,
-        
-        // 质变型能力
-        AddProjectile,
-        EnablePierce,
-        EnableRicochet
-    }
+    public enum Rarity { Common, Uncommon, Rare, Epic, Legendary }
 }

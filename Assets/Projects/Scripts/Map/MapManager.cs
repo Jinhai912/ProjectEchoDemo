@@ -133,24 +133,62 @@ public class MapManager : MonoBehaviour
     // 公共方法：当玩家选择了一个新节点后，由 MapView 的按钮调用
     public void MoveToNode(MapNode nextNode)
     {
-        Debug.Log("玩家移动到新节点: " + nextNode.nodeType);
-        currentNode = nextNode;
+        Debug.Log("玩家选择了新节点，类型为: " + nextNode.nodeType);
+    currentNode = nextNode;
 
-        // --- 核心修复：直接命令 RoomController 开始战斗 ---
-        RoomController roomController = FindObjectOfType<RoomController>();
-        if (roomController != null && nextNode.encounterData != null)
-        {
-            // 命令当前场景的 RoomController 用新数据开始战斗
-            roomController.StartEncounter(nextNode.encounterData);
-        }
-        else
-        {
-            Debug.LogError("MapManager 找不到 RoomController 或关卡数据！");
-        }
-        
-        // --- 最后，将游戏状态切换回 Playing ---
-        // UIManager 会自动响应这个状态，隐藏地图，显示HUD
-        GameManager.Instance.UpdateGameState(GameManager.GameState.Playing);
+    // --- 核心修改：使用 switch 语句来处理不同的节点类型 ---
+    switch (nextNode.nodeType)
+    {
+        case NodeType.NormalCombat:
+        case NodeType.EliteCombat:
+        case NodeType.Boss:
+            // 如果是任何一种战斗类型
+            
+            // 1. 切换到战斗状态，UIManager 会自动隐藏地图、显示HUD
+            GameManager.Instance.UpdateGameState(GameManager.GameState.Playing);
+            
+            // 2. 找到 RoomController 并命令它开始战斗
+            RoomController roomController = FindObjectOfType<RoomController>();
+            if (roomController != null && nextNode.encounterData != null)
+            {
+                roomController.StartEncounter(nextNode.encounterData);
+            }
+            else
+            {
+                Debug.LogError("MapManager 找不到 RoomController 或战斗数据！");
+            }
+            break; // 结束这个 case 的处理
+
+        // case NodeType.Event:
+        //     // 如果是事件类型
+            
+        //     // 1. 切换到事件状态，UIManager 会显示事件面板，游戏会暂停
+        //     GameManager.Instance.UpdateGameState(GameManager.GameState.InEvent);
+            
+        //     // 2. 命令 EventManager 触发这个事件
+        //     if (EventManager.Instance != null)
+        //     {
+        //         EventManager.Instance.TriggerEvent(nextNode.encounterData);
+        //     }
+        //     else
+        //     {
+        //         Debug.LogError("MapManager 找不到 EventManager 实例！");
+        //     }
+        //     break; // 结束这个 case 的处理
+
+        // (未来可以添加)
+        // case NodeType.Store:
+        //     GameManager.Instance.UpdateGameState(GameManager.GameState.InStore);
+        //     // EventManager.Instance.TriggerStore(nextNode.encounterData);
+        //     break;
+
+        default:
+            // 如果遇到未知的节点类型
+            Debug.LogError("未知的节点类型: " + nextNode.nodeType);
+            // 安全起见，返回地图
+            GameManager.Instance.UpdateGameState(GameManager.GameState.MapSelection);
+            break;
+    }
     }
 
     private void UpdateNodeStates()

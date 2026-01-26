@@ -102,10 +102,18 @@ public class PlayerStates : MonoBehaviour
     public void ApplyAbility(AbilityData ability)
     {
         if (PlayerData.Instance == null) return;
+        
+        // 记录应用前的最大血量
+        int oldMaxHealth = PlayerData.Instance.MaxHealth;
+
+        // 应用能力
         PlayerData.Instance.ApplyAbility(ability);
         
-        // 应用能力后，特别是加血后，需要手动广播一次血量变化
-        if(ability.type == AbilityData.AbilityType.IncreaseMaxHealth)
+        // 记录应用后的最大血量
+        int newMaxHealth = PlayerData.Instance.MaxHealth;
+
+        // 如果最大血量变了，说明刚才吃的是加血技能，广播事件
+        if (newMaxHealth != oldMaxHealth)
         {
             OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.MaxHealth);
         }
