@@ -1,49 +1,36 @@
 using UnityEngine;
-using UnityEngine.InputSystem; // 如果你使用新的输入系统
+using UnityEngine.InputSystem; 
 
 public class PlayerInteractor : MonoBehaviour
 {
     [Header("交互设置")]
-    public float interactionDistance = 2f; // 玩家可以交互的最大距离
-    public LayerMask interactableLayer;    // 只与特定层级的物体交互（性能优化）
+    public float interactionDistance = 2f; 
+    [Tooltip("请在下拉菜单中只勾选 'Interactable' 层，不要勾选 Player 层")]
+    public LayerMask interactableLayer;    
     
-    private Camera mainCamera;
+    // 移除了不需要的 Camera 引用
 
-    void Start()
-    {
-        mainCamera = Camera.main;
-    }
-
-    // 由 PlayerInput 组件在 "Interact" 动作被触发时调用
-    // 如果你不用新输入系统，可以把这个放在 Update 里
     private void OnInteract(InputValue value)
     {
         TryInteract();
     }
-    
-    // 如果你用旧输入系统，就把这个放在 Update() 里
-    /*
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            TryInteract();
-        }
-    }
-    */
 
     private void TryInteract()
     {
-        // 只使用 OverlapSphere，删除所有 Raycast 相关的代码
+        // 探测周围
         Collider[] colliders = Physics.OverlapSphere(transform.position, interactionDistance, interactableLayer);
 
         if (colliders.Length > 0)
         {
-            // 为了健壮性，我们依然寻找最近的那个
             Collider nearestCollider = null;
             float minDistance = float.MaxValue;
+
             foreach (Collider col in colliders)
             {
+                // --- 关键修改：强制排除玩家自己 ---
+                // 即使你在 Inspector 里手滑勾选了 Player 层，这一行也能防止你跟自己交互
+                if (col.gameObject == gameObject) continue;
+
                 float distance = Vector3.Distance(transform.position, col.transform.position);
                 if (distance < minDistance)
                 {
@@ -52,18 +39,32 @@ public class PlayerInteractor : MonoBehaviour
                 }
             }
             
+            // 找到了最近的目标
             if (nearestCollider != null)
             {
+                // 尝试获取接口
                 IInteractable interactable = nearestCollider.GetComponent<IInteractable>();
+                
+                // 健壮性增强：有时 Collider 在子物体上，脚本在父物体上，顺手找一下父级
+                if (interactable == null) 
+                    interactable = nearestCollider.GetComponentInParent<IInteractable>();
+
                 if (interactable != null)
                 {
                     interactable.Interact();
-                    return; // 成功交互后直接退出
+                    return; // 成功交互
                 }
             }
         }
         
-        // 如果上面的逻辑没有成功交互并退出，才执行到这里
         Debug.Log("附近没有可交互的物体。");
+    }
+
+    // --- 新增：调试辅助线 ---
+    // 选中玩家时，Scene 窗口会出现一个黄色圆圈，表示检测范围
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, interactionDistance);
     }
 }

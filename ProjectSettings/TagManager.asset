@@ -13,6 +13,8 @@ TagManager:
   - Interactable
   - UIPanel_Map
   - UIPanel_LevelUp
+  - UIPanel_Store
+  - UIPanel_Event
   layers:
   - Default
   - TransparentFX

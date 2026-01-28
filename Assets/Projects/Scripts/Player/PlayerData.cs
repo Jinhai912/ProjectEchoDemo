@@ -38,6 +38,9 @@ public class PlayerData : MonoBehaviour
     public int currentExperience;
     public List<AbilityData> acquiredAbilities = new List<AbilityData>();
 
+    [Header("经济系统")]
+    public int currentCurrency;
+
     // --- 最终属性 (通过【实时计算】得出) ---
     public int MaxHealth { get { return baseMaxHealth + bonusMaxHealth; } }
     public int Defense { get { return baseDefense + bonusDefense; } }
@@ -76,6 +79,7 @@ public class PlayerData : MonoBehaviour
         acquiredAbilities.Clear();
         projectileCount = 1;
         piercingCount = 0;
+        currentCurrency = 0;
     }
 
     /// <summary>
@@ -105,6 +109,30 @@ public class PlayerData : MonoBehaviour
             {
                 effect.OnEquip(this);
             }
+        }
+    }
+
+    //金币接口
+    public void AddCurrency(int amount)
+    {
+        currentCurrency += amount;
+        Debug.Log($"获得金币: {amount}, 当前余额: {currentCurrency}");
+        // 这里可以广播一个 OnCurrencyChanged 事件给 UI
+    }
+
+    public bool TrySpendCurrency(int amount)
+    {
+        if (currentCurrency >= amount)
+        {
+            currentCurrency -= amount;
+            Debug.Log($"消费金币: {amount}, 剩余余额: {currentCurrency}");
+            // 广播 UI 更新
+            return true;
+        }
+        else
+        {
+            Debug.Log("金币不足！");
+            return false;
         }
     }
 }

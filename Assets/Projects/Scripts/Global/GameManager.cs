@@ -11,18 +11,17 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     // --- 游戏状态 ---
-    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection, InEvent }
+    // 1. 修改：添加了 InStore 状态
+    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection, InEvent, InStore }
     public GameState currentState;
     public int currentFloor { get; private set; } = 1;
     public int totalFloors = 3;//总共层数
 
     // --- 事件 ---
-    // 定义事件，以便其他脚本可以响应状态变化
     public static event System.Action<GameState> OnGameStateChanged;
 
     void Awake()
     {
-        // 标准的单例模式实现，确保全局只有一个 GameManager
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -31,11 +30,9 @@ public class GameManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-
-
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerStates.OnPlayerDied += HandlePlayerDeath;
-        PlayerStates.OnHealthChanged += HandleHealthChange; // GameManager 也需要监听血量变化
+        PlayerStates.OnHealthChanged += HandleHealthChange; 
     }
 
     void OnDestroy()
@@ -44,7 +41,6 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
         PlayerStates.OnHealthChanged -= HandleHealthChange;
     }
-
 
     void Update()
     {
@@ -55,6 +51,11 @@ public class GameManager : MonoBehaviour
                 PauseGame();
             }
             else if (currentState == GameState.Paused)
+            {
+                ResumeGame();
+            }
+            // 2. 修改：允许在商店或事件中按 ESC 关闭界面回到游戏
+            else if (currentState == GameState.InStore || currentState == GameState.InEvent)
             {
                 ResumeGame();
             }
@@ -70,31 +71,33 @@ public class GameManager : MonoBehaviour
         switch (newState)
         {
             case GameState.MainMenu:
-                Time.timeScale = 1f; // 确保时间流速正常
-                // 在这里可以处理显示主菜单UI的逻辑
+                Time.timeScale = 1f; 
                 break;
             case GameState.Playing:
-                Time.timeScale = 1f; // 游戏开始，时间正常流动
+                Time.timeScale = 1f; 
                 break;
             case GameState.Paused:
-                Time.timeScale = 0f; // 游戏暂停，时间静止
+                Time.timeScale = 0f; 
                 break;
             case GameState.GameOver:
-                Time.timeScale = 0f; // 游戏结束，时间静止
-                // 在这里可以处理显示游戏结束UI的逻辑
+                Time.timeScale = 0f; 
                 break;
             case GameState.MapSelection:
                 Time.timeScale = 0f;
+                break;
+            
+            // 3. 修改：处理商店和事件状态的时间流速
+            case GameState.InEvent:
+            case GameState.InStore:
+                Time.timeScale = 0f; // 打开商店/事件时，游戏暂停
                 break;
         }
 
         if (UIManager.Instance != null)
         {
-            // 直接命令 UIManager 更新它的显示状态
-            UIManager.Instance.HandleGameStateChange(newState); // 假设方法名叫这个
+            UIManager.Instance.HandleGameStateChange(newState); 
         }
-        // 广播状态变化事件，通知所有监听者
-        //OnGameStateChanged?.Invoke(newState);
+        
         Debug.Log("Game state changed to: " + newState);
     }
 
@@ -102,11 +105,9 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        // --- 在开始新游戏时，重置层数 ---
         currentFloor = 1;
         Debug.Log("新游戏开始，进入第 1 层。");
 
-        // --- 在开始新游戏时，重置玩家数据 ---
         if (PlayerData.Instance != null)
         {
             PlayerData.Instance.InitializeForNewRun();
@@ -119,30 +120,21 @@ public class GameManager : MonoBehaviour
         StartEncounter(startingEncounter);
     }
 
-    // 场景加载完成后的回调函数
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // 1. 命令 UIManager 重新寻找UI
         if (UIManager.Instance != null)
         {
             UIManager.Instance.OnSceneLoaded(scene, mode);
         }
 
-        // 2. 决定新场景的状态
-        // 根据场景名决定初始状态
         if (scene.name == "MainFightScene")
         {
-            // --- 核心修复：在这里启动第一场战斗 ---
-
-            // 1. 找到当前场景的 RoomController
             RoomController roomController = FindObjectOfType<RoomController>();
 
             if (roomController != null)
             {
-                // 2. 检查 GameManager 手里是否攥着下一关的数据
                 if (nextEncounter != null)
                 {
-                    // 3. 命令 RoomController 用这份数据开始战斗！
                     roomController.StartEncounter(nextEncounter);
                 }
                 else
@@ -155,7 +147,6 @@ public class GameManager : MonoBehaviour
                 Debug.LogError("GameManager: 在 MainFightScene 中找不到 RoomController！无法开始战斗。");
             }
 
-            // 4. 最后，将游戏状态设置为 Playing
             UpdateGameState(GameState.Playing);
         }
         else if (scene.name == "MainMenu")
@@ -174,22 +165,14 @@ public class GameManager : MonoBehaviour
 
     public void ResumeGame()
     {
-        if (currentState == GameState.Paused)
-        {
-            UpdateGameState(GameState.Playing);
-        }
+        // 这里的逻辑适用于从 Paused, InStore, InEvent 返回游戏
+        UpdateGameState(GameState.Playing);
     }
 
-    /// <summary>
-    /// 返回主菜单。现在它也负责清空所有局内进度。
-    /// </summary>
     public void GoToMainMenu()
     {
-        // 在返回主菜单前，确保所有局内数据都被清空，为下一轮游戏做准备
         if (PlayerData.Instance != null)
         {
-            // 我们可以创建一个新的方法来只清空数据而不重置为初始值
-            // 但为了简单，直接调用 InitializeForNewRun() 也可以
             PlayerData.Instance.InitializeForNewRun(); 
         }
         if (MapManager.Instance != null)
@@ -197,13 +180,8 @@ public class GameManager : MonoBehaviour
             MapManager.Instance.ClearMap();
         }
         
-        // 确保时间流速恢复正常
         Time.timeScale = 1f;
-
-        // 加载主菜单场景
         SceneManager.LoadScene("MainMenu");
-        
-        // OnSceneLoaded 的逻辑会自动将游戏状态切换回 MainMenu
     }
 
     private void HandlePlayerDeath()
@@ -213,17 +191,10 @@ public class GameManager : MonoBehaviour
 
     public void RestartGame()
     {
-        // 恢复时间流速，以防是从暂停或地图界面过来的
         Time.timeScale = 1f;
-
-        // 重新加载当前的战斗场景
-        // GetActiveScene().name 会获取到 "MainFightScene"
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-
-        // OnSceneLoaded 事件会自动处理后续的状态切换 (切换到 Playing)
     }
 
-    // --- 修改：创建一个新的方法来启动指定的关卡 ---
     public void StartEncounter(EncounterData encounterData)
     {
         if (encounterData == null)
@@ -236,7 +207,6 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene("MainFightScene");
     }
 
-    // GameManager 负责监听血量变化，然后转告 UIManager
     private void HandleHealthChange(int current, int max)
     {
         if (UIManager.Instance != null)
@@ -245,27 +215,17 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 进入下一层。由特殊出口（如楼梯）调用。
-    /// </summary>
     public void GoToNextFloor()
     {
-        // 1. 增加层数计数
         currentFloor++;
         Debug.Log("--- 准备进入第 " + currentFloor + " 层！ ---");
 
-        // 2. 检查是否已经通关整个周目
         if (currentFloor > totalFloors)
         {
             WinTheEntireRun();
-            return; // 流程结束
+            return; 
         }
 
-        // 3. (可选) 可以在这里给玩家一些“层间奖励”
-        // 比如，让 PlayerData 回复一定比例的生命值
-        // if (PlayerData.Instance != null) { PlayerData.Instance.HealPercentage(0.5f); }
-
-        // 4. 清空【旧】的地图数据，为新地图做准备
         if (MapManager.Instance != null)
         {
             MapManager.Instance.ClearMap();
@@ -275,29 +235,12 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("GoToNextFloor: 找不到 MapManager 实例来清空地图。");
         }
 
-        // 5. 重新加载战斗场景，开始新的一层
-        // OnSceneLoaded 的逻辑会确保在新场景中：
-        // - MapManager 会因为 mapNodes 为空而生成一张全新的、更难的地图
-        // - 游戏状态会正确设置为 MapSelection，让玩家先看新地图
         SceneManager.LoadScene("MainFightScene");
     }
 
-    /// <summary>
-    /// 当玩家打通所有层后调用
-    /// </summary>
     private void WinTheEntireRun()
     {
         Debug.Log("恭喜！你已通关整个周目！正在返回主菜单...");
-        
-        // (可选) 在这里可以设置一个全局的标志位，
-        // 告诉 MainMenu 场景：“我是从通关胜利回来的，请显示一个特别的祝贺信息！”
-        // например: PlayerPrefs.SetInt("LastRunWon", 1);
-
-        // 调用我们已有的返回主菜单的方法
         GoToMainMenu();
     }
-
-
-    
-
 }

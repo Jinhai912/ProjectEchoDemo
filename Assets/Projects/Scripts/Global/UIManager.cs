@@ -1,76 +1,51 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement; // 用于重新加载场景
+using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections.Generic;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
+
     [Header("UI 面板")]
     public GameObject mainMenuPanel;
     public GameObject pauseMenuPanel;
     public GameObject gameOverPanel;
-    public GameObject inGameHUD; // 游戏中的平视显示器 (如血条、分数)
+    public GameObject inGameHUD;
     public GameObject mapPanel;
-    private GameObject levelUpPanel;
-    // --- 新增 HUD 元素引用 ---
+    private GameObject levelUpPanel; // 如果你需要它，记得Find
+    // --- 新增面板 ---
+    private GameObject storePanel;
+    private GameObject eventPanel;
+
+    [Header("HUD 元素")]
     private Slider healthSlider;
     private TextMeshProUGUI healthText;
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-
         SceneManager.sceneLoaded += OnSceneLoaded;
         GameManager.OnGameStateChanged += HandleGameStateChange;
         PlayerStates.OnHealthChanged += UpdateHealthUI;
     }
 
-    // void OnEnable()
-    // {
-    //     // 订阅 GameManager 的状态变化事件
-    //     GameManager.OnGameStateChanged += HandleGameStateChange;
-    //     // --- 新增：监听场景加载事件 ---
-    //     SceneManager.sceneLoaded += OnSceneLoaded;
-    //     //订阅生命之变化事件
-    //     PlayerStates.OnHealthChanged += UpdateHealthUI;
-    // }
-
-    // void OnDisable()
-    // {
-    //     // 取消订阅
-    //     GameManager.OnGameStateChanged -= HandleGameStateChange;
-    //     // --- 新增：取消监听 ---
-    //     SceneManager.sceneLoaded -= OnSceneLoaded;
-    //     PlayerStates.OnHealthChanged -= UpdateHealthUI;
-    // }
     void OnDestroy()
     {
-        // 确保在 UIManager 被销毁时（例如关闭游戏），取消所有订阅
         SceneManager.sceneLoaded -= OnSceneLoaded;
         GameManager.OnGameStateChanged -= HandleGameStateChange;
         PlayerStates.OnHealthChanged -= UpdateHealthUI;
     }
 
-    // 当新场景加载完成时调用
     public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log("UIManager 感知到新场景加载: " + scene.name);
-        // 在新场景中重新寻找 UI 面板
         FindAndAssignUI();
     }
 
-    // 一个专门用来寻找和分配 UI 元素的方法
     public void FindAndAssignUI()
     {
-        // 使用标签来寻找 UI 面板是一种可靠的方式
-        // 你需要为你的 UI 面板在 Inspector 中设置对应的标签
         try
         {
             mainMenuPanel = GameObject.FindWithTag("UIPanel_MainMenu");
@@ -79,135 +54,109 @@ public class UIManager : MonoBehaviour
             inGameHUD = GameObject.FindWithTag("UIPanel_HUD");
             mapPanel = GameObject.FindWithTag("UIPanel_Map");
             levelUpPanel = GameObject.FindWithTag("UIPanel_LevelUp");
+            
+            // --- 新增：寻找商店和事件面板 ---
+            // 记得去 Unity 里给 Panel 设置 Tag！
+            storePanel = GameObject.FindWithTag("UIPanel_Store");
+            eventPanel = GameObject.FindWithTag("UIPanel_Event");
         }
         catch (UnityException e)
         {
-            Debug.LogWarning("在当前场景中寻找 UI 面板时出错 (某些面板可能不存在): " + e.Message);
+            Debug.LogWarning("UI 查找警告: " + e.Message);
         }
-        // --- 新增：寻找 HUD 元素 ---
+
         GameObject healthBarGO = GameObject.FindWithTag("UI_HealthBar");
         if (healthBarGO != null) healthSlider = healthBarGO.GetComponent<Slider>();
 
         GameObject healthTextGO = GameObject.FindWithTag("UI_HealthText");
         if (healthTextGO != null) healthText = healthTextGO.GetComponent<TextMeshProUGUI>();
-
-
+        
+        // 初始关闭所有不需要的面板
+        if (storePanel) storePanel.SetActive(false);
+        if (eventPanel) eventPanel.SetActive(false);
     }
-    // --- 新增：更新血条 UI 的方法 ---
+
     public void UpdateHealthUI(int currentHealth, int maxHealth)
     {
-        // 更新 Slider
-        if (healthSlider != null)
-        {
-            // 计算比例 (0到1之间)
-            healthSlider.value = (float)currentHealth / maxHealth;
-        }
-
-        // 更新文本
-        if (healthText != null)
-        {
-            healthText.text = currentHealth + " / " + maxHealth;
-        }
+        if (healthSlider != null) healthSlider.value = (float)currentHealth / maxHealth;
+        if (healthText != null) healthText.text = currentHealth + " / " + maxHealth;
     }
-    // 事件处理函数
+
     public void HandleGameStateChange(GameManager.GameState newState)
     {
-        // // 在操作前，先检查引用是否有效
-        // if (mainMenuPanel != null) mainMenuPanel.SetActive(newState == GameManager.GameState.MainMenu);
-        // if (pauseMenuPanel != null) pauseMenuPanel.SetActive(newState == GameManager.GameState.Paused);
-        // if (gameOverPanel != null) gameOverPanel.SetActive(newState == GameManager.GameState.GameOver);
-        // if (inGameHUD != null) inGameHUD.SetActive(newState == GameManager.GameState.Playing);
-        // if (mapPanel != null) mapPanel.SetActive(newState == GameManager.GameState.MapSelection);
-        // if (levelUpPanel != null && newState != GameManager.GameState.LevelUp) // 假设我们未来会有一个 LevelUp 状态
-        // {
-        //     levelUpPanel.SetActive(false);
-        // }
-        // 先隐藏所有面板
-        // 1. 先把所有面板都隐藏掉
-        if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
-        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(false);
-        if (gameOverPanel != null) gameOverPanel.SetActive(false);
-        if (inGameHUD != null) inGameHUD.SetActive(false);
-        if (mapPanel != null) mapPanel.SetActive(false);
-        if (levelUpPanel != null) levelUpPanel.SetActive(false);
+        // 1. 隐藏所有
+        if (mainMenuPanel) mainMenuPanel.SetActive(false);
+        if (pauseMenuPanel) pauseMenuPanel.SetActive(false);
+        if (gameOverPanel) gameOverPanel.SetActive(false);
+        if (inGameHUD) inGameHUD.SetActive(false);
+        if (mapPanel) mapPanel.SetActive(false);
+        if (levelUpPanel) levelUpPanel.SetActive(false);
+        // --- 新增隐藏 ---
+        if (storePanel) storePanel.SetActive(false);
+        if (eventPanel) eventPanel.SetActive(false);
 
-        // 2. 然后，只根据新状态，激活需要的那一个
+        // 2. 激活特定
         switch (newState)
         {
             case GameManager.GameState.MainMenu:
-                if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
+                if (mainMenuPanel) mainMenuPanel.SetActive(true);
                 break;
             case GameManager.GameState.Playing:
-                if (inGameHUD != null) inGameHUD.SetActive(true);
+                if (inGameHUD) inGameHUD.SetActive(true);
                 break;
             case GameManager.GameState.Paused:
-                if (pauseMenuPanel != null) pauseMenuPanel.SetActive(true);
+                if (pauseMenuPanel) pauseMenuPanel.SetActive(true);
                 break;
             case GameManager.GameState.GameOver:
-                if (gameOverPanel != null) gameOverPanel.SetActive(true);
+                if (gameOverPanel) gameOverPanel.SetActive(true);
                 break;
             case GameManager.GameState.MapSelection:
-                if (mapPanel != null) mapPanel.SetActive(true);
+                if (mapPanel) mapPanel.SetActive(true);
+                break;
+            // --- 新增状态处理 ---
+            case GameManager.GameState.InStore:
+                if (storePanel) storePanel.SetActive(true);
+                break;
+            case GameManager.GameState.InEvent:
+                if (eventPanel) eventPanel.SetActive(true);
                 break;
         }
-        Debug.Log("UI 面板更新完毕。");
     }
 
-    // --- 公共方法，给 UI 按钮调用 ---
-
-    public void OnStartGameButtonPressed()
+    // --- 公共方法：打开商店 ---
+    public void OpenStorePanel(List<AbilityData> items)
     {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.StartGame();
-        }
-    }
+        if (storePanel == null) return;
 
-    public void OnPauseButtonPressed()
-    {
-        if (GameManager.Instance != null)
+        // 获取 StoreUI 脚本并初始化
+        StoreUI storeUI = storePanel.GetComponent<StoreUI>();
+        if (storeUI != null)
         {
-            GameManager.Instance.PauseGame();
-        }
-    }
-
-    public void OnResumeButtonPressed()
-    {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.ResumeGame();
-        }
-    }
-
-    public void OnMainMenuButtonPressed()
-    {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.GoToMainMenu();
-        }
-    }
-
-    /// <summary>
-    /// 显示地图
-    /// </summary>
-    public void ShowMapPanel()
-    {
-        // 1. 先命令 MapManager 去寻找 MapView 并画图
-        if (MapManager.Instance != null)
-        {
-            MapManager.Instance.PrepareAndDrawMap();
+            storeUI.SetupStore(items);
         }
 
-        // 2. 然后再切换游戏状态，显示面板
-        GameManager.Instance.UpdateGameState(GameManager.GameState.MapSelection);
+        GameManager.Instance.UpdateGameState(GameManager.GameState.InStore);
     }
-    
-    /// <summary>
-    /// 隐藏地图
-    /// </summary>
-    public void HideMapPanel()
+
+    // --- 公共方法：打开事件 ---
+    public void OpenEventPanel(EventData data, EventInteractable source)
     {
-        if (mapPanel != null) mapPanel.SetActive(false);
-        // 恢复游戏时间的操作将由 GameManager 在加载新关卡时处理
+        if (eventPanel == null) return;
+
+        EventUI eventUI = eventPanel.GetComponent<EventUI>();
+        if (eventUI != null)
+        {
+            eventUI.SetupEvent(data, source);
+        }
+
+        GameManager.Instance.UpdateGameState(GameManager.GameState.InEvent);
     }
+
+    // ... (保留你原来的 OnStartGameButtonPressed 等方法) ...
+    public void OnStartGameButtonPressed() { if (GameManager.Instance != null) GameManager.Instance.StartGame(); }
+    public void OnPauseButtonPressed() { if (GameManager.Instance != null) GameManager.Instance.PauseGame(); }
+    public void OnResumeButtonPressed() { if (GameManager.Instance != null) GameManager.Instance.ResumeGame(); }
+    public void OnMainMenuButtonPressed() { if (GameManager.Instance != null) GameManager.Instance.GoToMainMenu(); }
+    public void ShowMapPanel() { if (MapManager.Instance != null) MapManager.Instance.PrepareAndDrawMap(); GameManager.Instance.UpdateGameState(GameManager.GameState.MapSelection); }
+    public void HideMapPanel() { if (mapPanel != null) mapPanel.SetActive(false); }
 }
