@@ -1,13 +1,12 @@
 using UnityEngine;
-using System.Collections; // 引入协程所需的命名空间
+using System.Collections;
+using System.Collections.Generic;
 
 public class RoomController : MonoBehaviour
 {
-    // --- 事件 ---
     public static event System.Action<EncounterData> OnEncounterComplete;
-    private EncounterData currentEncounter; // 用来存储当前正在进行的关卡数据
+    private EncounterData currentEncounter;
 
-    // --- 波次数据结构 (保持不变) ---
     [System.Serializable]
     public class Wave
     {
@@ -17,178 +16,167 @@ public class RoomController : MonoBehaviour
         public float spawnInterval;
     }
 
-    [Header("波次设置")]
-    public Wave[] waves; // 我们将使用这个来驱动生成逻辑
+    [Header("物理对齐设置")]
+    public LayerMask groundLayer; // 在 Inspector 里选为 "Environment" 或 "Ground"
 
-
-    [Header("生成区域")]
+    [Header("生成区域配置")]
     public Vector3 spawnAreaCenter;
     public Vector3 spawnAreaSize = new Vector3(50f, 1f, 50f);
-
-    [Header("安全区域")]
     public Transform playerTransform;
     public float safeRadius = 5f;
 
-    // --- 内部状态变量 ---
-    private int enemiesAlive = 0; // 我们现在追踪存活的敌人，而不是生成的总数
-    private bool canOperate = true; // 总开关，响应游戏状态
-    private Coroutine encounterCoroutine; // 用于持有主协程的引用
+    private int enemiesAlive = 0;
+    private bool canOperate = true;
+    private Coroutine encounterCoroutine;
 
-    // 订阅事件 (保持不变)
     void OnEnable() { GameManager.OnGameStateChanged += HandleGameStateChange; }
     void OnDisable() { GameManager.OnGameStateChanged -= HandleGameStateChange; }
 
     private void HandleGameStateChange(GameManager.GameState newState)
     {
         canOperate = (newState == GameManager.GameState.Playing);
-
-        // 当游戏暂停时，我们也应该停止协程，恢复时再继续
-        // (这是一个进阶功能，我们先简化处理)
-        if (!canOperate && encounterCoroutine != null)
-        {
-            // 如果游戏不是Playing状态，可以考虑停止生成
-            // StopCoroutine(encounterCoroutine);
-        }
     }
 
-    
-    
     public void StartEncounter(EncounterData encounter)
     {
-        Debug.Log("RoomController 收到命令，开始新的关卡: " + encounter.name);
-
-        // 存储当前关卡数据
+        Debug.Log("RoomController 开始关卡: " + encounter.title);
         currentEncounter = encounter;
-        // --- 核心修改：在开始新战斗之前，先执行清场 ---
+        
+        // 1. 先清场
         ClearPreviousEncounterObjects();
         
-        // 在开始新关卡前，先停止可能正在运行的旧协程
-        if (encounterCoroutine != null)
-        {
-            StopCoroutine(encounterCoroutine);
-        }
+        if (encounterCoroutine != null) StopCoroutine(encounterCoroutine);
         
-        // 启动新的战斗协程
+        // 2. 启动战斗主流程
         encounterCoroutine = StartCoroutine(RunEncounter(encounter));
     }
 
-    /// <summary>
-    /// 寻找并销毁场景中所有标记为 "TemporaryEncounterObject" 的物件。
-    /// </summary>
     private void ClearPreviousEncounterObjects()
     {
-        Debug.Log("正在清理上一关的临时物件...");
-        
-        // 1. 在整个场景中，寻找所有挂载了 TemporaryEncounterObject 脚本的组件
-        TemporaryEncounterObject[] oldObjects = FindObjectsOfType<TemporaryEncounterObject>();
-        
-        // 2. 遍历找到的所有“临时工牌”
-        foreach (TemporaryEncounterObject obj in oldObjects)
+        Debug.Log("正在执行全场深度大扫除...");
+
+        // 1. 按照“临时工标签”销毁 (原逻辑)
+        TemporaryEncounterObject[] oldTempObjects = FindObjectsOfType<TemporaryEncounterObject>();
+        foreach (TemporaryEncounterObject obj in oldTempObjects)
         {
-            // 3. 销毁那个佩戴着工牌的 GameObject
             Destroy(obj.gameObject);
-            Debug.Log("已清理: " + obj.gameObject.name);
         }
-        
-        Debug.Log("清理完毕，共清理了 " + oldObjects.Length + " 个物件。");
+
+        // 2. 【核心新增】按照“介质区域”销毁 (保底逻辑)
+        // 这一步能把所有地上的水渍、油渍、火海全部清空
+        MediaZone[] remainingZones = FindObjectsOfType<MediaZone>();
+        foreach (MediaZone zone in remainingZones)
+        {
+            Destroy(zone.gameObject);
+        }
+
+        Debug.Log($"大扫除完毕：清理了 {oldTempObjects.Length} 个临时物体和 {remainingZones.Length} 个介质区域。");
     }
 
-    // --- 核心波次控制协程 ---
     private IEnumerator RunEncounter(EncounterData encounter)
     {
-        Wave[] waves = encounter.waves; // 使用传入的数据
-
-        // 等待一帧，确保其他所有 Start 都已执行
         yield return null;
 
-        // 遍历所有配置的波次
+        // --- 【核心新增】：在生成怪之前，先撒桶 ---
+        SpawnBarrels(encounter);
+
+        Wave[] waves = encounter.waves;
         for (int i = 0; i < waves.Length; i++)
         {
-            // 等待，直到游戏状态是 Playing
-            while (!canOperate)
-            {
-                yield return null;
-            }
+            while (!canOperate) yield return null;
 
             Wave currentWave = waves[i];
-            Debug.Log("开始波次 " + (i + 1));
+            Debug.Log($"波次 {i + 1} 开始: {currentWave.waveName}");
 
-            // 1. 生成当前波次的敌人
             for (int j = 0; j < currentWave.enemyCount; j++)
             {
-                // 每次生成前都检查游戏状态
-                if (!canOperate)
-                {
-                    // 如果在生成过程中游戏暂停或结束了，就卡在这里等待
-                    yield return new WaitUntil(() => canOperate);
-                }
-
+                if (!canOperate) yield return new WaitUntil(() => canOperate);
                 SpawnEnemy(currentWave.enemyPrefab);
                 yield return new WaitForSeconds(currentWave.spawnInterval);
             }
 
-            // 2. 等待玩家清空当前波次的敌人
-            // WaitUntil 会持续检查条件，比 while 循环更简洁
+            // 等待当前波次清空
             yield return new WaitUntil(() => enemiesAlive <= 0);
-
-            Debug.Log("波次 " + (i + 1) + " 已清空!");
         }
 
-        // 3. 所有波次都已完成
-        Debug.Log("关卡完成！广播 OnEncounterComplete 事件！");
+        Debug.Log("所有波次清空，关卡完成！");
         OnEncounterComplete?.Invoke(currentEncounter);
     }
 
-    // --- 生成敌人的方法 (稍微修改以更新 enemiesAlive) ---
-    void SpawnEnemy(GameObject enemyPrefabToSpawn)
+    // --- 【核心方法】：随机撒桶 ---
+    private void SpawnBarrels(EncounterData data)
     {
-        Vector3 spawnPosition;
-        int attempts = 0;
-        const int maxAttempts = 20;
+        if (data.barrelPrefabs == null || data.barrelPrefabs.Length == 0) return;
 
-        do
+        int count = Random.Range(data.minBarrels, data.maxBarrels + 1);
+        Debug.Log($"正在生成场景物件，数量: {count}");
+
+        for (int i = 0; i < count; i++)
         {
+            Vector3 spawnPos = GetRandomSpawnPosition();
+            // 随机选一个桶的类型（水桶或油桶）
+            GameObject prefab = data.barrelPrefabs[Random.Range(0, data.barrelPrefabs.Length)];
+            
+            GameObject barrel = Instantiate(prefab, spawnPos, Quaternion.Euler(0, Random.Range(0, 360f), 0));
+            
+            // 关键：动态添加清理脚本，确保下一关会自动消失
+            if (barrel.GetComponent<TemporaryEncounterObject>() == null)
+            {
+                barrel.AddComponent<TemporaryEncounterObject>();
+            }
+        }
+    }
+
+    private void SpawnEnemy(GameObject enemyPrefabToSpawn)
+    {
+        Vector3 spawnPosition = GetRandomSpawnPosition();
+        Instantiate(enemyPrefabToSpawn, spawnPosition, Quaternion.identity);
+        enemiesAlive++;
+    }
+
+    // 提取出的通用随机位置算法
+    private Vector3 GetRandomSpawnPosition()
+    {
+        // 1. 获取你在 Scene 窗口画出的那个框的中心高度 (Target Y)
+        float targetY = transform.position.y + spawnAreaCenter.y;
+
+        int attempts = 0;
+        while (attempts < 20)
+        {
+            // 2. 在 X 和 Z 轴范围内选随机值
             float randomX = Random.Range(-spawnAreaSize.x / 2, spawnAreaSize.x / 2);
             float randomZ = Random.Range(-spawnAreaSize.z / 2, spawnAreaSize.z / 2);
-            spawnPosition = transform.position + spawnAreaCenter + new Vector3(randomX, 0, randomZ);
-            spawnPosition.y = 1f; // 强制生成高度
-            attempts++;
 
-            if (Vector3.Distance(spawnPosition, playerTransform.position) > safeRadius)
+            // 3. 组合最终坐标
+            // X 和 Z 是随机的，Y 轴直接锁死在你画的平面高度
+            Vector3 result = new Vector3(
+                transform.position.x + spawnAreaCenter.x + randomX,
+                targetY,
+                transform.position.z + spawnAreaCenter.z + randomZ
+            );
+            
+            // 4. 安全区检查（离玩家不能太近）
+            if (playerTransform == null || Vector3.Distance(result, playerTransform.position) > safeRadius)
             {
-                // 我们现在使用传进来的参数，而不是公共变量
-                Instantiate(enemyPrefabToSpawn, spawnPosition, Quaternion.identity);
-                enemiesAlive++; // 增加存活敌人计数
-                return;
+                return result;
             }
-        } while (attempts < maxAttempts);
+            attempts++;
+        }
+
+        // 如果 20 次尝试都离玩家太近，就保底返回中心点
+        return new Vector3(transform.position.x + spawnAreaCenter.x, targetY, transform.position.z + spawnAreaCenter.z);
     }
 
-    // --- OnEnemyDied 方法 (重命名以更清晰) ---
-    public void OnEnemyDied()
-    {
-        enemiesAlive--;
-    }
+    public void OnEnemyDied() => enemiesAlive--;
 
-
-    // 在Scene视图中绘制Gizmos，方便调试
-    // 正确版本
     void OnDrawGizmosSelected()
     {
-        // --- 绘制生成区域 ---
-        Gizmos.color = new Color(0, 1, 0, 0.3f); // 设置Gizmo颜色为绿色，半透明
-        // 绘制生成区域的立方体线框
+        Gizmos.color = new Color(0, 1, 0, 0.3f);
         Gizmos.DrawCube(transform.position + spawnAreaCenter, spawnAreaSize);
-
-        // --- 绘制玩家安全区域 ---
-        // 检查 playerTransform 是否被赋值，防止在编辑器模式下或游戏未运行时报错
         if (playerTransform != null)
         {
-            // 将Gizmo颜色切换为红色，半透明
             Gizmos.color = new Color(1, 0, 0, 0.3f);
-            // 以玩家位置为中心，safeRadius为半径，绘制一个球体
             Gizmos.DrawSphere(playerTransform.position, safeRadius);
         }
     }
-    
 }

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fce596035ee80f4183ffc0abe2b6581, type: 3}
+  m_Name: SW_Rain_R
+  m_EditorClassIdentifier: 
+  id: 'SW_P_401 '
+  abilityName: "\u5168\u573A\u964D\u96E8\u5185\u6838 "
+  tier: 3
+  isMemoryBound: 1
+  memoryCost: 1024
+  description: "\u6BCF30\u79D2\u53EC\u5524\u4E00\u573A\u6301\u7EED10\u79D2\u7684\u66B4\u96E8\r\n"
+  icon: {fileID: 0}
+  effects: []

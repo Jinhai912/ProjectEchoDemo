@@ -14,6 +14,9 @@ public class ShootController : MonoBehaviour
     public GameObject bulletPrefab;      // 子弹预制体
     public Transform firePoint;          // 开火点
 
+    [Header("进阶索敌设置")]
+    public float barrelPriorityRange = 5f; // 木桶优先范围（在这个距离内先打桶）
+
     private Transform targetEnemy;       // 当前锁定的敌人
     private float fireCooldown = 0f;     // 射击冷却计时器
     private Rigidbody rb;
@@ -61,40 +64,67 @@ public class ShootController : MonoBehaviour
 
     void FindAndTargetEnemy()
     {
-        // 找到场景中所有带有 Shootable 脚本的对象
-        Shootable[] shootables = FindObjectsOfType<Shootable>();
+        // 获取射程内所有的可射击目标
+        Shootable[] allShootables = FindObjectsOfType<Shootable>();
 
-        Transform nearestShootable = null;
-        float minDistance = Mathf.Infinity;
+        Transform nearestEnemy = null;
+        float minEnemyDist = Mathf.Infinity;
 
-        // 遍历所有敌人，找到最近的一个
-        foreach (Shootable shootable in shootables)
+        Transform nearestBarrel = null;
+        float minBarrelDist = Mathf.Infinity;
+
+        foreach (Shootable s in allShootables)
         {
-            float distanceToEnemy = Vector3.Distance(transform.position, shootable.transform.position);
-            if (distanceToEnemy < minDistance)
+            float dist = Vector3.Distance(transform.position, s.transform.position);
+            
+            // 超出总射程的直接忽略
+            if (dist > shootingRange) continue;
+
+            // 判断是否是木桶（通过检查是否有 MediaBarrel 脚本）
+            MediaBarrel barrel = s.GetComponent<MediaBarrel>();
+            if (barrel != null)
             {
-                minDistance = distanceToEnemy;
-                nearestShootable = shootable.transform;
+                if (dist < minBarrelDist)
+                {
+                    minBarrelDist = dist;
+                    nearestBarrel = s.transform;
+                }
+            }
+            else // 否则视为普通敌人
+            {
+                if (dist < minEnemyDist)
+                {
+                    minEnemyDist = dist;
+                    nearestEnemy = s.transform;
+                }
             }
         }
 
-        // 如果最近的敌人在射程内，就将它设为目标，否则没有目标
-        if (nearestShootable != null && minDistance <= shootingRange)
+        // --- 核心优先级逻辑判定 ---
+        
+        // 1. 如果有木桶在优先范围内，强制打桶
+        if (nearestBarrel != null && minBarrelDist <= barrelPriorityRange)
         {
-            targetEnemy = nearestShootable;
-            // (可选) 让玩家朝向敌人
-            //transform.LookAt(targetEnemy);
-            Vector3 directionToLook = targetEnemy.position - transform.position;
-            directionToLook.y = 0; // 确保只在水平面上旋转
-            Quaternion targetRotation = Quaternion.LookRotation(directionToLook);
-
-            // 在 FixedUpdate 中平滑旋转
-            // 为了简单，我们可以在这里直接设置，但更好的方式是把旋转也放到 FixedUpdate
-            rb.MoveRotation(targetRotation); // 使用 MoveRotation
+            targetEnemy = nearestBarrel;
         }
+        // 2. 否则，如果射程内有敌人，打敌人
+        else if (nearestEnemy != null)
+        {
+            targetEnemy = nearestEnemy;
+        }
+        // 3. 全都没找到
         else
         {
             targetEnemy = null;
+        }
+
+        // 旋转朝向目标的逻辑保持不变
+        if (targetEnemy != null)
+        {
+            Vector3 directionToLook = targetEnemy.position - transform.position;
+            directionToLook.y = 0;
+            Quaternion targetRotation = Quaternion.LookRotation(directionToLook);
+            rb.MoveRotation(targetRotation);
         }
     }
 
@@ -130,12 +160,14 @@ public class ShootController : MonoBehaviour
             Vector3 fireDirection = rotationOffset * (targetEnemy.position - firePoint.position).normalized;
 
             // 生成子弹
-            GameObject bulletGO = Instantiate(bulletPrefab, firePoint.position, Quaternion.LookRotation(fireDirection));
+            GameObject bulletGO = ObjectPooler.Instance.SpawnFromPool(bulletPrefab, firePoint.position, Quaternion.LookRotation(fireDirection));
             
             // 初始化
             Bullet bulletScript = bulletGO.GetComponent<Bullet>();
             if (bulletScript != null)
             {
+                // 从 PlayerData 读取当前注入的介质属性，传给子弹
+                bulletScript.mediaType = PlayerData.Instance.currentBulletMedia;
                 bulletScript.Initialize(playerStates, fireDirection, bulletSpeed);
             }
         }

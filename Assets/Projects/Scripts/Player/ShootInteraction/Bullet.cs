@@ -1,31 +1,51 @@
 using UnityEngine;
+using System.Collections;
 
 public class Bullet : MonoBehaviour
 {
-    public float lifeTime = 3f;
     private PlayerStates playerStats;
-    private int currentPierceCount = 0; // 当前剩余穿透次数
+    private int currentPierceCount = 0;
+    public PhysicalMediaType mediaType = PhysicalMediaType.None;
+    
+    private Rigidbody rb;
+    private Coroutine deactivationCoroutine;
 
-    // 初始化时接收穿透数据
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+
     public void Initialize(PlayerStates stats, Vector3 direction, float speed)
     {
         playerStats = stats;
-        GetComponent<Rigidbody>().velocity = direction * speed;
-        Destroy(gameObject, lifeTime);
+        rb.velocity = direction * speed;
 
-        // 从全局数据获取穿透次数
+        // 重新初始化穿透次数
         if (PlayerData.Instance != null)
         {
             currentPierceCount = PlayerData.Instance.piercingCount;
         }
+
+        // --- 核心修改：使用协程替代 Destroy ---
+        // 每次启用前先停止旧的回收协程，防止冲突
+        if (deactivationCoroutine != null) StopCoroutine(deactivationCoroutine);
+        deactivationCoroutine = StartCoroutine(ReturnToPoolAfterTime(3f)); // 3秒后回收
+    }
+
+    private IEnumerator ReturnToPoolAfterTime(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Recycle();
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        // 碰到敌人
         EnemyState enemy = collision.gameObject.GetComponent<EnemyState>();
         if (enemy != null)
         {
+            StatusContainer status = collision.gameObject.GetComponent<StatusContainer>();
+            if (status != null) status.ApplyMediaStatus(this.mediaType);
+
             if (playerStats != null)
             {
                 bool isCritical;
@@ -33,21 +53,32 @@ public class Bullet : MonoBehaviour
                 enemy.TakeDamage(damage, isCritical);
             }
 
-            // --- 穿透逻辑 ---
             if (currentPierceCount > 0)
             {
-                currentPierceCount--; // 消耗一次穿透机会
-                // 不销毁，让子弹继续飞！
+                currentPierceCount--;
             }
             else
             {
-                Destroy(gameObject); // 没次数了，销毁
+                Recycle();
             }
+            return;
         }
-        // 碰到墙壁总是销毁
-        else 
+
+        MediaBarrel barrel = collision.gameObject.GetComponent<MediaBarrel>();
+        if (barrel != null)
         {
-            Destroy(gameObject);
+            barrel.Explode();
+            Recycle();
+            return;
         }
+
+        Recycle();
+    }
+
+    // 统一回收接口
+    private void Recycle()
+    {
+        if (deactivationCoroutine != null) StopCoroutine(deactivationCoroutine);
+        ObjectPooler.Instance.ReturnToPool(this.gameObject);
     }
 }

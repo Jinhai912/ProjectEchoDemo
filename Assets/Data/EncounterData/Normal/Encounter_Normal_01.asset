@@ -12,11 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdb15f2495322d34f9ff726c46ebf48a, type: 3}
   m_Name: Encounter_Normal_01
   m_EditorClassIdentifier: 
-  encounterName: Encounter_Normal_01
+  encounterType: 0
+  title: 
   description: "\u666E\u901A\u5173\u5361\uFF0C\u8FD1\u6218\u5C0F\u5175\n"
+  image: {fileID: 0}
   waves:
   - waveName: 
     enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
     enemyCount: 5
     spawnInterval: 3
   customExitPrefab: {fileID: 0}
+  barrelPrefabs:
+  - {fileID: 4413940533639602160, guid: dd6a38762931a9249a07b74930d512d3, type: 3}
+  - {fileID: 5786562570900789114, guid: 42a01d07ad9f22a439b37bdd5271ddfe, type: 3}
+  minBarrels: 2
+  maxBarrels: 3
+  choices: []

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 589b85d4d0046cd47a628c005a5c639f, type: 3}
   m_Name: Effect_Attack_Up
   m_EditorClassIdentifier: 
-  description: "\u653B\u51FB\u529B\u63D0\u534710\u70B9\n"
+  description: "\u653B\u51FB\u529B\u63D0\u53472\u70B9\n"
   targetStat: 1
-  value: 10
+  value: 2

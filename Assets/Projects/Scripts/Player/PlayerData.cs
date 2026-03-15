@@ -1,24 +1,22 @@
-// PlayerData.cs (最终、清晰的版本)
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerData : MonoBehaviour
 {
-    // --- 单例模式 ---
+    // --- 单例 ---
     public static PlayerData Instance { get; private set; }
 
-    [Header("玩家初始/基础属性")]
-    public int baseMaxHealth = 100;
-    public int baseDefense = 0;
-    public float baseAttack = 10f;
-    public float baseMoveSpeed = 4f;
-    public float baseFireRate = 1f;
-    public float baseCritRate = 0f;
-    public float baseCritDamage = 1.5f;
-    public float baseTotalDamageBonus = 1.0f;
-    public float initialPickupRadius = 5f;
+    // 参数1: 当前已用内存, 参数2: 总上限
+    public static event System.Action<int, int> OnMemoryChanged;
 
-    [Header("运行时额外加成")]
+    #region 1. 硬件插槽 (Hardware Slots)
+    [Header("--- 当前硬件挂载 ---")]
+    public HardwareCoreSO currentCore;     // 核心炉：决定内存和血量加成
+    public HardwareBarrelSO currentBarrel; // 枪管：决定攻击形态、伤害、射速
+    #endregion
+
+    #region 2. 基础属性与加成 (数值层)
+    [Header("--- 运行时加成 (Firmware & Softwares) ---")]
     public int bonusMaxHealth;
     public int bonusDefense;
     public float bonusAttack;
@@ -29,28 +27,52 @@ public class PlayerData : MonoBehaviour
     public float damageBonusMultiplier = 1.0f;
     public float pickupRadiusMultiplier = 1.0f;
 
-    [Header("机制能力状态")]
-    public int projectileCount = 1;     // 默认发射 1 发
-    public int piercingCount = 0;       // 默认穿透 0 次 (0 = 碰到第一个就炸)
+    [Header("--- 默认/保底数值 (无硬件时使用) ---")]
+    public int baseMaxHealth = 100;
+    public float baseAttack = 10f;
+    public float baseMoveSpeed = 4f;
+    public float baseFireRate = 1f;
+    public float initialPickupRadius = 5f;
+
+    [Header("--- 机制状态 ---")]
+    public int projectileCount = 1;     
+    public int piercingCount = 0; 
+
+    // --- 最终属性计算 (由硬件基础值驱动) ---
+
+    // 内存上限：由核心炉决定
+    public int maxMemoryMB => currentCore != null ? currentCore.memoryCapacity : 1024;
+
+    // 最大生命值：基础 + 固件加成 + 核心加成
+    public int MaxHealth => baseMaxHealth + bonusMaxHealth + (currentCore != null ? currentCore.healthBonus : 0);
     
-    [Header("运行时直接数据")]
+    // 最终攻击力：核心枪管伤害 + 软件加成
+    public float FinalAttack => (currentBarrel != null ? currentBarrel.baseDamage : baseAttack) + bonusAttack;
+    
+    // 最终射速：核心枪管射速 * 软件倍率
+    public float FireRate => (currentBarrel != null ? currentBarrel.baseFireRate : baseFireRate) * fireRateMultiplier;
+
+    public int Defense => bonusDefense;
+    public float MoveSpeed => baseMoveSpeed * moveSpeedMultiplier;
+    public float FinalCritRate => critRateBonus;
+    public float FinalCritDamage => 1.5f + critDamageBonus; // 1.5为基础倍率
+    public float FinalDamageBonus => 1.0f * damageBonusMultiplier;
+    public float PickupRadius => initialPickupRadius * pickupRadiusMultiplier;
+    #endregion
+
+    #region 3. 运行时数据 (Runtime Data)
+    [Header("--- 实时状态 ---")]
     public int currentHealth;
     public int currentExperience;
-    public List<AbilityData> acquiredAbilities = new List<AbilityData>();
+    public int currentCurrency; // 回声碎片
+    public int currentUsedMemoryMB = 0; 
 
-    [Header("经济系统")]
-    public int currentCurrency;
+    public List<AbilityData> installedProtocols = new List<AbilityData>();
+    public List<AbilityData> permanentFirmwares = new List<AbilityData>();
+    public PhysicalMediaType currentBulletMedia = PhysicalMediaType.None;
 
-    // --- 最终属性 (通过【实时计算】得出) ---
-    public int MaxHealth { get { return baseMaxHealth + bonusMaxHealth; } }
-    public int Defense { get { return baseDefense + bonusDefense; } }
-    public float FinalAttack { get { return baseAttack + bonusAttack; } }
-    public float MoveSpeed { get { return baseMoveSpeed * moveSpeedMultiplier; } }
-    public float FireRate { get { return baseFireRate * fireRateMultiplier; } }
-    public float FinalCritRate { get { return baseCritRate + critRateBonus; } }
-    public float FinalCritDamage { get { return baseCritDamage + critDamageBonus; } }
-    public float FinalDamageBonus { get { return baseTotalDamageBonus * damageBonusMultiplier; } }
-    public float PickupRadius { get { return initialPickupRadius * pickupRadiusMultiplier; } }
+    public int RemainingMemoryMB => maxMemoryMB - currentUsedMemoryMB;
+    #endregion
 
     void Awake()
     {
@@ -59,80 +81,93 @@ public class PlayerData : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    /// <summary>
-    /// 初始化或重置玩家在新一局游戏开始时的属性
-    /// </summary>
+    // --- 硬件更换接口 ---
+    public void EquipCore(HardwareCoreSO newCore)
+    {
+        if (newCore == null) return;
+        currentCore = newCore;
+        // 核心更换后，内存上限变了，必须通知UI
+        OnMemoryChanged?.Invoke(currentUsedMemoryMB, maxMemoryMB);
+        Debug.Log($"<color=gold>[硬件] 核心炉已更新: {newCore.hardwareName}</color>");
+    }
+
+    public void EquipBarrel(HardwareBarrelSO newBarrel)
+    {
+        if (newBarrel == null) return;
+        currentBarrel = newBarrel;
+        Debug.Log($"<color=orange>[硬件] 枪管已更新: {newBarrel.hardwareName}</color>");
+    }
+
+    // --- 重置逻辑 ---
     public void InitializeForNewRun()
     {
-        // 重置所有【加成值】
-        bonusMaxHealth = 0;
-        bonusDefense = 0;
-        bonusAttack = 0;
-        moveSpeedMultiplier = 1.0f;
-        fireRateMultiplier = 1.0f;
-        critRateBonus = 0f;
-        critDamageBonus = 0f;
-        damageBonusMultiplier = 1.0f;
-        pickupRadiusMultiplier = 1.0f;
-        currentHealth = MaxHealth; 
-        currentExperience = 0;
-        acquiredAbilities.Clear();
-        projectileCount = 1;
-        piercingCount = 0;
-        currentCurrency = 0;
-    }
-
-    /// <summary>
-    /// 增加经验值。所有经验相关的逻辑都在这里。
-    /// </summary>
-    public void AddExperience(int amount)
-    {
-        currentExperience += amount;
-        Debug.Log("获得经验: " + amount + " | 当前总经验: " + currentExperience);
-        // 未来可以在这里添加升级的判断逻辑
-    }
-    
-    /// <summary>
-    /// 应用一个能力。所有能力效果的计算都在这里。
-    /// </summary>
-    public void ApplyAbility(AbilityData ability)
-    {
-        if (ability == null) return;
+        bonusMaxHealth = 0; bonusDefense = 0; bonusAttack = 0;
+        moveSpeedMultiplier = 1.0f; fireRateMultiplier = 1.0f;
+        critRateBonus = 0f; critDamageBonus = 0f; damageBonusMultiplier = 1.0f; pickupRadiusMultiplier = 1.0f;
         
-        acquiredAbilities.Add(ability);
-        Debug.Log("正在应用能力: " + ability.abilityName);
+        projectileCount = 1; piercingCount = 0;
+        currentExperience = 0;
+        currentCurrency = 0;
+        currentUsedMemoryMB = 0;
+        
+        installedProtocols.Clear();
+        permanentFirmwares.Clear();
+        currentBulletMedia = PhysicalMediaType.None;
 
-        // --- 新架构核心：遍历效果列表，让每个效果自己去干活 ---
-        foreach (var effect in ability.effects)
-        {
-            if (effect != null)
-            {
-                effect.OnEquip(this);
-            }
-        }
+        // 最后初始化血量和UI
+        currentHealth = MaxHealth; 
+        OnMemoryChanged?.Invoke(currentUsedMemoryMB, maxMemoryMB);
     }
 
-    //金币接口
-    public void AddCurrency(int amount)
-    {
-        currentCurrency += amount;
-        Debug.Log($"获得金币: {amount}, 当前余额: {currentCurrency}");
-        // 这里可以广播一个 OnCurrencyChanged 事件给 UI
-    }
+    public void AddExperience(int amount) => currentExperience += amount;
+    public void AddCurrency(int amount) => currentCurrency += amount;
 
     public bool TrySpendCurrency(int amount)
     {
-        if (currentCurrency >= amount)
+        if (currentCurrency >= amount) { currentCurrency -= amount; return true; }
+        return false;
+    }
+
+    // --- 能力应用分流逻辑 ---
+    public void ApplyAbility(AbilityData ability)
+    {
+        if (ability == null) return;
+        if (ability.isMemoryBound) InstallProtocol(ability);
+        else InstallFirmware(ability);
+    }
+
+    private void InstallProtocol(AbilityData ability)
+    {
+        if (currentUsedMemoryMB + ability.memoryCost > maxMemoryMB)
         {
-            currentCurrency -= amount;
-            Debug.Log($"消费金币: {amount}, 剩余余额: {currentCurrency}");
-            // 广播 UI 更新
-            return true;
+            Debug.LogWarning($"<color=red>[警告] 内存不足: {ability.abilityName}</color>");
+            return;
         }
-        else
-        {
-            Debug.Log("金币不足！");
-            return false;
-        }
+        currentUsedMemoryMB += ability.memoryCost;
+        installedProtocols.Add(ability);
+        OnMemoryChanged?.Invoke(currentUsedMemoryMB, maxMemoryMB);
+        ActivateEffects(ability);
+    }
+
+    private void InstallFirmware(AbilityData ability)
+    {
+        permanentFirmwares.Add(ability);
+        ActivateEffects(ability);
+    }
+
+    private void ActivateEffects(AbilityData ability)
+    {
+        foreach (var effect in ability.effects)
+            if (effect != null) effect.OnEquip(this);
+    }
+
+    public void UninstallProtocol(AbilityData ability)
+    {
+        if (!installedProtocols.Contains(ability)) return;
+        foreach (var effect in ability.effects)
+            if (effect != null) effect.OnRemove(this);
+        currentUsedMemoryMB -= ability.memoryCost;
+        installedProtocols.Remove(ability);
+        OnMemoryChanged?.Invoke(currentUsedMemoryMB, maxMemoryMB);
     }
 }

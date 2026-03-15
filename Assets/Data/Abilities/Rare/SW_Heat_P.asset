@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fce596035ee80f4183ffc0abe2b6581, type: 3}
+  m_Name: SW_Heat_P
+  m_EditorClassIdentifier: 
+  id: SW_P_302
+  abilityName: "\u9AD8\u80FD\u71C3\u6599\u534F\u8BAE "
+  tier: 2
+  isMemoryBound: 1
+  memoryCost: 512
+  description: "\u5B50\u5F39\u9644\u5E26\u9AD8\u70ED"
+  icon: {fileID: 0}
+  effects:
+  - {fileID: 11400000, guid: 0fd5dded9c7816e4081cb14661236721, type: 2}

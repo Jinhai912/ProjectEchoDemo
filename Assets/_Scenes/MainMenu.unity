@@ -1907,6 +1907,8 @@ GameObject:
   - component: {fileID: 1162134988}
   - component: {fileID: 1162134990}
   - component: {fileID: 1162134991}
+  - component: {fileID: 1162134992}
+  - component: {fileID: 1162134993}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1931,6 +1933,7 @@ MonoBehaviour:
   gameOverPanel: {fileID: 210412956}
   inGameHUD: {fileID: 988406456}
   mapPanel: {fileID: 0}
+  memoryText: {fileID: 0}
 --- !u!114 &1162134984
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2017,6 +2020,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5e183ad89ed260548b7ba75fff3e1142, type: 2}
   - {fileID: 11400000, guid: b42d6042149f3a744a29ac22aa76f7f2, type: 2}
   - {fileID: 11400000, guid: a53381f7661b5fc47b448b5b5e1d4650, type: 2}
+  - {fileID: 11400000, guid: 04eb263567b7ec04aa5af5c98752a389, type: 2}
+  - {fileID: 11400000, guid: 554610a693ced814eb89aa956be0ee8e, type: 2}
+  - {fileID: 11400000, guid: 1beffde9cc247cb4d82242dcf922410f, type: 2}
   - {fileID: 11400000, guid: d2f9f394124a98045a2ebfaf7d08e386, type: 2}
   - {fileID: 11400000, guid: ded0d6965999a0a4b8963ab1352498ca, type: 2}
   - {fileID: 11400000, guid: 9fc25a38e325d1c4a892d9f4c0e312b9, type: 2}
@@ -2033,28 +2039,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86edc44081296484ba20d7d314614ee4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialMaxHealth: 100
-  initialBaseDamage: 10
-  initialMoveSpeed: 4
-  initialFireRate: 1.5
-  initialCritRate: 0
-  initialCritDamage: 1.5
-  initialTotalDamageBonus: 1
-  initialExperience: 0
-  initialDefense: 0
+  currentCore: {fileID: 0}
+  currentBarrel: {fileID: 0}
+  bonusMaxHealth: 0
+  bonusDefense: 0
+  bonusAttack: 0
+  moveSpeedMultiplier: 1
+  fireRateMultiplier: 1
+  critRateBonus: 0
+  critDamageBonus: 0
+  damageBonusMultiplier: 1
+  pickupRadiusMultiplier: 1
+  baseMaxHealth: 100
+  baseAttack: 10
+  baseMoveSpeed: 4
+  baseFireRate: 1
   initialPickupRadius: 5
-  maxHealth: 0
+  projectileCount: 1
+  piercingCount: 0
   currentHealth: 0
-  baseDamage: 0
-  moveSpeed: 0
-  fireRate: 0
-  critRate: 0
-  critDamage: 0
-  totalDamageBonus: 0
   currentExperience: 0
-  defense: 0
-  pickupRadius: 0
-  acquiredAbilities: []
+  currentCurrency: 0
+  currentUsedMemoryMB: 0
+  installedProtocols: []
+  permanentFirmwares: []
+  currentBulletMedia: 0
 --- !u!114 &1162134991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2084,6 +2093,37 @@ MonoBehaviour:
   baseMaxNodesPerLayer: 3
   layersIncreasePerFloor: 1
   nodesIncreasePerFloor: 1
+--- !u!114 &1162134992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162134982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecfc73ec8d1d181468761f814f35d2e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  conductionRadius: 5
+  overloadExplosionRadius: 3
+  overloadForce: 500
+  vfxConduction: {fileID: 0}
+  vfxOverload: {fileID: 0}
+  vfxVaporization: {fileID: 0}
+  vfxIgnition: {fileID: 0}
+--- !u!114 &1162134993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162134982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c7e270157d2a1f459097b875507f10f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1245343403
 GameObject:
   m_ObjectHideFlags: 0
@@ -2622,6 +2662,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1664249450}
   - component: {fileID: 1664249449}
+  - component: {fileID: 1664249451}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -2706,6 +2747,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!114 &1664249451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1664249448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &1726071810
 GameObject:
   m_ObjectHideFlags: 0

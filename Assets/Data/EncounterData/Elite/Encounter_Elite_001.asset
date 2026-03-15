@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdb15f2495322d34f9ff726c46ebf48a, type: 3}
   m_Name: Encounter_Elite_001
   m_EditorClassIdentifier: 
-  encounterName: Elite001
+  encounterType: 0
+  title: 
   description: "\u7CBE\u82F1\u602A\u5173\u5361\uFF0C\u5305\u542B\u4E09\u4E2A\u6CE2\u6B21\n"
+  image: {fileID: 0}
   waves:
   - waveName: 
     enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
@@ -28,3 +30,9 @@ MonoBehaviour:
     enemyCount: 5
     spawnInterval: 0.1
   customExitPrefab: {fileID: 0}
+  barrelPrefabs:
+  - {fileID: 4413940533639602160, guid: dd6a38762931a9249a07b74930d512d3, type: 3}
+  - {fileID: 5786562570900789114, guid: 42a01d07ad9f22a439b37bdd5271ddfe, type: 3}
+  minBarrels: 4
+  maxBarrels: 5
+  choices: []

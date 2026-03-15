@@ -11,13 +11,14 @@ public class StoreUI : MonoBehaviour
     public TextMeshProUGUI currencyText; // 显示当前金币
 
     // 定价策略 (暂定)
-    private int GetPrice(AbilityData.Rarity rarity)
+    private int GetPrice(AbilityData.AbilityTier tier)
     {
-        switch (rarity)
+        switch (tier)
         {
-            case AbilityData.Rarity.Common: return 50;
-            case AbilityData.Rarity.Uncommon: return 100;
-            case AbilityData.Rarity.Rare: return 200;
+            case AbilityData.AbilityTier.L1_Micro: return 50;   // 白卡
+            case AbilityData.AbilityTier.L2_Driver: return 100; // 蓝卡
+            case AbilityData.AbilityTier.L3_Logic: return 200;  // 紫卡
+            case AbilityData.AbilityTier.L4_Core: return 500;   // 红卡 
             default: return 50;
         }
     }
@@ -41,7 +42,7 @@ public class StoreUI : MonoBehaviour
             TextMeshProUGUI nameText = btnObj.transform.Find("NameText").GetComponent<TextMeshProUGUI>();
             TextMeshProUGUI priceText = btnObj.transform.Find("PriceText").GetComponent<TextMeshProUGUI>();
             
-            int price = GetPrice(ability.rarity);
+            int price = GetPrice(ability.tier);
 
             if (nameText) nameText.text = ability.abilityName;
             if (priceText) priceText.text = "$" + price;

@@ -22,6 +22,7 @@ public class UIManager : MonoBehaviour
     [Header("HUD 元素")]
     private Slider healthSlider;
     private TextMeshProUGUI healthText;
+    public TextMeshProUGUI memoryText;
 
     void Awake()
     {
@@ -30,6 +31,7 @@ public class UIManager : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
         GameManager.OnGameStateChanged += HandleGameStateChange;
         PlayerStates.OnHealthChanged += UpdateHealthUI;
+        PlayerData.OnMemoryChanged += UpdateMemoryUI;
     }
 
     void OnDestroy()
@@ -37,6 +39,7 @@ public class UIManager : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
         GameManager.OnGameStateChanged -= HandleGameStateChange;
         PlayerStates.OnHealthChanged -= UpdateHealthUI;
+        PlayerData.OnMemoryChanged -= UpdateMemoryUI;
     }
 
     public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -59,6 +62,21 @@ public class UIManager : MonoBehaviour
             // 记得去 Unity 里给 Panel 设置 Tag！
             storePanel = GameObject.FindWithTag("UIPanel_Store");
             eventPanel = GameObject.FindWithTag("UIPanel_Event");
+            if (inGameHUD != null)
+            {
+                // transform.Find 是在子物体中按名字查找（注意名字要和 Hierarchy 里完全一致）
+                Transform memTransform = inGameHUD.transform.Find("MemoryText");
+                
+                if (memTransform != null)
+                {
+                    memoryText = memTransform.GetComponent<TextMeshProUGUI>();
+                    Debug.Log("UIManager: 已在 InGameHUD 中找到并关联 MemoryText");
+                }
+                else
+                {
+                    Debug.LogWarning("UIManager: 在 InGameHUD 下找不到名为 'MemoryText' 的物体！");
+                }
+            }
         }
         catch (UnityException e)
         {
@@ -74,6 +92,10 @@ public class UIManager : MonoBehaviour
         // 初始关闭所有不需要的面板
         if (storePanel) storePanel.SetActive(false);
         if (eventPanel) eventPanel.SetActive(false);
+        if (memoryText != null && PlayerData.Instance != null)
+        {
+            UpdateMemoryUI(PlayerData.Instance.currentUsedMemoryMB, PlayerData.Instance.maxMemoryMB);
+        }
     }
 
     public void UpdateHealthUI(int currentHealth, int maxHealth)
@@ -150,6 +172,21 @@ public class UIManager : MonoBehaviour
         }
 
         GameManager.Instance.UpdateGameState(GameManager.GameState.InEvent);
+    }
+
+    private void UpdateMemoryUI(int used, int max)
+    {
+        if (memoryText != null)
+        {
+            // 显示格式：RAM: 256 / 1024 MB
+            memoryText.text = $"RAM: {used} / {max} MB";
+
+            // 视觉反馈：如果超频(用量 > 上限)，变红；否则白色
+            if (used > max) 
+                memoryText.color = Color.red;
+            else 
+                memoryText.color = Color.white;
+        }
     }
 
     // ... (保留你原来的 OnStartGameButtonPressed 等方法) ...

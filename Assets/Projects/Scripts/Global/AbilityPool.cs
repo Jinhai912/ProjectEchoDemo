@@ -3,36 +3,65 @@ using UnityEngine;
 
 public class AbilityPool : MonoBehaviour
 {
-    // 在 Inspector 中，我们将把所有创建的能力 .asset 文件都拖到这个列表里
-    [Header("能力数据库")]
+    [Header("全能力总库 (把所有 .asset 丢进来)")]
     public List<AbilityData> allAbilities;
 
-    /// <summary>
-    /// [Beta]从能力池中随机、可重复地抽取指定数量的能力。
-    /// </summary>
-    /// <param name="count">要抽取的数量</param>
-    /// <returns>一个包含随机能力的新列表</returns>
+    // 自动分拣的子池子
+    private List<AbilityData> whitePool = new List<AbilityData>();
+    private List<AbilityData> bluePool = new List<AbilityData>();
+    private List<AbilityData> purplePool = new List<AbilityData>();
+    private List<AbilityData> redPool = new List<AbilityData>();
+
+    void Awake()
+    {
+        SortAbilities();
+    }
+
+    // 自动按品质分类
+    private void SortAbilities()
+    {
+        whitePool.Clear(); bluePool.Clear(); purplePool.Clear(); redPool.Clear();
+        foreach (var ability in allAbilities)
+        {
+            switch (ability.tier)
+            {
+                case AbilityData.AbilityTier.L1_Micro: whitePool.Add(ability); break;
+                case AbilityData.AbilityTier.L2_Driver: bluePool.Add(ability); break;
+                case AbilityData.AbilityTier.L3_Logic: purplePool.Add(ability); break;
+                case AbilityData.AbilityTier.L4_Core: redPool.Add(ability); break;
+            }
+        }
+    }
+
     public List<AbilityData> GetRandomAbilities(int count)
     {
-        // 创建一个临时的列表，复制所有能力，避免直接修改原始列表
-        List<AbilityData> tempPool = new List<AbilityData>(allAbilities);
         List<AbilityData> chosenAbilities = new List<AbilityData>();
-
-        // 确保抽取的数量不会超过池中能力的总数
-        int drawCount = Mathf.Min(count, tempPool.Count);
-
-        for (int i = 0; i < drawCount; i++)
+        
+        for (int i = 0; i < count; i++)
         {
-            // 随机选择一个索引
-            int randomIndex = Random.Range(0, tempPool.Count);
-            
-            // 将选中的能力添加到结果列表中
-            chosenAbilities.Add(tempPool[randomIndex]);
-            
-            // 从临时池中移除已选中的能力，确保下次不会再抽到它
-            tempPool.RemoveAt(randomIndex);
-        }
+            // --- 决战之夜：Demo 权重逻辑 ---
+            // 白(60%)、蓝(25%)、紫(10%)、红(5%)
+            int roll = Random.Range(0, 100);
+            List<AbilityData> selectedPool;
 
+            if (roll < 60) selectedPool = whitePool;
+            else if (roll < 85) selectedPool = bluePool;
+            else if (roll < 95) selectedPool = purplePool;
+            else selectedPool = redPool;
+
+            // 兜底：如果选中的池子是空的，回退到白池子
+            if (selectedPool.Count == 0) selectedPool = whitePool;
+            
+            if (selectedPool.Count > 0)
+            {
+                AbilityData randomAbility = selectedPool[Random.Range(0, selectedPool.Count)];
+                // 防重复：如果已经选了这张，就再抽一次（简单处理）
+                if (!chosenAbilities.Contains(randomAbility))
+                    chosenAbilities.Add(randomAbility);
+                else
+                    i--; // 重新抽
+            }
+        }
         return chosenAbilities;
     }
 }

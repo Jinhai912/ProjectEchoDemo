@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 589b85d4d0046cd47a628c005a5c639f, type: 3}
   m_Name: Effect_Health_Up
   m_EditorClassIdentifier: 
-  description: "\u751F\u547D\u4E0A\u9650\u63D0\u534720\u70B9\n"
+  description: "\u751F\u547D\u4E0A\u9650\u63D0\u534710\u70B9\n"
   targetStat: 0
-  value: 20
+  value: 10
