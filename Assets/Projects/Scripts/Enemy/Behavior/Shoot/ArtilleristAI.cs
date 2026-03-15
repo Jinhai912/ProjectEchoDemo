@@ -1,94 +1,92 @@
-// ArtilleristAI.cs
 using UnityEngine;
 
+/// <summary>
+/// 远程敌人AI控制器
+/// 描述：控制远程单位的站桩射击逻辑、索敌朝向及开火频率。
+/// </summary>
 [RequireComponent(typeof(Rigidbody))]
 public class ArtilleristAI : MonoBehaviour
 {
+    #region 属性配置
     [Header("战斗参数")]
-    public float attackRange = 15f;     // 在这个距离开始攻击
-    public float stopChasingRange = 20f;  // 超过这个距离就放弃
+    public float attackRange = 15f;     
+    public float stopChasingRange = 20f;  
     public float rotationSpeed = 5f;
     public float attackCooldown = 2f;
 
     [Header("组件引用")]
     public GameObject projectilePrefab;
     public Transform firePoint;
+    #endregion
 
-    private Transform player;
-    private Rigidbody rb;
-    private float attackTimer;
+    #region 私有变量
+    private enum State { Idle, Attacking }
+    private State _currentState;
+    private Transform _player;
+    private Rigidbody _rb;
+    private float _attackTimer;
+    #endregion
 
-    private enum State { Idle, Attacking } // 简化的状态机
-    private State currentState;
-
+    #region 生命周期
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        _rb = GetComponent<Rigidbody>();
         GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
-        if (playerGO != null) player = playerGO.transform;
-        currentState = State.Idle;
+        if (playerGO != null) _player = playerGO.transform;
+        _currentState = State.Idle;
     }
 
     void Update()
     {
-        if (player == null) return;
+        if (_player == null) return;
         
-        if (attackTimer > 0) { attackTimer -= Time.deltaTime; }
+        if (_attackTimer > 0) _attackTimer -= Time.deltaTime;
 
-        UpdateState();
-        ExecuteStateAction();
+        UpdateAIState();
+        ExecuteAILogic();
     }
+    #endregion
 
-    void UpdateState()
+    #region 核心逻辑
+    private void UpdateAIState()
     {
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        float distance = Vector3.Distance(transform.position, _player.position);
 
-        if (distanceToPlayer <= attackRange)
-        {
-            currentState = State.Attacking;
-        }
-        else if (distanceToPlayer > stopChasingRange)
-        {
-            currentState = State.Idle;
-        }
-        else // 在攻击范围和放弃范围之间，可以添加一个追击状态
-        {
-            currentState = State.Idle; // 为简化，我们先让它停在原地
-        }
+        if (distance <= attackRange)
+            _currentState = State.Attacking;
+        else if (distance > stopChasingRange)
+            _currentState = State.Idle;
     }
 
-    void ExecuteStateAction()
+    private void ExecuteAILogic()
     {
-        // 任何状态下，只要能看到玩家，都应该朝向玩家
-        if (currentState != State.Idle)
+        if (_currentState != State.Idle)
         {
-            LookAtPlayer();
+            LookAtTarget();
+            if (_currentState == State.Attacking && _attackTimer <= 0)
+            {
+                PerformRangedAttack();
+            }
         }
-        
-        rb.velocity = Vector3.zero; // 远程怪不移动
+        _rb.velocity = Vector3.zero; 
+    }
 
-        if (currentState == State.Attacking && attackTimer <= 0)
+    private void LookAtTarget()
+    {
+        Vector3 dir = (_player.position - transform.position).normalized;
+        dir.y = 0;
+        Quaternion lookRot = Quaternion.LookRotation(dir);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.deltaTime * rotationSpeed);
+    }
+
+    private void PerformRangedAttack()
+    {
+        _attackTimer = attackCooldown;
+        if (projectilePrefab && firePoint)
         {
-            Attack();
+            firePoint.LookAt(_player);
+            Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
         }
     }
-
-    void LookAtPlayer()
-    {
-        Vector3 direction = (player.position - transform.position).normalized;
-        direction.y = 0;
-        Quaternion lookRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
-    }
-
-    void Attack()
-    {
-        attackTimer = attackCooldown;
-
-        if (projectilePrefab == null || firePoint == null) return;
-        
-        // 我们需要确保发射点也朝向玩家
-        firePoint.LookAt(player);
-        Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-    }
+    #endregion
 }

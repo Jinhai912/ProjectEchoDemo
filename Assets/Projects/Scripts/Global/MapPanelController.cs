@@ -1,8 +1,10 @@
-// MapPanelController.cs
 using UnityEngine;
-using UnityEngine.UI; // 引入 UI 命名空间
+using UnityEngine.UI;
 
-// 这个脚本需要挂载在你的 MapPanel 对象上
+/// <summary>
+/// 地图面板事件控制器
+/// 负责绑定节点按钮点击事件至 GameManager。
+/// </summary>
 public class MapPanelController : MonoBehaviour
 {
     [Header("关卡数据")]

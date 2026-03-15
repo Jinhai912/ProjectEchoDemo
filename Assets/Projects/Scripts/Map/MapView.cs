@@ -1,14 +1,13 @@
-// MapView.cs
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI; // 引入 UI 命名空间
+using UnityEngine.UI;
 
-// 挂载在 MapPanel 上
+
 public class MapView : MonoBehaviour
 {
     [Header("UI 预制体")]
-    public GameObject nodePrefab; // 我们之前创建的 MapNode_Prefab 按钮
-    public GameObject linePrefab; // 一个用来画线的简单 Image 预制体
+    public GameObject nodePrefab; 
+    public GameObject linePrefab; 
 
     [Header("UI 引用")]
     public RectTransform container;
@@ -21,7 +20,7 @@ public class MapView : MonoBehaviour
     public Sprite eventIcon;
 
     [Header("路径线设置")]
-    public float lineWidth = 10f; // 默认粗细为 10
+    public float lineWidth = 10f;
 
 
     // 存储已创建的节点UI，方便查找
@@ -62,7 +61,7 @@ public class MapView : MonoBehaviour
             
             // c. 计算节点的 X 位置
             // node.position.x 的范围是 0 到 (totalLayers - 1)
-            // 我们把它映射到 [0, 1] 的比例
+            // 把它映射到 [0, 1] 的比例
             float xRatio = node.position.x / (MapManager.Instance.CurrentMapTotalLayers - 1);
             // 将比例映射到可绘制宽度上，再加上左边界和边距
             float xPos = (leftBound + padding) + (xRatio * drawableWidth);

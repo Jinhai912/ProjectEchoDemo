@@ -1,14 +1,24 @@
 using UnityEngine;
 
+/// <summary>
+/// 能力效果抽象基类
+/// 描述：所有具体逻辑零件（数值加成、机制注入、反应联动）的父类。
+/// </summary>
 public abstract class AbilityEffectSO : ScriptableObject
 {
-    // 每个效果都可以有自己的描述，用于 UI 拼接
-    [TextArea] public string description;
+    [TextArea(3, 5)]
+    [Tooltip("该效果的逻辑描述，可用于UI显示")]
+    public string effectDescription;
 
-    // 核心方法：当这个效果被应用到玩家身上时发生什么
-    // 我们把 PlayerData 传进去，让 Effect 自己决定改什么数据
+    /// <summary>
+    /// 当协议被安装或固件被应用时触发
+    /// </summary>
+    /// <param name="playerData">玩家全局数据引用</param>
     public abstract void OnEquip(PlayerData playerData);
 
-    // 可选：当效果被移除时（备用，比如临时 Buff）
+    /// <summary>
+    /// 当协议被卸载或效果失效时触发（撤销逻辑）
+    /// </summary>
+    /// <param name="playerData">玩家全局数据引用</param>
     public virtual void OnRemove(PlayerData playerData) { }
 }

@@ -1,7 +1,4 @@
-// NodeType.cs
 
-// 这是一个纯粹的枚举定义，所以不需要 using UnityEngine 等。
-// 也不需要 class 或 MonoBehaviour。
 public enum NodeType
 {
     NormalCombat, // 普通战斗

@@ -1,15 +1,19 @@
-// DamageNumberManager.cs (修改后)
 using UnityEngine;
-using UnityEngine.SceneManagement; // 引入场景管理命名空间
+using UnityEngine.SceneManagement;
 
+/// <summary>
+/// 伤害飘字管理器
+/// 描述：监听敌人受击事件，并负责在对应屏幕坐标生成伤害数字。
+/// </summary>
 public class DamageNumberManager : MonoBehaviour
 {
-    // --- 引用 ---
+    [Header("资源配置")]
     public GameObject damageNumberPrefab;
-    private Canvas uiCanvas; // 变为 private
-    private Camera mainCamera;
 
-    // 不再需要 Start，使用 Awake
+    private Canvas _uiCanvas;
+    private Camera _mainCamera;
+
+    #region 生命周期
     void Awake()
     {
         FindRequiredComponents();
@@ -22,41 +26,36 @@ public class DamageNumberManager : MonoBehaviour
         EnemyState.OnDamageTaken -= HandleDamageTaken;
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
-    
+    #endregion
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        FindRequiredComponents();
-    }
+    #region 核心逻辑
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => FindRequiredComponents();
 
     private void FindRequiredComponents()
     {
-        mainCamera = Camera.main;
-        uiCanvas = FindObjectOfType<Canvas>();
-        if (mainCamera == null) Debug.LogError("DamageNumberManager: 场景中找不到 MainCamera!");
-        if (uiCanvas == null) Debug.LogError("DamageNumberManager: 场景中找不到 Canvas!");
+        _mainCamera = Camera.main;
+        _uiCanvas = FindObjectOfType<Canvas>();
     }
 
-    // 事件处理函数
     private void HandleDamageTaken(float damage, bool isCritical, Vector3 worldPosition)
     {
-        if (damageNumberPrefab == null || uiCanvas == null || mainCamera == null)
-        {
-            // Debug.LogError("DamageNumberManager 缺少预制体或画布或相机的引用!");
-            return;
-        }
+        if (damageNumberPrefab == null || _uiCanvas == null || _mainCamera == null) return;
 
-        // ... 后续的 Instantiate 和 Setup 逻辑完全不变 ...
-        GameObject numberInstance = Instantiate(damageNumberPrefab, uiCanvas.transform);
-        Vector3 spawnWorldPosition = worldPosition + Vector3.up * 1.5f;
-        Vector2 screenPosition = mainCamera.WorldToScreenPoint(spawnWorldPosition);
-        screenPosition.x += Random.Range(-25f, 25f);
-        screenPosition.y += Random.Range(-15f, 15f);
-        numberInstance.transform.position = screenPosition;
-        DamageNumberAnimator animator = numberInstance.GetComponent<DamageNumberAnimator>();
-        if (animator != null)
+        // 1. 实例化与坐标转换
+        GameObject numberInstance = Instantiate(damageNumberPrefab, _uiCanvas.transform);
+        Vector3 spawnWorldPos = worldPosition + Vector3.up * 1.5f;
+        Vector2 screenPos = _mainCamera.WorldToScreenPoint(spawnWorldPos);
+
+        // 2. 增加随机扰动，防止文字重叠
+        screenPos.x += Random.Range(-25f, 25f);
+        screenPos.y += Random.Range(-15f, 15f);
+        numberInstance.transform.position = screenPos;
+
+        // 3. 启动动画
+        if (numberInstance.TryGetComponent<DamageNumberAnimator>(out var animator))
         {
             animator.Setup(damage, isCritical);
         }
     }
+    #endregion
 }

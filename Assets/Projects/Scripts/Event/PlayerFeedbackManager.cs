@@ -1,69 +1,58 @@
-// PlayerFeedbackManager.cs (修改后)
 using UnityEngine;
-using UnityEngine.SceneManagement; // 引入场景管理命名空间
+using UnityEngine.SceneManagement;
 
+/// <summary>
+/// 玩家反馈信息管理器
+/// 描述：负责处理除了伤害数值以外的所有文字反馈（如XP获得、材料获取、物理反应提示）。
+/// </summary>
 public class PlayerFeedbackManager : MonoBehaviour
 {
-    // --- 引用 ---
-    public GameObject feedbackTextPrefab;
-    // uiCanvas 现在是私有的，因为它会动态获取
-    private Canvas uiCanvas; 
-    private Camera mainCamera;
+    public static System.Action<string, bool, Vector3> OnFeedbackRequested;
 
+    [Header("资源配置")]
+    public GameObject feedbackTextPrefab;
+
+    private Canvas _uiCanvas; 
+    private Camera _mainCamera;
+
+    #region 生命周期
     void Awake()
     {
-        // Awake 在对象第一次被创建时调用，在这里进行初始设置
         FindRequiredComponents();
         OnFeedbackRequested += HandleFeedbackRequest;
-        // 监听场景加载事件
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void OnDestroy()
     {
         OnFeedbackRequested -= HandleFeedbackRequest;
-        // 取消监听
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
-    
-    
-    // 当新场景加载完成时调用
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // 在新场景中重新寻找组件
-        FindRequiredComponents();
-    }
+    #endregion
 
-    // 一个专门用来寻找所需组件的方法
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => FindRequiredComponents();
+
     private void FindRequiredComponents()
     {
-        mainCamera = Camera.main; // Camera.main 会自动寻找带 "MainCamera" 标签的相机
-        uiCanvas = FindObjectOfType<Canvas>(); // 寻找当前场景中的第一个 Canvas
-
-        // 添加健壮性检查
-        if (mainCamera == null) Debug.LogError("PlayerFeedbackManager: 场景中找不到 MainCamera!");
-        if (uiCanvas == null) Debug.LogError("PlayerFeedbackManager: 场景中找不到 Canvas!");
+        _mainCamera = Camera.main;
+        _uiCanvas = FindObjectOfType<Canvas>();
     }
 
-    // 事件处理函数
     private void HandleFeedbackRequest(string message, bool isSpecial, Vector3 worldPosition)
     {
-        // 在使用前再次检查，确保万无一失
-        if (feedbackTextPrefab == null || uiCanvas == null || mainCamera == null) return;
+        if (feedbackTextPrefab == null || _uiCanvas == null || _mainCamera == null) return;
 
-        // ... 后续的 Instantiate 和 Setup 逻辑完全不变 ...
-        GameObject textInstance = Instantiate(feedbackTextPrefab, uiCanvas.transform);
-        Vector2 screenPosition = mainCamera.WorldToScreenPoint(worldPosition);
-        screenPosition.x += Random.Range(-20f, 20f);
-        screenPosition.y += Random.Range(10f, 30f);
-        textInstance.transform.position = screenPosition;
-        PickupFeedbackAnimator animator = textInstance.GetComponent<PickupFeedbackAnimator>();
-        if (animator != null)
+        GameObject textInstance = Instantiate(feedbackTextPrefab, _uiCanvas.transform);
+        Vector2 screenPos = _mainCamera.WorldToScreenPoint(worldPosition);
+        
+        // 稍微向上和左右偏移
+        screenPos.x += Random.Range(-20f, 20f);
+        screenPos.y += Random.Range(10f, 30f);
+        textInstance.transform.position = screenPos;
+
+        if (textInstance.TryGetComponent<PickupFeedbackAnimator>(out var animator))
         {
             animator.Setup(message, isSpecial);
         }
     }
-    
-    // 静态事件定义可以保留，也可以移到更全局的地方，比如一个 EventManager
-    public static System.Action<string, bool, Vector3> OnFeedbackRequested;
 }

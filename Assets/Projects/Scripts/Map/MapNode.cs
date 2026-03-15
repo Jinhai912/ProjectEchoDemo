@@ -9,9 +9,7 @@ public class MapNode
     public NodeType nodeType;
     public Vector2 position;
     
-    // --- 核心修改：不再直接引用 MapNode 对象 ---
-    // public List<MapNode> children = new List<MapNode>(); 
-    // 而是存储子节点在总列表中的【索引】
+
     public List<int> childrenIndices = new List<int>();
 
     public EncounterData encounterData;
