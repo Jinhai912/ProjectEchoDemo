@@ -18,5 +18,5 @@ MonoBehaviour:
   icon: {fileID: 0}
   heatCapacity: 70
   coolingRate: 45
-  coolingDelay: 0.3
+  coolingDelay: 0.5
   overheatRecoveryTime: 1.2

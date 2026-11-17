@@ -14,7 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hardwareID: 
   hardwareName: "\u6807\u51C6\u8109\u51B2\u7BA1"
+  description: 
+  icon: {fileID: 0}
   bulletPrefab: {fileID: 0}
   baseDamage: 10
   baseFireRate: 2
-  heatPerShot: 5
+  projectilesPerShot: 1
+  spreadAngle: 0
+  bulletSpeed: 20
+  pierce: 0
+  heatPerShot: 8

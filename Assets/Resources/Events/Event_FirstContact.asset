@@ -19,8 +19,15 @@ MonoBehaviour:
   - buttonText: "\u63A5\u5165\u4E2D\u7EE7 (-10 HP)"
     resultText: "\u4F60\u5FCD\u53D7\u7535\u51FB\uFF0C\u4E0B\u8F7D\u4E86\u4E00\u4EFD\u534F\u8BAE\u3002"
     rewardAbility: {fileID: 11400000, guid: 3f5cfa4f923fbd84daf578474d34e2b2, type: 2}
+    rewardHardware: {fileID: 0}
     healthCost: 10
   - buttonText: "\u79BB\u5F00"
     resultText: "\u4F60\u6CA1\u6709\u5192\u9669\u3002"
     rewardAbility: {fileID: 0}
+    rewardHardware: {fileID: 0}
     healthCost: 0
+  - buttonText: "\u62C6\u4E0B\u6563\u70ED\u6A21\u5757 (-5 HP)"
+    resultText: "\u4F60\u64AC\u5F00\u5916\u58F3\uFF0C\u5E26\u8D70\u4E86\u4E00\u5957\u9AD8\u6D41\u6563\u70ED\u5668\u3002"
+    rewardAbility: {fileID: 0}
+    rewardHardware: {fileID: 11400000, guid: 622c651d369ff4548a7711c1e2c99840, type: 2}
+    healthCost: 5
