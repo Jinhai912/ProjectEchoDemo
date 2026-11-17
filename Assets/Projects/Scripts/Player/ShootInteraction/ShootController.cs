@@ -88,9 +88,7 @@ public class ShootController : MonoBehaviour
             // 超出总射程的直接忽略
             if (dist > shootingRange) continue;
 
-            // 判断是否是木桶（通过检查是否有 MediaBarrel 脚本）
-            MediaBarrel barrel = s.GetComponent<MediaBarrel>();
-            if (barrel != null)
+            if (s.IsBarrel)
             {
                 if (dist < minBarrelDist)
                 {

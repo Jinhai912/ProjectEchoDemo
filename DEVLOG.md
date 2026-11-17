@@ -226,3 +226,16 @@
   - `PlayerInteractor` / `PhysicalReactionManager` 的 `OverlapSphere` 改为 `NonAlloc`。
   - 缓存 CurrencyGem 的共享材质，移除近战命中日志刷屏。
 - **验证**: Unity 编译 0 errors；Play Mode 自动击杀起始敌人，碎片 300→316，无 Console errors，掉落物正常拾取。
+
+### #18 性能收尾二：敌方投射物池化 + Windows 构建
+
+- **状态**: 已实现并验证
+- **修改**:
+  - `Shootable` 缓存 `IsBarrel`，自动索敌不再每次 `GetComponent<MediaBarrel>`。
+  - `StatusContainer` 无状态时跳过计时更新。
+  - `ObjectPooler` 先设置位姿再激活，保证池化对象 `OnEnable` 读到正确朝向。
+  - `EnemyProjectile` 改为池化 + 计时器回收；`ArtilleristAI` 从对象池发射。
+- **验证**:
+  - Unity 编译 0 errors。
+  - Windows 构建成功：`Builds/Windows/ProjectEcho.exe`。
+  - 敌方投射物池化待游玩远程敌人确认。

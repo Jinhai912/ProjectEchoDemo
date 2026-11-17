@@ -12,12 +12,25 @@ public class EnemyProjectile : MonoBehaviour
     public float lifeTime = 10f;        
 
     private Rigidbody _rb;
+    private float _lifeTimer;
 
-    void Start()
+    void Awake()
     {
         _rb = GetComponent<Rigidbody>();
-        _rb.velocity = transform.forward * speed;
-        Destroy(gameObject, lifeTime);
+    }
+
+    void OnEnable()
+    {
+        _lifeTimer = lifeTime;
+        if (_rb != null) _rb.velocity = transform.forward * speed;
+    }
+
+    void Update()
+    {
+        if (_lifeTimer <= 0f) return;
+
+        _lifeTimer -= Time.deltaTime;
+        if (_lifeTimer <= 0f) Recycle();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -29,7 +42,15 @@ public class EnemyProjectile : MonoBehaviour
             {
                 player.TakeDamage(damage);
             }
-            Destroy(gameObject);
+            Recycle();
         }
+    }
+
+    private void Recycle()
+    {
+        _lifeTimer = 0f;
+
+        if (ObjectPooler.Instance != null) ObjectPooler.Instance.ReturnToPool(gameObject);
+        else Destroy(gameObject);
     }
 }

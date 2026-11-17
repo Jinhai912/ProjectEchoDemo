@@ -20,6 +20,7 @@ public class StatusContainer : MonoBehaviour
     #region 生命周期
     void Update()
     {
+        if (_activeStatusTimers.Count == 0) return;
         UpdateStatusTimers();
     }
     #endregion

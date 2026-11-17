@@ -54,8 +54,8 @@ public class ObjectPooler : MonoBehaviour
         PooledObject spawned = objectToSpawn.GetComponent<PooledObject>();
         if (spawned != null) spawned.MarkOutOfPool();
 
-        objectToSpawn.SetActive(true);
         objectToSpawn.transform.SetPositionAndRotation(position, rotation);
+        objectToSpawn.SetActive(true);
 
         return objectToSpawn;
     }

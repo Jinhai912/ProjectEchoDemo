@@ -85,7 +85,15 @@ public class ArtilleristAI : MonoBehaviour
         if (projectilePrefab && firePoint)
         {
             firePoint.LookAt(_player);
-            Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+
+            if (ObjectPooler.Instance != null)
+            {
+                ObjectPooler.Instance.SpawnFromPool(projectilePrefab, firePoint.position, firePoint.rotation);
+            }
+            else
+            {
+                Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+            }
         }
     }
     #endregion
