@@ -52,6 +52,9 @@ public class EncounterData : ScriptableObject
 
     [Header("事件/商店专属设置")]
     public List<ChoiceData> choices;
+
+    [Tooltip("事件遭遇要展示的事件数据")]
+    public EventData eventData;
 }
 
 public enum EncounterType

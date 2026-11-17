@@ -147,7 +147,9 @@ public class MapManager : MonoBehaviour
         case NodeType.NormalCombat:
         case NodeType.EliteCombat:
         case NodeType.Boss:
-            // 如果是任何一种战斗类型
+        case NodeType.Store:
+        case NodeType.Event:
+            // 所有节点都进入同一战斗场景，由 RoomController 按遭遇类型准备房间
             
             // 1. 切换到战斗状态，UIManager 会自动隐藏地图、显示HUD
             GameManager.Instance.UpdateGameState(GameManager.GameState.Playing);
@@ -164,14 +166,6 @@ public class MapManager : MonoBehaviour
             }
             break; // 结束这个 case 的处理
 
-        case NodeType.Store:
-            OpenStoreNode();
-            break;
-
-        case NodeType.Event:
-            OpenEventNode(nextNode);
-            break;
-
         case NodeType.RestSite:
             Debug.LogWarning("休息点尚未实现，返回地图。");
             UIManager.Instance.ShowMapPanel();
@@ -184,35 +178,6 @@ public class MapManager : MonoBehaviour
             GameManager.Instance.UpdateGameState(GameManager.GameState.MapSelection);
             break;
     }
-    }
-
-    private void OpenStoreNode()
-    {
-        AbilityPool pool = LevelUpManager.Instance != null
-            ? LevelUpManager.Instance.abilityPool
-            : FindObjectOfType<AbilityPool>();
-
-        if (pool == null)
-        {
-            Debug.LogError("MapManager: 找不到 AbilityPool，无法打开商店节点。");
-            UIManager.Instance.ShowMapPanel();
-            return;
-        }
-
-        List<AbilityData> stock = pool.GetRandomAbilities(3);
-        UIManager.Instance.OpenStorePanel(stock, true);
-    }
-
-    private void OpenEventNode(MapNode node)
-    {
-        if (node.eventData == null)
-        {
-            Debug.LogError("MapManager: 事件节点没有绑定 EventData，返回地图。");
-            UIManager.Instance.ShowMapPanel();
-            return;
-        }
-
-        UIManager.Instance.OpenEventPanel(node.eventData, null, true);
     }
 
     private void UpdateNodeStates()

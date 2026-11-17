@@ -47,8 +47,16 @@ public class RoomController : MonoBehaviour
         
         if (encounterCoroutine != null) StopCoroutine(encounterCoroutine);
         
-        // 2. 启动战斗主流程
-        encounterCoroutine = StartCoroutine(RunEncounter(encounter));
+        // 2. 按遭遇类型启动对应流程
+        if (encounter.encounterType == EncounterType.Store ||
+            encounter.encounterType == EncounterType.Event)
+        {
+            encounterCoroutine = StartCoroutine(RunSpecialEncounter(encounter));
+        }
+        else
+        {
+            encounterCoroutine = StartCoroutine(RunEncounter(encounter));
+        }
     }
 
     private void ClearPreviousEncounterObjects()
@@ -69,6 +77,13 @@ public class RoomController : MonoBehaviour
         {
             Destroy(zone.gameObject);
         }
+
+        // 3. 先关掉上一场的商店/事件交互物，等特殊遭遇开始时再按类型激活
+        StoreInteractable store = FindObjectOfType<StoreInteractable>(true);
+        if (store != null) store.gameObject.SetActive(false);
+
+        EventInteractable eventConsole = FindObjectOfType<EventInteractable>(true);
+        if (eventConsole != null) eventConsole.gameObject.SetActive(false);
 
         Debug.Log($"大扫除完毕：清理了 {oldTempObjects.Length} 个临时物体和 {remainingZones.Length} 个介质区域。");
     }
@@ -101,6 +116,38 @@ public class RoomController : MonoBehaviour
 
         Debug.Log("所有波次清空，关卡完成！");
         OnEncounterComplete?.Invoke(currentEncounter);
+    }
+
+    private IEnumerator RunSpecialEncounter(EncounterData encounter)
+    {
+        yield return null;
+
+        PrepareSpecialInteractables(encounter);
+
+        Debug.Log("特殊遭遇已准备完成: " + encounter.encounterType);
+        OnEncounterComplete?.Invoke(encounter); // 让 RewardManager 生成出口
+    }
+
+    private void PrepareSpecialInteractables(EncounterData encounter)
+    {
+        StoreInteractable store = FindObjectOfType<StoreInteractable>(true);
+        EventInteractable eventConsole = FindObjectOfType<EventInteractable>(true);
+
+        if (store != null)
+        {
+            store.gameObject.SetActive(encounter.encounterType == EncounterType.Store);
+        }
+
+        if (eventConsole != null)
+        {
+            bool isEvent = encounter.encounterType == EncounterType.Event;
+            eventConsole.gameObject.SetActive(isEvent);
+
+            if (isEvent && encounter.eventData != null)
+            {
+                eventConsole.eventData = encounter.eventData;
+            }
+        }
     }
 
     // --- 【核心方法】：随机撒桶 ---

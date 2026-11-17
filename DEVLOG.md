@@ -111,3 +111,19 @@
   - Unity 编译通过（0 errors）。
   - Play Mode 启动战斗场景后，`LevelUpManager.Panel` 指向 `LevelUpPanel`，三张 `AbilityCard` 均存在，Console 0 errors。
   - 实际升级三选一待游玩确认。
+
+### #8 修正商店/事件节点流程：进入遭遇房间，而不是直接弹面板
+
+- **状态**: 已修正，Unity 编译通过，战斗场景启动验证通过，商店交互待验证
+- **问题**: #6 把商店/事件节点做成了在地图界面上直接打开面板。项目的原设计是节点进入 `MainFightScene`，由 `RoomController` 激活场景里已有的 `Store_Table_Test` / `Event_Console`，玩家按 E 交互，再从出口回地图。
+- **修改**:
+  - `MapGenerator` 为 Store/Event 节点创建对应 `encounterType` 的运行时 `EncounterData`。
+  - `MapManager` 统一把 Store/Event 交给 `RoomController.StartEncounter`，不再直接开面板。
+  - `RoomController` 按遭遇类型激活商店/事件交互物，不刷怪；`OnEncounterComplete` 用于生成出口。
+  - `RewardManager` 对非战斗遭遇跳过宝箱，只生成出口。
+  - `StoreUI` 在引用为空时运行时构建商品列表、商品按钮和关闭键，修复 `ShopPanel` 空壳。
+  - `UIManager` 的面板查找改为包含未激活对象，并避免重复查找把引用覆盖成 `null`。
+- **验证**:
+  - Unity 编译通过（0 errors）。
+  - 战斗遭遇启动后 `Store_Table_Test` / `Event_Console` / `ShopPanel` 均保持关闭，Console 0 errors。
+  - 商店交互的实际 UI 待验证（当前 `guide` 模式阻止了自动测试菜单）。

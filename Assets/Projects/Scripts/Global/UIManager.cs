@@ -51,17 +51,14 @@ public class UIManager : MonoBehaviour
     {
         try
         {
-            mainMenuPanel = GameObject.FindWithTag("UIPanel_MainMenu");
-            pauseMenuPanel = GameObject.FindWithTag("UIPanel_Pause");
-            gameOverPanel = GameObject.FindWithTag("UIPanel_GameOver");
-            inGameHUD = GameObject.FindWithTag("UIPanel_HUD");
-            mapPanel = GameObject.FindWithTag("UIPanel_Map");
-            levelUpPanel = FindLevelUpPanel();
-            
-            // --- 新增：寻找商店和事件面板 ---
-            // 记得去 Unity 里给 Panel 设置 Tag！
-            storePanel = GameObject.FindWithTag("UIPanel_Store");
-            eventPanel = FindEventPanel();
+            AssignIfFound(ref mainMenuPanel, GameObject.FindWithTag("UIPanel_MainMenu"));
+            AssignIfFound(ref pauseMenuPanel, GameObject.FindWithTag("UIPanel_Pause"));
+            AssignIfFound(ref gameOverPanel, GameObject.FindWithTag("UIPanel_GameOver"));
+            AssignIfFound(ref inGameHUD, GameObject.FindWithTag("UIPanel_HUD"));
+            AssignIfFound(ref mapPanel, FindPanelByTagOrComponent<MapView>("UIPanel_Map"));
+            AssignIfFound(ref levelUpPanel, FindPanelByTagOrComponent<AbilityCardUI>("UIPanel_LevelUp"));
+            AssignIfFound(ref storePanel, FindPanelByTagOrComponent<StoreUI>("UIPanel_Store"));
+            AssignIfFound(ref eventPanel, FindPanelByTagOrComponent<EventUI>("UIPanel_Event"));
             if (inGameHUD != null)
             {
                 // transform.Find 是在子物体中按名字查找（注意名字要和 Hierarchy 里完全一致）
@@ -110,46 +107,26 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private GameObject FindEventPanel()
+    private static void AssignIfFound(ref GameObject target, GameObject found)
     {
-        GameObject taggedPanel = GameObject.FindWithTag("UIPanel_Event");
-        if (taggedPanel != null) return taggedPanel;
-
-        // 面板在加载时可能处于关闭状态，需要连未激活对象一起找
-        EventUI[] eventUIs = FindObjectsOfType<EventUI>(true);
-        foreach (EventUI eventUI in eventUIs)
-        {
-            if (eventUI != null && eventUI.gameObject.scene.IsValid())
-            {
-                return eventUI.gameObject;
-            }
-        }
-
-        return null;
+        if (found != null) target = found;
     }
 
-    private GameObject FindLevelUpPanel()
+    private GameObject FindPanelByTagOrComponent<T>(string tag) where T : Component
     {
-        GameObject taggedPanel = GameObject.FindWithTag("UIPanel_LevelUp");
+        GameObject taggedPanel = GameObject.FindWithTag(tag);
         if (taggedPanel != null) return taggedPanel;
 
-        if (LevelUpManager.Instance != null && LevelUpManager.Instance.Panel != null)
+        // 面板在加载时可能已被隐藏，FindWithTag 找不到未激活对象
+        T[] components = FindObjectsOfType<T>(true);
+        foreach (T component in components)
         {
-            return LevelUpManager.Instance.Panel;
-        }
+            if (component == null || !component.gameObject.scene.IsValid()) continue;
 
-        AbilityCardUI[] cards = FindObjectsOfType<AbilityCardUI>(true);
-        foreach (AbilityCardUI card in cards)
-        {
-            if (card == null || !card.gameObject.scene.IsValid()) continue;
-
-            Transform current = card.transform;
+            Transform current = component.transform;
             while (current != null)
             {
-                if (current.CompareTag("UIPanel_LevelUp"))
-                {
-                    return current.gameObject;
-                }
+                if (current.CompareTag(tag)) return current.gameObject;
                 current = current.parent;
             }
         }
@@ -211,7 +188,11 @@ public class UIManager : MonoBehaviour
     // --- 公共方法：打开商店 ---
     public void OpenStorePanel(List<AbilityData> items, bool returnToMap = false)
     {
-        if (storePanel == null) return;
+        if (storePanel == null)
+        {
+            Debug.LogError("UIManager: 找不到 UIPanel_Store，无法打开商店。");
+            return;
+        }
 
         // 获取 StoreUI 脚本并初始化
         StoreUI storeUI = storePanel.GetComponent<StoreUI>();
@@ -226,7 +207,11 @@ public class UIManager : MonoBehaviour
     // --- 公共方法：打开事件 ---
     public void OpenEventPanel(EventData data, EventInteractable source, bool returnToMap = false)
     {
-        if (eventPanel == null) return;
+        if (eventPanel == null)
+        {
+            Debug.LogError("UIManager: 找不到 UIPanel_Event，无法打开事件。");
+            return;
+        }
 
         EventUI eventUI = eventPanel.GetComponent<EventUI>();
         if (eventUI != null)

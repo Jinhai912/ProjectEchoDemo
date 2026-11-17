@@ -125,9 +125,29 @@ public class MapGenerator
         MapNode node = layerNodes[index];
         node.nodeType = type;
         node.eventData = eventData;
+
+        if (type == NodeType.Store || type == NodeType.Event)
+        {
+            node.encounterData = CreateSpecialEncounter(type, eventData);
+        }
+
         layerNodes.RemoveAt(index);
         Debug.Log("在第 " + (int)node.position.x + " 层生成了一个 " + type + " 节点。");
         return node;
+    }
+
+    private EncounterData CreateSpecialEncounter(NodeType type, EventData eventData)
+    {
+        EncounterData encounter = ScriptableObject.CreateInstance<EncounterData>();
+        encounter.encounterType = type == NodeType.Store ? EncounterType.Store : EncounterType.Event;
+        encounter.title = type == NodeType.Store ? "商店" : "事件";
+        encounter.description = string.Empty;
+        encounter.waves = new RoomController.Wave[0];
+        encounter.barrelPrefabs = new GameObject[0];
+        encounter.minBarrels = 0;
+        encounter.maxBarrels = 0;
+        encounter.eventData = eventData;
+        return encounter;
     }
 
     private void TryAssignFallbackSpecial(NodeType type, EventData eventData)
@@ -142,6 +162,10 @@ public class MapGenerator
             MapNode node = candidates[Random.Range(0, candidates.Count)];
             node.nodeType = type;
             node.eventData = eventData;
+            if (type == NodeType.Store || type == NodeType.Event)
+            {
+                node.encounterData = CreateSpecialEncounter(type, eventData);
+            }
             Debug.Log("兜底生成了一个 " + type + " 节点。");
             return;
         }
