@@ -162,3 +162,12 @@
     - 第二次后地图层数 7；
     - 第三次后 `currentState = Victory`，`GameOverPanel` 激活，`Over` 文本为“通关！”。
   - Console 0 errors。
+
+### #12 敌人掉落 10–20 碎片
+
+- **状态**: 已实现并验证
+- **修改**:
+  - `EnemyState` 新增 `currencyMin = 10` / `currencyMax = 20`，死亡时生成碎片掉落物。
+  - 新增 `CurrencyGem`（继承 `Pickup`）：飞向玩家、拾取后增加碎片并弹出 `+X 碎片` 反馈；30 秒未拾取自动销毁，并带 `TemporaryEncounterObject` 以便换场清理。
+  - 掉落物先用运行时生成的小光球作为占位表现，后续替换正式模型/特效。
+- **验证**: Play Mode 起始敌人被自动击杀后，`currentCurrency` 从 300 变为 316（掉落 16），`CurrencyGem` 已被拾取，Console 0 errors。

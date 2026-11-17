@@ -18,7 +18,9 @@ public class EnemyState : MonoBehaviour
     [SerializeField] private float _currentHealth;
 
     [Header("掉落配置")]
-    public GameObject expGemPrefab; 
+    public GameObject expGemPrefab;
+    public int currencyMin = 10;
+    public int currencyMax = 20;
     #endregion
 
     private RoomController _roomController;
@@ -55,7 +57,42 @@ public class EnemyState : MonoBehaviour
             Instantiate(expGemPrefab, transform.position, Quaternion.identity);
         }
 
+        SpawnCurrencyDrop();
+
         Destroy(gameObject);
+    }
+
+    private void SpawnCurrencyDrop()
+    {
+        int amount = UnityEngine.Random.Range(currencyMin, currencyMax + 1);
+        if (amount <= 0) return;
+
+        // 占位表现：一个小光球；后续可以替换成正式的碎片模型/特效
+        GameObject gem = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        gem.name = "CurrencyGem";
+        gem.transform.position = transform.position + Vector3.up * 0.5f;
+        gem.transform.localScale = Vector3.one * 0.3f;
+
+        Collider gemCollider = gem.GetComponent<Collider>();
+        if (gemCollider != null) gemCollider.isTrigger = true;
+
+        Renderer gemRenderer = gem.GetComponent<Renderer>();
+        if (gemRenderer != null)
+        {
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) shader = Shader.Find("Standard");
+
+            if (shader != null)
+            {
+                Material material = new Material(shader);
+                material.color = new Color(0.2f, 0.8f, 1f);
+                gemRenderer.material = material;
+            }
+        }
+
+        CurrencyGem currencyGem = gem.AddComponent<CurrencyGem>();
+        currencyGem.currencyAmount = amount;
+        gem.AddComponent<TemporaryEncounterObject>();
     }
     #endregion
 }
