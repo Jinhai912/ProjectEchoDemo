@@ -22,6 +22,7 @@ public class UIManager : MonoBehaviour
     [Header("HUD 元素")]
     private Slider healthSlider;
     private TextMeshProUGUI healthText;
+    private TextMeshProUGUI gameOverTitleText;
     public TextMeshProUGUI memoryText;
 
     void Awake()
@@ -55,6 +56,16 @@ public class UIManager : MonoBehaviour
             AssignIfFound(ref pauseMenuPanel, GameObject.FindWithTag("UIPanel_Pause"));
             AssignIfFound(ref gameOverPanel, GameObject.FindWithTag("UIPanel_GameOver"));
             AssignIfFound(ref inGameHUD, GameObject.FindWithTag("UIPanel_HUD"));
+
+            if (gameOverPanel != null)
+            {
+                Transform overTransform = gameOverPanel.transform.Find("Over");
+                if (overTransform != null)
+                {
+                    gameOverTitleText = overTransform.GetComponent<TextMeshProUGUI>();
+                }
+            }
+
             AssignIfFound(ref mapPanel, FindPanelByTagOrComponent<MapView>("UIPanel_Map"));
             AssignIfFound(ref levelUpPanel, FindPanelByTagOrComponent<AbilityCardUI>("UIPanel_LevelUp"));
             AssignIfFound(ref storePanel, FindPanelByTagOrComponent<StoreUI>("UIPanel_Store"));
@@ -167,6 +178,16 @@ public class UIManager : MonoBehaviour
                 break;
             case GameManager.GameState.GameOver:
                 if (gameOverPanel) gameOverPanel.SetActive(true);
+                if (gameOverTitleText) gameOverTitleText.text = "GAME OVER";
+                break;
+            case GameManager.GameState.Victory:
+                if (gameOverPanel) gameOverPanel.SetActive(true);
+                if (gameOverTitleText)
+                {
+                    TMP_FontAsset victoryFont = RuntimeFontUtility.GetFont();
+                    if (victoryFont != null) gameOverTitleText.font = victoryFont;
+                    gameOverTitleText.text = "通关！";
+                }
                 break;
             case GameManager.GameState.MapSelection:
                 if (mapPanel) mapPanel.SetActive(true);

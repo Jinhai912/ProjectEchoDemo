@@ -6,13 +6,14 @@ public class GameManager : MonoBehaviour
     [Header("关卡流程")]
     public EncounterData startingEncounter; // 在 Inspector 中拖入你的第一个关卡数据
     public EncounterData nextEncounter { get; private set; }
+    private bool showMapAfterSceneLoad;
 
     // --- 单例模式 ---
     public static GameManager Instance { get; private set; }
 
     // --- 游戏状态 ---
     // 1. 修改：添加了 InStore 状态
-    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection, InEvent, InStore, InLevelUp }
+    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection, InEvent, InStore, InLevelUp, Victory }
     public GameState currentState;
     public int currentFloor { get; private set; } = 1;
     public int totalFloors = 3;//总共层数
@@ -80,6 +81,7 @@ public class GameManager : MonoBehaviour
                 Time.timeScale = 0f; 
                 break;
             case GameState.GameOver:
+            case GameState.Victory:
                 Time.timeScale = 0f; 
                 break;
             case GameState.MapSelection:
@@ -128,6 +130,20 @@ public class GameManager : MonoBehaviour
 
         if (scene.name == "MainFightScene")
         {
+            // 打完 Boss 通过楼梯进入下一层时，不启动遭遇，直接打开新一层地图
+            if (showMapAfterSceneLoad)
+            {
+                showMapAfterSceneLoad = false;
+                nextEncounter = null;
+
+                if (UIManager.Instance != null)
+                {
+                    UIManager.Instance.ShowMapPanel();
+                }
+
+                return;
+            }
+
             RoomController roomController = FindObjectOfType<RoomController>();
 
             if (roomController != null)
@@ -178,6 +194,9 @@ public class GameManager : MonoBehaviour
         {
             MapManager.Instance.ClearMap();
         }
+
+        nextEncounter = null;
+        showMapAfterSceneLoad = false;
         
         Time.timeScale = 1f;
         SceneManager.LoadScene("MainMenu");
@@ -190,6 +209,7 @@ public class GameManager : MonoBehaviour
 
     public void RestartGame()
     {
+        showMapAfterSceneLoad = false;
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
@@ -202,6 +222,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        showMapAfterSceneLoad = false;
         nextEncounter = encounterData;
         SceneManager.LoadScene("MainFightScene");
     }
@@ -234,12 +255,14 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("GoToNextFloor: 找不到 MapManager 实例来清空地图。");
         }
 
+        nextEncounter = null;
+        showMapAfterSceneLoad = true;
         SceneManager.LoadScene("MainFightScene");
     }
 
     private void WinTheEntireRun()
     {
-        Debug.Log("恭喜！你已通关整个周目！正在返回主菜单...");
-        GoToMainMenu();
+        Debug.Log("恭喜！你已通关整个周目！");
+        UpdateGameState(GameState.Victory);
     }
 }

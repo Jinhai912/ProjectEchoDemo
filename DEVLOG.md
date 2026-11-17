@@ -146,3 +146,19 @@
   - 新增 `RuntimeFontUtility`，运行时创建的 UI 文本直接使用 TMP 全局 fallback 列表里的中文字体（当前为 `msyh SDF`），不再依赖默认 LiberationSans 的逐字回退。
   - `StoreUI` / `EventUI` / `RuntimeEventPanelBuilder` 创建文本时统一调用该工具。
 - **验证**: Unity 编译 0 errors；`startingCurrency` 在 Inspector 中为 300。中文显示待再跑一次商店确认。
+
+### #11 打通垂直切片主流程：Boss → 下一层 → 通关结算
+
+- **状态**: 已实现并验证
+- **问题**: `GoToNextFloor` 重载 `MainFightScene` 后，`OnSceneLoaded` 会再次启动 `nextEncounter`（上一个 Boss），导致无法进入新一层；`WinTheEntireRun` 只回主菜单，没有结算界面。
+- **修改**:
+  - `GameManager` 新增 `showMapAfterSceneLoad`：Boss 楼梯触发 `GoToNextFloor` 时清空 `nextEncounter`，重载场景后直接打开新一层地图。
+  - 新增 `GameState.Victory`；`WinTheEntireRun` 切换到 Victory，不再直接回主菜单。
+  - `UIManager` 复用 `GameOverPanel` 作为结算面板，Victory 时标题改为“通关！”，GameOver 时恢复“GAME OVER”。
+  - `GoToMainMenu` / `StartEncounter` / `RestartGame` 清理过渡标记，避免残留状态。
+- **验证**:
+  - Play Mode 中临时按钮连续触发 `GoToNextFloor` 三次：
+    - 第一次后 `currentState = MapSelection`，地图层数 6；
+    - 第二次后地图层数 7；
+    - 第三次后 `currentState = Victory`，`GameOverPanel` 激活，`Over` 文本为“通关！”。
+  - Console 0 errors。
