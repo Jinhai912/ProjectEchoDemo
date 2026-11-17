@@ -247,3 +247,13 @@
   - `EnemyState` 用运行时模板 + `ObjectPooler` 生成碎片光球，材质共享。
   - `CurrencyGem` 改为 30s 计时回收，拾取/超时都回池。
 - **验证**: Play Mode 起始敌人击杀，碎片 300→313，Console 0 errors；池中保留未激活碎片实例。
+
+### #20 性能验收快照与 Windows 构建
+
+- **状态**: 已完成
+- **Profiler（Play Mode 起始战斗场景）**:
+  - frameTime: 6.9–12.0 ms
+  - batches / drawCalls: 38 / 38
+  - triangles: 15,596
+  - totalAllocated: ~300 MB
+- **Windows 构建**: `Builds/Windows/ProjectEcho.exe`（StandaloneWindows64，两个场景均已打包）。
