@@ -127,3 +127,13 @@
   - Unity 编译通过（0 errors）。
   - 战斗遭遇启动后 `Store_Table_Test` / `Event_Console` / `ShopPanel` 均保持关闭，Console 0 errors。
   - 商店交互的实际 UI 待验证（当前 `guide` 模式阻止了自动测试菜单）。
+
+### #9 商店/事件流程验证与中文字体 fallback
+
+- **状态**: 已验证，Unity 编译通过
+- **验证结果**:
+  - 商店：`RoomController 开始关卡: 商店` → `特殊遭遇已准备完成: Store` → `打开商店界面` → `InStore` → 点击商品（`钱不够！`）→ 关闭 → `Playing` → 出口 → `MapSelection`。
+  - 事件：`RoomController 开始关卡: 事件` → `特殊遭遇已准备完成: Event` → `InEvent` → 出口 → `MapSelection`。
+  - Console 0 errors；运行时中文缺字警告已定位。
+- **修改**: 在 `Assets/TextMesh Pro/Resources/TMP Settings.asset` 的 `m_fallbackFontAssets` 加入 `msyh SDF`（GUID `1fc33eee782440942a13fc2aded163c4`），让默认字体缺字时回退到中文字体。
+- **待办**: 玩家初始碎片为 0，商店只能提示“钱不够”。需要决定初始碎片、敌人掉落或事件奖励中的一种来源。
