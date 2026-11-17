@@ -72,8 +72,22 @@ public class LevelUpManager : MonoBehaviour
             return;
         }
 
-        // 1. 暂停游戏
-        Time.timeScale = 0f;
+        if (abilityPool == null)
+        {
+            Debug.LogError("LevelUpManager 无法显示升级选项：AbilityPool 未设置！");
+            return;
+        }
+
+        // 1. 切换到升级状态，由 GameManager 统一处理暂停与 UI 显示
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.UpdateGameState(GameManager.GameState.InLevelUp);
+        }
+        else
+        {
+            Time.timeScale = 0f;
+            levelUpPanel.SetActive(true);
+        }
 
         // 2. 抽取能力并更新卡片 (这部分逻辑不变)
         List<AbilityData> chosenAbilities = abilityPool.GetRandomAbilities(3);
@@ -90,9 +104,10 @@ public class LevelUpManager : MonoBehaviour
             }
         }
 
-        // 3. 直接、粗暴地激活面板！
-        levelUpPanel.SetActive(true);
-        Debug.Log("LevelUpManager 已手动激活 LevelUpPanel。");
+        // 3. 兜底：没有 GameManager 时仍然确保面板可见
+        if (GameManager.Instance == null) levelUpPanel.SetActive(true);
+
+        Debug.Log("LevelUpManager 已显示升级选项。");
     }
 
     /// <summary>
@@ -106,14 +121,17 @@ public class LevelUpManager : MonoBehaviour
             player.GetComponent<PlayerStates>()?.ApplyAbility(selectedAbility);
         }
 
-        // 1. 直接、粗暴地隐藏面板！
-        if (levelUpPanel != null)
+        // 1. 回到游戏状态，由 GameManager 统一恢复 timeScale 并隐藏面板
+        if (GameManager.Instance != null)
         {
-            levelUpPanel.SetActive(false);
-            Debug.Log("LevelUpManager 已手动隐藏 LevelUpPanel。");
+            GameManager.Instance.UpdateGameState(GameManager.GameState.Playing);
+        }
+        else
+        {
+            if (levelUpPanel != null) levelUpPanel.SetActive(false);
+            Time.timeScale = 1f;
         }
 
-        // 2. 恢复游戏
-        Time.timeScale = 1f;
+        Debug.Log("LevelUpManager 已关闭升级面板。");
     }
 }

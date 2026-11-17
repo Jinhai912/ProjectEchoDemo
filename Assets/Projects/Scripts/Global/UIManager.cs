@@ -142,6 +142,10 @@ public class UIManager : MonoBehaviour
             case GameManager.GameState.InEvent:
                 if (eventPanel) eventPanel.SetActive(true);
                 break;
+            case GameManager.GameState.InLevelUp:
+                if (inGameHUD) inGameHUD.SetActive(true);
+                if (levelUpPanel) levelUpPanel.SetActive(true);
+                break;
         }
     }
 

@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
 
     // --- 游戏状态 ---
     // 1. 修改：添加了 InStore 状态
-    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection, InEvent, InStore }
+    public enum GameState { MainMenu, Playing, Paused, GameOver, MapSelection, InEvent, InStore, InLevelUp }
     public GameState currentState;
     public int currentFloor { get; private set; } = 1;
     public int totalFloors = 3;//总共层数
@@ -89,15 +89,14 @@ public class GameManager : MonoBehaviour
             // 3. 修改：处理商店和事件状态的时间流速
             case GameState.InEvent:
             case GameState.InStore:
-                Time.timeScale = 0f; // 打开商店/事件时，游戏暂停
+            case GameState.InLevelUp:
+                Time.timeScale = 0f; // 打开商店/事件/升级面板时，游戏暂停
                 break;
         }
 
-        if (UIManager.Instance != null)
-        {
-            UIManager.Instance.HandleGameStateChange(newState); 
-        }
-        
+        // 统一通过事件通知 UI、玩家控制和房间逻辑等订阅者
+        OnGameStateChanged?.Invoke(newState);
+
         Debug.Log("Game state changed to: " + newState);
     }
 
