@@ -10,6 +10,13 @@ public class StoreInteractable : MonoBehaviour, IInteractable
     private List<AbilityData> currentStock = new List<AbilityData>();
     private bool isStockGenerated = false;
 
+    private void OnEnable()
+    {
+        // 场景里的商店桌会被不同商店房间复用，每次启用都重新进货
+        isStockGenerated = false;
+        if (currentStock != null) currentStock.Clear();
+    }
+
     // 实现接口方法
     public void Interact()
     {

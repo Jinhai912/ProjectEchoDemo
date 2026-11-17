@@ -190,3 +190,18 @@
     - 每层敌人生命乘以 `1 + 0.5 × (floor - 1)`；
     - Boss 额外乘以 20，并放大 1.8 倍、染红作为占位表现。
 - **验证**: Unity 编译 0 errors；`Encounter_Boss_01` 类型确认为 `Boss`。实际战斗强度待游玩验证。
+
+### #15 垂直切片收尾：交互物复用重置与暂停 Resume
+
+- **状态**: 已实现并验证
+- **问题**:
+  - `Event_Console` 被不同事件房间复用，`hasInteracted` 不重置，第二个事件节点点不开。
+  - `Store_Table_Test` 被不同商店房间复用，`isStockGenerated` 不重置，第二家商店沿用上一家库存和已购状态。
+  - 暂停菜单 `Resume` 按钮的持久化监听器 `m_Target` 也是 0，点击无响应，与 Main Menu 按钮同一类问题。
+- **修改**:
+  - `EventInteractable.OnEnable` 重置 `hasInteracted`。
+  - `StoreInteractable.OnEnable` 重置 `isStockGenerated` 并清空 `currentStock`。
+  - `UIManager` 的按钮绑定改为通用 `WireButton`，同时绑定暂停菜单 `Resume`、`Main Menu` 和 GameOver 的 `MainMenu`。
+- **验证**:
+  - Unity 编译 0 errors。
+  - Play Mode 中暂停后触发 `Resume`，`currentState` 从 `Paused` 回到 `Playing`。

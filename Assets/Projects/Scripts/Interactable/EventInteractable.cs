@@ -7,6 +7,12 @@ public class EventInteractable : MonoBehaviour, IInteractable
 
     private bool hasInteracted = false;
 
+    private void OnEnable()
+    {
+        // 场景里的 Event_Console 会被不同事件房间复用，每次启用都重置
+        hasInteracted = false;
+    }
+
     public void Interact()
     {
         if (hasInteracted) return;

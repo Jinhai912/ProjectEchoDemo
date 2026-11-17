@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 using TMPro;
 using System.Collections.Generic;
 
@@ -66,8 +67,9 @@ public class UIManager : MonoBehaviour
                 }
             }
 
-            WireMainMenuButton(pauseMenuPanel, "Main Menu");
-            WireMainMenuButton(gameOverPanel, "MainMenu");
+            WireButton(pauseMenuPanel, "Resume", OnResumeButtonPressed);
+            WireButton(pauseMenuPanel, "Main Menu", OnMainMenuButtonPressed);
+            WireButton(gameOverPanel, "MainMenu", OnMainMenuButtonPressed);
 
             AssignIfFound(ref mapPanel, FindPanelByTagOrComponent<MapView>("UIPanel_Map"));
             AssignIfFound(ref levelUpPanel, FindPanelByTagOrComponent<AbilityCardUI>("UIPanel_LevelUp"));
@@ -148,7 +150,7 @@ public class UIManager : MonoBehaviour
         return null;
     }
 
-    private void WireMainMenuButton(GameObject panel, string buttonName)
+    private void WireButton(GameObject panel, string buttonName, UnityAction action)
     {
         if (panel == null) return;
 
@@ -160,7 +162,7 @@ public class UIManager : MonoBehaviour
 
         // 场景里的持久化监听器目标丢失（m_Target: 0），这里在运行时重新绑定
         button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(OnMainMenuButtonPressed);
+        button.onClick.AddListener(action);
     }
 
     public void UpdateHealthUI(int currentHealth, int maxHealth)
