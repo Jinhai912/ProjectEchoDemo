@@ -25,6 +25,7 @@ public class EnemyState : MonoBehaviour
 
     private RoomController _roomController;
     private static Material _currencyMaterial;
+    private static GameObject _currencyGemPrefab;
 
     #region 生命周期
     void Start()
@@ -76,10 +77,40 @@ public class EnemyState : MonoBehaviour
         int amount = UnityEngine.Random.Range(currencyMin, currencyMax + 1);
         if (amount <= 0) return;
 
+        Vector3 spawnPosition = transform.position + Vector3.up * 0.5f;
+        GameObject gem;
+
+        if (ObjectPooler.Instance != null)
+        {
+            if (_currencyGemPrefab == null) _currencyGemPrefab = CreateCurrencyGemTemplate();
+            gem = ObjectPooler.Instance.SpawnFromPool(_currencyGemPrefab, spawnPosition, Quaternion.identity);
+        }
+        else
+        {
+            gem = CreateCurrencyGemObject();
+            gem.transform.position = spawnPosition;
+        }
+
+        if (gem == null) return;
+
+        CurrencyGem currencyGem = gem.GetComponent<CurrencyGem>();
+        if (currencyGem != null) currencyGem.currencyAmount = amount;
+    }
+
+    private static GameObject CreateCurrencyGemTemplate()
+    {
+        GameObject template = CreateCurrencyGemObject();
+        template.name = "CurrencyGemTemplate";
+        template.SetActive(false);
+        UnityEngine.Object.DontDestroyOnLoad(template);
+        return template;
+    }
+
+    private static GameObject CreateCurrencyGemObject()
+    {
         // 占位表现：一个小光球；后续可以替换成正式的碎片模型/特效
         GameObject gem = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         gem.name = "CurrencyGem";
-        gem.transform.position = transform.position + Vector3.up * 0.5f;
         gem.transform.localScale = Vector3.one * 0.3f;
 
         Collider gemCollider = gem.GetComponent<Collider>();
@@ -107,8 +138,9 @@ public class EnemyState : MonoBehaviour
         }
 
         CurrencyGem currencyGem = gem.AddComponent<CurrencyGem>();
-        currencyGem.currencyAmount = amount;
         gem.AddComponent<TemporaryEncounterObject>();
+        currencyGem.currencyAmount = 10;
+        return gem;
     }
     #endregion
 }

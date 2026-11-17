@@ -239,3 +239,11 @@
   - Unity 编译 0 errors。
   - Windows 构建成功：`Builds/Windows/ProjectEcho.exe`。
   - 敌方投射物池化待游玩远程敌人确认。
+
+### #19 性能收尾三：碎片光球对象池
+
+- **状态**: 已实现并验证
+- **修改**:
+  - `EnemyState` 用运行时模板 + `ObjectPooler` 生成碎片光球，材质共享。
+  - `CurrencyGem` 改为 30s 计时回收，拾取/超时都回池。
+- **验证**: Play Mode 起始敌人击杀，碎片 300→313，Console 0 errors；池中保留未激活碎片实例。

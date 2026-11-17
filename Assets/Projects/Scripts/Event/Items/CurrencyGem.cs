@@ -6,12 +6,25 @@ using UnityEngine;
 /// </summary>
 public class CurrencyGem : Pickup
 {
+    private const float Lifetime = 30f;
+
     public int currencyAmount = 10;
+    private float _lifeTimer;
 
     protected override void OnEnable()
     {
         base.OnEnable();
-        Destroy(gameObject, 30f);
+        _lifeTimer = Lifetime;
+    }
+
+    protected override void Update()
+    {
+        base.Update();
+
+        if (_lifeTimer <= 0f) return;
+
+        _lifeTimer -= Time.deltaTime;
+        if (_lifeTimer <= 0f) Recycle();
     }
 
     protected override void OnPickedUp(GameObject picker)
@@ -27,5 +40,13 @@ public class CurrencyGem : Pickup
             transform.position);
 
         base.OnPickedUp(picker);
+    }
+
+    private void Recycle()
+    {
+        _lifeTimer = 0f;
+
+        if (ObjectPooler.Instance != null) ObjectPooler.Instance.ReturnToPool(gameObject);
+        else Destroy(gameObject);
     }
 }
