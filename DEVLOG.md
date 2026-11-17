@@ -70,3 +70,27 @@
   - `EventUI.SelectOption` 在 `healthCost > 0` 时调用。
   - `EventUI.CloseEvent` 在玩家已死亡时不再调用 `ResumeGame`。
 - **验证**: Unity 编译通过（0 errors），运行验证待完成。
+
+### #6 商店/事件地图节点接通
+
+- **状态**: 已实现，Unity 编译与场景启动验证通过，完整流程待游玩验证
+- **文件**:
+  - `Assets/Projects/Scripts/Map/MapGenerator.cs`
+  - `Assets/Projects/Scripts/Map/MapManager.cs`
+  - `Assets/Projects/Scripts/Map/MapNode.cs`
+  - `Assets/Projects/Scripts/Global/UIManager.cs`
+  - `Assets/Projects/Scripts/Global/StoreUI.cs`
+  - `Assets/Projects/Scripts/Global/EventUI.cs`
+  - `Assets/Projects/Scripts/Global/RuntimeEventPanelBuilder.cs`（新增）
+  - `Assets/Resources/Events/Event_FirstContact.asset`（新增）
+- **功能**:
+  - 地图生成时第 1 层保证一个商店、第 2 层保证一个事件，其余层按概率生成。
+  - 商店节点直接打开现有商店面板，关闭后回到地图。
+  - 事件节点打开事件面板，关闭后回到地图。
+  - 事件池留空时自动从 `Resources/Events` 加载。
+  - 场景缺少 `UIPanel_Event` 时，运行时自动创建一个基础事件面板。
+- **验证**:
+  - Unity 编译通过（0 errors）。
+  - Play Mode 启动 `MainFightScene` 后，`Canvas/EventPanel` 自动创建并带 `UIPanel_Event` 标签。
+  - Console 显示 `MapManager: 从 Resources/Events 加载了 1 个事件。`
+  - 完整节点点击、商店购买、事件选项流程待手动游玩验证。

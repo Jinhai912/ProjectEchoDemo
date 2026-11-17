@@ -38,31 +38,42 @@ public class MapGenerator
     /// </summary>
     private void AssignNodeTypesAndData()
     {
-        // 遍历所有中间层的节点 (不包括起点和终点Boss)
+        bool storeAssigned = false;
+        bool eventAssigned = false;
+
+        // 遍历所有中间层 (不包括起点和终点Boss)
         for (int i = 1; i < totalLayers - 1; i++)
         {
             List<MapNode> layerNodes = GetNodesInLayer(i);
-            
-            // --- 在这一层安插一个精英怪 ---
-            // 确保精英怪池不为空，并且节点数量足够
-            if (mapManager.eliteCombatEncounters.Count > 0 && layerNodes.Count > 0)
-            {
-                // 随机选择一个倒霉的节点，把它变成精英房
-                int eliteIndex = Random.Range(0, layerNodes.Count);
-                MapNode eliteNode = layerNodes[eliteIndex];
-                eliteNode.nodeType = NodeType.EliteCombat;
-                // 同样，从精英关卡池里随机选一个具体的关卡配置
-                eliteNode.encounterData = mapManager.eliteCombatEncounters[Random.Range(0, mapManager.eliteCombatEncounters.Count)];
-                
-                // 把这个节点从待处理列表里移除，避免它又被分配成其他类型
-                layerNodes.RemoveAt(eliteIndex);
+            if (layerNodes.Count == 0) continue;
 
+            // 1) 特殊节点：第 1 层保证商店，第 2 层保证事件，其余层按概率
+            NodeType? specialType = ChooseSpecialType(i, storeAssigned, eventAssigned);
+            if (specialType.HasValue)
+            {
+                EventData eventData = specialType.Value == NodeType.Event ? PickEventData() : null;
+                if (specialType.Value != NodeType.Event || eventData != null)
+                {
+                    AssignNode(layerNodes, specialType.Value, eventData);
+                    if (specialType.Value == NodeType.Store) storeAssigned = true;
+                    if (specialType.Value == NodeType.Event) eventAssigned = true;
+                }
+            }
+
+            // 2) 在剩余节点里安插一个精英
+            if (mapManager.eliteCombatEncounters != null &&
+                mapManager.eliteCombatEncounters.Count > 0 &&
+                layerNodes.Count > 0)
+            {
+                MapNode eliteNode = AssignNode(layerNodes, NodeType.EliteCombat, null);
+                eliteNode.encounterData = mapManager.eliteCombatEncounters[Random.Range(0, mapManager.eliteCombatEncounters.Count)];
                 Debug.Log("在第 " + i + " 层生成了一个精英节点。");
             }
-            
-            // --- (未来) 在这里可以添加安插商店、事件房的逻辑 ---
-            // if (mapManager.eventEncounters.Count > 0 && layerNodes.Count > 0) { ... }
         }
+
+        // 3) 兜底：层数较少时，尽量保证商店和事件各有一个
+        if (!storeAssigned) TryAssignFallbackSpecial(NodeType.Store, null);
+        if (!eventAssigned) TryAssignFallbackSpecial(NodeType.Event, PickEventData());
 
         // --- 最后，为所有剩下的普通节点和Boss节点分配具体的关卡数据 ---
         foreach (var node in allNodes)
@@ -83,6 +94,56 @@ public class MapGenerator
                         break;
                 }
             }
+        }
+    }
+
+    private NodeType? ChooseSpecialType(int layer, bool storeAssigned, bool eventAssigned)
+    {
+        if (layer == 1 && !storeAssigned) return NodeType.Store;
+        if (layer == 2 && !eventAssigned && HasEventPool()) return NodeType.Event;
+
+        float roll = Random.value;
+        if (roll < 0.2f) return NodeType.Store;
+        if (roll < 0.4f && HasEventPool()) return NodeType.Event;
+        return null;
+    }
+
+    private bool HasEventPool()
+    {
+        return mapManager.eventPool != null && mapManager.eventPool.Count > 0;
+    }
+
+    private EventData PickEventData()
+    {
+        if (!HasEventPool()) return null;
+        return mapManager.eventPool[Random.Range(0, mapManager.eventPool.Count)];
+    }
+
+    private MapNode AssignNode(List<MapNode> layerNodes, NodeType type, EventData eventData)
+    {
+        int index = Random.Range(0, layerNodes.Count);
+        MapNode node = layerNodes[index];
+        node.nodeType = type;
+        node.eventData = eventData;
+        layerNodes.RemoveAt(index);
+        Debug.Log("在第 " + (int)node.position.x + " 层生成了一个 " + type + " 节点。");
+        return node;
+    }
+
+    private void TryAssignFallbackSpecial(NodeType type, EventData eventData)
+    {
+        if (type == NodeType.Event && eventData == null) return;
+
+        for (int i = 1; i < totalLayers - 1; i++)
+        {
+            List<MapNode> candidates = GetNodesInLayer(i).FindAll(n => n.nodeType == NodeType.NormalCombat);
+            if (candidates.Count == 0) continue;
+
+            MapNode node = candidates[Random.Range(0, candidates.Count)];
+            node.nodeType = type;
+            node.eventData = eventData;
+            Debug.Log("兜底生成了一个 " + type + " 节点。");
+            return;
         }
     }
 

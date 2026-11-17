@@ -61,7 +61,7 @@ public class UIManager : MonoBehaviour
             // --- 新增：寻找商店和事件面板 ---
             // 记得去 Unity 里给 Panel 设置 Tag！
             storePanel = GameObject.FindWithTag("UIPanel_Store");
-            eventPanel = GameObject.FindWithTag("UIPanel_Event");
+            eventPanel = FindEventPanel();
             if (inGameHUD != null)
             {
                 // transform.Find 是在子物体中按名字查找（注意名字要和 Hierarchy 里完全一致）
@@ -88,6 +88,18 @@ public class UIManager : MonoBehaviour
 
         GameObject healthTextGO = GameObject.FindWithTag("UI_HealthText");
         if (healthTextGO != null) healthText = healthTextGO.GetComponent<TextMeshProUGUI>();
+
+        // 场景里没有事件面板时，创建一个运行时兜底面板，保证事件节点可用
+        if (eventPanel == null && storePanel != null)
+        {
+            Canvas canvas = inGameHUD != null ? inGameHUD.GetComponentInParent<Canvas>() : null;
+            if (canvas != null)
+            {
+                eventPanel = RuntimeEventPanelBuilder.Build(canvas.transform);
+                eventPanel.tag = "UIPanel_Event";
+                Debug.Log("UIManager: 场景缺少 EventPanel，已创建运行时事件面板。");
+            }
+        }
         
         // 初始关闭所有不需要的面板
         if (storePanel) storePanel.SetActive(false);
@@ -96,6 +108,24 @@ public class UIManager : MonoBehaviour
         {
             UpdateMemoryUI(PlayerData.Instance.currentUsedMemoryMB, PlayerData.Instance.maxMemoryMB);
         }
+    }
+
+    private GameObject FindEventPanel()
+    {
+        GameObject taggedPanel = GameObject.FindWithTag("UIPanel_Event");
+        if (taggedPanel != null) return taggedPanel;
+
+        // 面板在加载时可能处于关闭状态，需要连未激活对象一起找
+        EventUI[] eventUIs = FindObjectsOfType<EventUI>(true);
+        foreach (EventUI eventUI in eventUIs)
+        {
+            if (eventUI != null && eventUI.gameObject.scene.IsValid())
+            {
+                return eventUI.gameObject;
+            }
+        }
+
+        return null;
     }
 
     public void UpdateHealthUI(int currentHealth, int maxHealth)
@@ -150,7 +180,7 @@ public class UIManager : MonoBehaviour
     }
 
     // --- 公共方法：打开商店 ---
-    public void OpenStorePanel(List<AbilityData> items)
+    public void OpenStorePanel(List<AbilityData> items, bool returnToMap = false)
     {
         if (storePanel == null) return;
 
@@ -158,21 +188,21 @@ public class UIManager : MonoBehaviour
         StoreUI storeUI = storePanel.GetComponent<StoreUI>();
         if (storeUI != null)
         {
-            storeUI.SetupStore(items);
+            storeUI.SetupStore(items, returnToMap);
         }
 
         GameManager.Instance.UpdateGameState(GameManager.GameState.InStore);
     }
 
     // --- 公共方法：打开事件 ---
-    public void OpenEventPanel(EventData data, EventInteractable source)
+    public void OpenEventPanel(EventData data, EventInteractable source, bool returnToMap = false)
     {
         if (eventPanel == null) return;
 
         EventUI eventUI = eventPanel.GetComponent<EventUI>();
         if (eventUI != null)
         {
-            eventUI.SetupEvent(data, source);
+            eventUI.SetupEvent(data, source, returnToMap);
         }
 
         GameManager.Instance.UpdateGameState(GameManager.GameState.InEvent);

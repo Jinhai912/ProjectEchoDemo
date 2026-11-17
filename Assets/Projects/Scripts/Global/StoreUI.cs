@@ -10,6 +10,8 @@ public class StoreUI : MonoBehaviour
     public GameObject itemButtonPrefab; // 商品按钮预制体
     public TextMeshProUGUI currencyText; // 显示当前金币
 
+    private bool returnToMapOnClose;
+
     // 定价策略 (暂定)
     private int GetPrice(AbilityData.AbilityTier tier)
     {
@@ -23,8 +25,10 @@ public class StoreUI : MonoBehaviour
         }
     }
 
-    public void SetupStore(List<AbilityData> items)
+    public void SetupStore(List<AbilityData> items, bool returnToMap = false)
     {
+        returnToMapOnClose = returnToMap;
+
         // 1. 清空旧商品
         foreach (Transform child in itemsContainer) Destroy(child.gameObject);
 
@@ -93,6 +97,13 @@ public class StoreUI : MonoBehaviour
     // 关闭按钮调用
     public void OnCloseButton()
     {
-        GameManager.Instance.ResumeGame(); // 恢复到 Playing 状态
+        if (returnToMapOnClose)
+        {
+            UIManager.Instance.ShowMapPanel();
+        }
+        else
+        {
+            GameManager.Instance.ResumeGame(); // 恢复到 Playing 状态
+        }
     }
 }

@@ -13,6 +13,7 @@ public class MapNode
     public List<int> childrenIndices = new List<int>();
 
     public EncounterData encounterData;
+    public EventData eventData;
 
     public MapNode(NodeType type, Vector2 pos)
     {

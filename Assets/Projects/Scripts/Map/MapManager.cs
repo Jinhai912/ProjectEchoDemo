@@ -16,9 +16,11 @@ public class MapManager : MonoBehaviour
     [Header("关卡数据池")]
     public List<EncounterData> normalCombatEncounters;
     public List<EncounterData> eliteCombatEncounters;
-    public List<EncounterData> storeEncounters; // (未来商店)
-    public List<EncounterData> eventEncounters; // (未来事件)
     public EncounterData bossEncounter; // Boss 通常是固定的
+
+    [Header("特殊节点池")]
+    [Tooltip("留空时会自动从 Resources/Events 加载全部 EventData")]
+    public List<EventData> eventPool = new List<EventData>();
 
     [Header("地图基础配置 (第一层)")] // 修改了 Header 名字，更清晰
     public int baseTotalLayers = 5;      // 基础层数
@@ -47,6 +49,21 @@ public class MapManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        LoadEventsIfNeeded();
+    }
+
+    private void LoadEventsIfNeeded()
+    {
+        if (eventPool == null) eventPool = new List<EventData>();
+        if (eventPool.Count > 0) return;
+
+        EventData[] loadedEvents = Resources.LoadAll<EventData>("Events");
+        if (loadedEvents != null && loadedEvents.Length > 0)
+        {
+            eventPool.AddRange(loadedEvents);
+            Debug.Log($"MapManager: 从 Resources/Events 加载了 {loadedEvents.Length} 个事件。");
+        }
     }
 
     /// <summary>
@@ -147,28 +164,18 @@ public class MapManager : MonoBehaviour
             }
             break; // 结束这个 case 的处理
 
-        // case NodeType.Event:
-        //     // 如果是事件类型
-            
-        //     // 1. 切换到事件状态，UIManager 会显示事件面板，游戏会暂停
-        //     GameManager.Instance.UpdateGameState(GameManager.GameState.InEvent);
-            
-        //     // 2. 命令 EventManager 触发这个事件
-        //     if (EventManager.Instance != null)
-        //     {
-        //         EventManager.Instance.TriggerEvent(nextNode.encounterData);
-        //     }
-        //     else
-        //     {
-        //         Debug.LogError("MapManager 找不到 EventManager 实例！");
-        //     }
-        //     break; // 结束这个 case 的处理
+        case NodeType.Store:
+            OpenStoreNode();
+            break;
 
-        // (未来可以添加)
-        // case NodeType.Store:
-        //     GameManager.Instance.UpdateGameState(GameManager.GameState.InStore);
-        //     // EventManager.Instance.TriggerStore(nextNode.encounterData);
-        //     break;
+        case NodeType.Event:
+            OpenEventNode(nextNode);
+            break;
+
+        case NodeType.RestSite:
+            Debug.LogWarning("休息点尚未实现，返回地图。");
+            UIManager.Instance.ShowMapPanel();
+            break;
 
         default:
             // 如果遇到未知的节点类型
@@ -177,6 +184,35 @@ public class MapManager : MonoBehaviour
             GameManager.Instance.UpdateGameState(GameManager.GameState.MapSelection);
             break;
     }
+    }
+
+    private void OpenStoreNode()
+    {
+        AbilityPool pool = LevelUpManager.Instance != null
+            ? LevelUpManager.Instance.abilityPool
+            : FindObjectOfType<AbilityPool>();
+
+        if (pool == null)
+        {
+            Debug.LogError("MapManager: 找不到 AbilityPool，无法打开商店节点。");
+            UIManager.Instance.ShowMapPanel();
+            return;
+        }
+
+        List<AbilityData> stock = pool.GetRandomAbilities(3);
+        UIManager.Instance.OpenStorePanel(stock, true);
+    }
+
+    private void OpenEventNode(MapNode node)
+    {
+        if (node.eventData == null)
+        {
+            Debug.LogError("MapManager: 事件节点没有绑定 EventData，返回地图。");
+            UIManager.Instance.ShowMapPanel();
+            return;
+        }
+
+        UIManager.Instance.OpenEventPanel(node.eventData, null, true);
     }
 
     private void UpdateNodeStates()
