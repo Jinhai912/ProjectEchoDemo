@@ -304,3 +304,19 @@
 - **验证**:
   - Unity 编译 0 errors。
   - Windows 构建数据的 `Assembly-CSharp.dll` / `globalgamemanagers` 时间更新到 17:47。
+
+### #25 里程碑 3：商店/升级/事件的硬件获取与替换
+
+- **状态**: 已实现并验证
+- **修改**:
+  - 新增 `RewardChoice`，统一能力/硬件的展示、内存标签、价格和品质色。
+  - 新增 `HardwarePool`（核心/枪管/散热），挂在 GameManager；创建 2 个核心炉资产（标准/装甲）。
+  - `LevelUpManager` 三选一可混合能力与硬件（`hardwareChance=0.35`）；`AbilityCardUI` 支持 `DisplayChoice`，硬件卡用金色强调。
+  - `StoreInteractable` 库存混合能力/硬件（`hardwareChance=0.35`），跳过已装备/重复硬件；`StoreUI` 支持硬件购买与装备，装备失败退款。
+  - `EventData.EventOption` 新增 `rewardHardware`，`EventUI` 支持装备硬件。
+  - `PlayerData` 新增 `EquipHardware` / `IsHardwareEquipped`；核心换装会夹紧生命并刷新 HUD。
+- **验证**:
+  - Unity 编译 0 errors。
+  - `hardwarePool` 正确指向 GameManager，三组列表已序列化到 MainMenu。
+  - 升级三选一（临时硬件概率 1）出现长枪管/装甲核心炉 + 能力卡混排；点击长枪管后 `currentBarrel=HW_B_Rail`，伤害 25 / 射速 0.8 / 穿透 2，面板回到 Playing。
+  - 商店库存/购买路径编译通过，待游玩商店确认。

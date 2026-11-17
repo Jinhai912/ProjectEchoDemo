@@ -20,7 +20,7 @@ public class AbilityCardUI : MonoBehaviour
     public Button selectButton;
     #endregion
 
-    private AbilityData _assignedAbility;
+    private RewardChoice _assignedChoice;
 
     /// <summary>
     /// 填充并显示能力卡片信息
@@ -28,22 +28,34 @@ public class AbilityCardUI : MonoBehaviour
     /// <param name="ability">目标能力数据</param>
     public void DisplayAbility(AbilityData ability)
     {
-        _assignedAbility = ability;
-        
-        // 文本填充
-        nameText.text = ability.abilityName;
-        descriptionText.text = ability.description;
-        
-        // 内存占用显示逻辑
+        DisplayChoice(RewardChoice.FromAbility(ability));
+    }
+
+    /// <summary>
+    /// 填充并显示统一奖励卡片（能力或硬件）。
+    /// </summary>
+    public void DisplayChoice(RewardChoice choice)
+    {
+        _assignedChoice = choice;
+
+        nameText.text = choice.DisplayName;
+        descriptionText.text = choice.Description;
+
         if (memoryCostText != null)
         {
-            memoryCostText.text = ability.isMemoryBound ? $"{ability.memoryCost} MB" : "FIRMWARE";
-            memoryCostText.color = ability.isMemoryBound ? Color.white : Color.green;
+            memoryCostText.text = choice.MemoryLabel;
+            memoryCostText.color = choice.IsHardware
+                ? new Color(1f, 0.78f, 0.25f)
+                : (choice.ability != null && choice.ability.isMemoryBound ? Color.white : Color.green);
         }
 
-        // 图标与品质表现
-        if (iconImage != null && ability.icon != null) iconImage.sprite = ability.icon;
-        // if (frameImage != null) frameImage.color = GetTierColor(ability.tier);
+        if (iconImage != null)
+        {
+            iconImage.sprite = choice.Icon;
+            iconImage.enabled = choice.Icon != null;
+        }
+
+        if (frameImage != null) frameImage.color = choice.AccentColor;
 
         // 按钮事件重新绑定
         selectButton.onClick.RemoveAllListeners();
@@ -55,12 +67,12 @@ public class AbilityCardUI : MonoBehaviour
     /// </summary>
     private void OnCardSelected()
     {
-        if (_assignedAbility == null) return;
+        if (_assignedChoice.ability == null && _assignedChoice.hardware == null) return;
 
         if (LevelUpManager.Instance != null)
         {
-            Debug.Log($"[UI] 已选择协议: {_assignedAbility.abilityName}");
-            LevelUpManager.Instance.SelectAbility(_assignedAbility);
+            Debug.Log($"[UI] 已选择: {_assignedChoice.DisplayName}");
+            LevelUpManager.Instance.SelectChoice(_assignedChoice);
         }
     }
 }

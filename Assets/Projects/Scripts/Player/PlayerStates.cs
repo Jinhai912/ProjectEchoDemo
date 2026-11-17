@@ -39,6 +39,12 @@ public class PlayerStates : MonoBehaviour
 
     #region 公共接口 (作为外部与 PlayerData 沟通的桥梁)
 
+    public static void NotifyHealthChanged()
+    {
+        if (PlayerData.Instance == null) return;
+        OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.MaxHealth);
+    }
+
     /// <summary>
     /// 玩家承受伤害。
     /// </summary>

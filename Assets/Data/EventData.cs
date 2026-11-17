@@ -44,6 +44,9 @@ public class EventData : ScriptableObject
         [Tooltip("给予玩家的协议卡牌或数值奖励")]
         public AbilityData rewardAbility; 
 
+        [Tooltip("给予玩家的硬件奖励（核心炉/枪管/散热器）")]
+        public HardwareData rewardHardware;
+
         [Tooltip("选择该项需支付或损失的生命值 (正数为扣除)")]
         public int healthCost = 0; 
     }

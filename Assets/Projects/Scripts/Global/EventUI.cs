@@ -102,6 +102,14 @@ public class EventUI : MonoBehaviour
             Debug.Log("获得事件奖励: " + option.rewardAbility.abilityName);
         }
 
+        if (option.rewardHardware != null && PlayerData.Instance != null)
+        {
+            bool equipped = PlayerData.Instance.EquipHardware(option.rewardHardware);
+            Debug.Log(equipped
+                ? "获得事件硬件: " + option.rewardHardware.DisplayName
+                : "事件硬件已装备或无效: " + option.rewardHardware.DisplayName);
+        }
+
         // 处理代价 (如扣血)
         if (option.healthCost > 0)
         {

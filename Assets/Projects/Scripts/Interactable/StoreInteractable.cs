@@ -6,8 +6,9 @@ public class StoreInteractable : MonoBehaviour, IInteractable
     [Header("商店配置")]
     public List<AbilityData> fixedItems; // 固定商品（可选）
     public int randomItemCount = 3;      // 随机商品数量
+    [Range(0f, 1f)] public float hardwareChance = 0.35f;
 
-    private List<AbilityData> currentStock = new List<AbilityData>();
+    private List<RewardChoice> currentStock = new List<RewardChoice>();
     private bool isStockGenerated = false;
 
     private void OnEnable()
@@ -28,17 +29,52 @@ public class StoreInteractable : MonoBehaviour, IInteractable
 
     private void GenerateStock()
     {
-        // 这里需要引用你的 AbilityPool 来随机进货
-        // 假设你有一个单例或者可以找到 AbilityPool
-        AbilityPool pool = FindObjectOfType<AbilityPool>(); 
-        if (pool != null)
+        currentStock.Clear();
+
+        AbilityPool abilityPool = FindObjectOfType<AbilityPool>();
+        HardwarePool hardwarePool = LevelUpManager.Instance != null
+            ? LevelUpManager.Instance.hardwarePool
+            : FindObjectOfType<HardwarePool>();
+
+        int target = Mathf.Max(0, randomItemCount);
+        int attempts = 0;
+        int maxAttempts = Mathf.Max(1, target * 20);
+
+        while (currentStock.Count < target && attempts < maxAttempts)
         {
-            currentStock = pool.GetRandomAbilities(randomItemCount);
+            attempts++;
+
+            if (hardwarePool != null && Random.value < hardwareChance)
+            {
+                HardwareData hardware = hardwarePool.GetRandomHardware();
+                bool equipped = PlayerData.Instance != null && PlayerData.Instance.IsHardwareEquipped(hardware);
+                bool duplicate = currentStock.Exists(choice => choice.hardware == hardware);
+
+                if (hardware != null && !equipped && !duplicate)
+                {
+                    currentStock.Add(RewardChoice.FromHardware(hardware));
+                    continue;
+                }
+            }
+
+            if (abilityPool != null)
+            {
+                List<AbilityData> abilities = abilityPool.GetRandomAbilities(1);
+                if (abilities.Count > 0)
+                {
+                    currentStock.Add(RewardChoice.FromAbility(abilities[0]));
+                }
+            }
         }
-        
-        // 把固定商品也加进去
-        if (fixedItems != null) currentStock.AddRange(fixedItems);
-        
+
+        if (fixedItems != null)
+        {
+            foreach (var ability in fixedItems)
+            {
+                if (ability != null) currentStock.Add(RewardChoice.FromAbility(ability));
+            }
+        }
+
         isStockGenerated = true;
     }
 }

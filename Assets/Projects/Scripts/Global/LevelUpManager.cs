@@ -10,6 +10,8 @@ public class LevelUpManager : MonoBehaviour
 
     [Header("组件引用")]
     public AbilityPool abilityPool;
+    public HardwarePool hardwarePool;
+    [Range(0f, 1f)] public float hardwareChance = 0.35f;
 
     // --- UI 引用 ---
     private GameObject levelUpPanel; 
@@ -25,6 +27,7 @@ public class LevelUpManager : MonoBehaviour
         Instance = this;
         SceneManager.sceneLoaded += OnSceneLoaded;
         if (abilityPool == null) abilityPool = GetComponent<AbilityPool>();
+        if (hardwarePool == null) hardwarePool = GetComponent<HardwarePool>();
     }
 
     void OnDestroy()
@@ -118,14 +121,14 @@ public class LevelUpManager : MonoBehaviour
             levelUpPanel.SetActive(true);
         }
 
-        // 2. 抽取能力并更新卡片 (这部分逻辑不变)
-        List<AbilityData> chosenAbilities = abilityPool.GetRandomAbilities(3);
+        // 2. 抽取能力/硬件并更新卡片
+        List<RewardChoice> chosenChoices = BuildChoices(3);
         for (int i = 0; i < abilityCards.Count; i++)
         {
-            if (i < chosenAbilities.Count)
+            if (i < chosenChoices.Count)
             {
                 abilityCards[i].gameObject.SetActive(true);
-                abilityCards[i].DisplayAbility(chosenAbilities[i]);
+                abilityCards[i].DisplayChoice(chosenChoices[i]);
             }
             else
             {
@@ -136,7 +139,74 @@ public class LevelUpManager : MonoBehaviour
         // 3. 无论 UIManager 是否持有引用，都确保升级面板可见
         levelUpPanel.SetActive(true);
 
-        Debug.Log($"LevelUpManager 已显示升级选项，共 {chosenAbilities.Count} 张卡。");
+        Debug.Log($"LevelUpManager 已显示升级选项，共 {chosenChoices.Count} 张卡。");
+    }
+
+    private List<RewardChoice> BuildChoices(int count)
+    {
+        List<RewardChoice> result = new List<RewardChoice>();
+        HashSet<AbilityData> usedAbilities = new HashSet<AbilityData>();
+        HashSet<HardwareData> usedHardware = new HashSet<HardwareData>();
+
+        int attempts = 0;
+        int maxAttempts = Mathf.Max(1, count * 20);
+
+        while (result.Count < count && attempts < maxAttempts)
+        {
+            attempts++;
+
+            if (hardwarePool != null && Random.value < hardwareChance)
+            {
+                HardwareData hardware = hardwarePool.GetRandomHardware();
+                bool equipped = PlayerData.Instance != null && PlayerData.Instance.IsHardwareEquipped(hardware);
+                if (hardware != null && !equipped && usedHardware.Add(hardware))
+                {
+                    result.Add(RewardChoice.FromHardware(hardware));
+                    continue;
+                }
+            }
+
+            List<AbilityData> abilities = abilityPool.GetRandomAbilities(1);
+            if (abilities.Count > 0 && usedAbilities.Add(abilities[0]))
+            {
+                result.Add(RewardChoice.FromAbility(abilities[0]));
+            }
+        }
+
+        if (result.Count < count)
+        {
+            List<AbilityData> fill = abilityPool.GetRandomAbilities(count - result.Count);
+            foreach (var ability in fill)
+            {
+                if (usedAbilities.Add(ability)) result.Add(RewardChoice.FromAbility(ability));
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 选择统一奖励（能力或硬件）。
+    /// </summary>
+    public void SelectChoice(RewardChoice choice)
+    {
+        if (choice.IsHardware)
+        {
+            if (PlayerData.Instance != null)
+            {
+                bool equipped = PlayerData.Instance.EquipHardware(choice.hardware);
+                Debug.Log(equipped
+                    ? $"获得硬件: {choice.DisplayName}"
+                    : $"硬件已装备或无效: {choice.DisplayName}");
+            }
+        }
+        else if (choice.ability != null && player != null)
+        {
+            player.GetComponent<PlayerStates>()?.ApplyAbility(choice.ability);
+            Debug.Log($"获得协议: {choice.DisplayName}");
+        }
+
+        CloseLevelUpPanel();
     }
 
     /// <summary>
@@ -144,12 +214,11 @@ public class LevelUpManager : MonoBehaviour
     /// </summary>
     public void SelectAbility(AbilityData selectedAbility)
     {
-        // 应用能力 (逻辑不变)
-        if (player != null)
-        {
-            player.GetComponent<PlayerStates>()?.ApplyAbility(selectedAbility);
-        }
+        SelectChoice(RewardChoice.FromAbility(selectedAbility));
+    }
 
+    private void CloseLevelUpPanel()
+    {
         // 1. 先隐藏自己持有的面板，避免 UIManager 没拿到引用时面板残留
         if (levelUpPanel != null) levelUpPanel.SetActive(false);
 

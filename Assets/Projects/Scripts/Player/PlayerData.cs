@@ -146,8 +146,10 @@ public class PlayerData : MonoBehaviour
     {
         if (newCore == null) return;
         currentCore = newCore;
+        if (currentHealth > MaxHealth) currentHealth = MaxHealth;
         // 核心更换后，内存上限变了，必须通知UI
         OnMemoryChanged?.Invoke(currentUsedMemoryMB, maxMemoryMB);
+        PlayerStates.NotifyHealthChanged();
         Debug.Log($"<color=gold>[硬件] 核心炉已更新: {newCore.hardwareName}</color>");
     }
 
@@ -164,6 +166,38 @@ public class PlayerData : MonoBehaviour
         currentHeatSink = newHeatSink;
         ResetHeat();
         Debug.Log($"<color=cyan>[硬件] 散热器已更新: {newHeatSink.hardwareName}</color>");
+    }
+
+    public bool EquipHardware(HardwareData hardware)
+    {
+        if (hardware == null) return false;
+
+        switch (hardware)
+        {
+            case HardwareCoreSO core:
+                if (currentCore == core) return false;
+                EquipCore(core);
+                return true;
+
+            case HardwareBarrelSO barrel:
+                if (currentBarrel == barrel) return false;
+                EquipBarrel(barrel);
+                return true;
+
+            case HardwareHeatSinkSO heatSink:
+                if (currentHeatSink == heatSink) return false;
+                EquipHeatSink(heatSink);
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    public bool IsHardwareEquipped(HardwareData hardware)
+    {
+        if (hardware == null) return false;
+        return hardware == currentCore || hardware == currentBarrel || hardware == currentHeatSink;
     }
 
     public void AddHeat(float amount)

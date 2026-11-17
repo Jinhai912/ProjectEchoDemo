@@ -12,20 +12,7 @@ public class StoreUI : MonoBehaviour
 
     private bool returnToMapOnClose;
 
-    // 定价策略 (暂定)
-    private int GetPrice(AbilityData.AbilityTier tier)
-    {
-        switch (tier)
-        {
-            case AbilityData.AbilityTier.L1_Micro: return 50;   // 白卡
-            case AbilityData.AbilityTier.L2_Driver: return 100; // 蓝卡
-            case AbilityData.AbilityTier.L3_Logic: return 200;  // 紫卡
-            case AbilityData.AbilityTier.L4_Core: return 500;   // 红卡 
-            default: return 50;
-        }
-    }
-
-    public void SetupStore(List<AbilityData> items, bool returnToMap = false)
+    public void SetupStore(List<RewardChoice> items, bool returnToMap = false)
     {
         returnToMapOnClose = returnToMap;
 
@@ -44,9 +31,9 @@ public class StoreUI : MonoBehaviour
         UpdateCurrencyUI();
 
         // 3. 生成新商品
-        foreach (var ability in items)
+        foreach (var choice in items)
         {
-            if (ability == null) continue;
+            if (choice.ability == null && choice.hardware == null) continue;
 
             GameObject btnObj = Instantiate(itemButtonPrefab, itemsContainer);
             btnObj.SetActive(true);
@@ -60,15 +47,19 @@ public class StoreUI : MonoBehaviour
             TextMeshProUGUI nameText = nameTransform != null ? nameTransform.GetComponent<TextMeshProUGUI>() : null;
             TextMeshProUGUI priceText = priceTransform != null ? priceTransform.GetComponent<TextMeshProUGUI>() : null;
 
-            int price = GetPrice(ability.tier);
+            int price = choice.Price;
 
-            if (nameText) nameText.text = ability.abilityName;
+            if (nameText)
+            {
+                nameText.text = choice.DisplayName;
+                nameText.color = choice.AccentColor;
+            }
             if (priceText) priceText.text = "$" + price;
 
             // 4. 绑定购买点击事件
             if (btn != null)
             {
-                btn.onClick.AddListener(() => TryBuyItem(ability, price, btnObj));
+                btn.onClick.AddListener(() => TryBuyItem(choice, price, btnObj));
             }
         }
     }
@@ -201,16 +192,35 @@ public class StoreUI : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 
-    private void TryBuyItem(AbilityData ability, int price, GameObject buttonObj)
+    private void TryBuyItem(RewardChoice choice, int price, GameObject buttonObj)
     {
         if (PlayerData.Instance != null)
         {
+            if (choice.IsHardware && PlayerData.Instance.IsHardwareEquipped(choice.hardware))
+            {
+                Debug.Log("该硬件已经装备。");
+                return;
+            }
+
             if (PlayerData.Instance.TrySpendCurrency(price))
             {
-                // 扣钱成功，获得能力
-                // 注意：这里需要通过 PlayerStates 或 PlayerData 应用能力
-                // 既然 PlayerData 是单例，直接用它
-                PlayerData.Instance.ApplyAbility(ability);
+                bool applied = true;
+
+                if (choice.IsHardware)
+                {
+                    applied = PlayerData.Instance.EquipHardware(choice.hardware);
+                }
+                else
+                {
+                    PlayerData.Instance.ApplyAbility(choice.ability);
+                }
+
+                if (!applied)
+                {
+                    PlayerData.Instance.AddCurrency(price); // 装备失败退款
+                    Debug.Log("硬件装备失败，已退款。");
+                    return;
+                }
                 
                 // 播放音效? UpdateCurrencyUI();
                 UpdateCurrencyUI();

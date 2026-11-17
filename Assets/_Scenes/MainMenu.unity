@@ -1909,6 +1909,7 @@ GameObject:
   - component: {fileID: 1162134991}
   - component: {fileID: 1162134992}
   - component: {fileID: 1162134993}
+  - component: {fileID: 1162134994}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2003,6 +2004,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   abilityPool: {fileID: 1162134989}
+  hardwarePool: {fileID: 0}
+  hardwareChance: 0.35
 --- !u!114 &1162134989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2135,6 +2138,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c7e270157d2a1f459097b875507f10f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1162134994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162134982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b9ea5e8a9c5114479b1a10b99e6ceb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cores:
+  - {fileID: 11400000, guid: a918299576a18ab409a78fe0192553b2, type: 2}
+  - {fileID: 11400000, guid: 69598cd9135df1b46ac1eb6944878b64, type: 2}
+  barrels:
+  - {fileID: 11400000, guid: 58d74dc0a04eb304f959171560d3826d, type: 2}
+  - {fileID: 11400000, guid: 843e2cd62a54a3f4d8c774753cfef9a0, type: 2}
+  - {fileID: 11400000, guid: 64736f57a95b0ab4bb6228084e662dcf, type: 2}
+  heatSinks:
+  - {fileID: 11400000, guid: cabcc1d9c23e4aa48b0dc177fbf9de4f, type: 2}
+  - {fileID: 11400000, guid: 622c651d369ff4548a7711c1e2c99840, type: 2}
+  - {fileID: 11400000, guid: 9fa1b8f34c427824e8e8a60044b6a953, type: 2}
 --- !u!1 &1245343403
 GameObject:
   m_ObjectHideFlags: 0

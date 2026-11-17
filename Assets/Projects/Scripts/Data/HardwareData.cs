@@ -18,4 +18,22 @@ public abstract class HardwareData : ScriptableObject
 {
     public abstract HardwareSlot Slot { get; }
     public abstract string DisplayName { get; }
+    public abstract string Description { get; }
+    public abstract Sprite Icon { get; }
+
+    public virtual int Price => Slot switch
+    {
+        HardwareSlot.Core => 300,
+        HardwareSlot.Barrel => 200,
+        HardwareSlot.HeatSink => 150,
+        _ => 100
+    };
+
+    public virtual string SlotLabel => Slot switch
+    {
+        HardwareSlot.Core => "CORE",
+        HardwareSlot.Barrel => "BARREL",
+        HardwareSlot.HeatSink => "HEAT SINK",
+        _ => "HARDWARE"
+    };
 }

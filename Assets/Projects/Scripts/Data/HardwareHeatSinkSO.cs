@@ -38,4 +38,6 @@ public class HardwareHeatSinkSO : HardwareData
 
     public override HardwareSlot Slot => HardwareSlot.HeatSink;
     public override string DisplayName => hardwareName;
+    public override string Description => description;
+    public override Sprite Icon => icon;
 }

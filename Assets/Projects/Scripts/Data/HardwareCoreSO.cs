@@ -35,4 +35,6 @@ public class HardwareCoreSO : HardwareData
 
     public override HardwareSlot Slot => HardwareSlot.Core;
     public override string DisplayName => hardwareName;
+    public override string Description => description;
+    public override Sprite Icon => icon;
 }

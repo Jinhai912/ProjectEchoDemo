@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c84fb39ed3958845a5c46ab9413156f, type: 3}
+  m_Name: HW_C_Armored
+  m_EditorClassIdentifier: 
+  hardwareID: HW_C_002
+  hardwareName: "\u88C5\u7532\u6838\u5FC3\u7089"
+  description: "\u727A\u7272\u90E8\u5206\u5185\u5B58\u6362\u53D6\u66F4\u9AD8\u751F\u547D\u3002"
+  icon: {fileID: 0}
+  memoryCapacity: 768
+  healthBonus: 50
+  energyRegen: 8

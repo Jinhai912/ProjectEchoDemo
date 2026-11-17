@@ -322,7 +322,7 @@ public class UIManager : MonoBehaviour
     }
 
     // --- 公共方法：打开商店 ---
-    public void OpenStorePanel(List<AbilityData> items, bool returnToMap = false)
+    public void OpenStorePanel(List<RewardChoice> items, bool returnToMap = false)
     {
         if (storePanel == null)
         {
