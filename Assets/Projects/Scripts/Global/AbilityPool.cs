@@ -30,6 +30,8 @@ public class AbilityPool : MonoBehaviour
         _whitePool.Clear(); _bluePool.Clear(); _purplePool.Clear(); _redPool.Clear();
         foreach (var ability in allAbilities)
         {
+            if (ability == null) continue;
+
             switch (ability.tier)
             {
                 case AbilityData.AbilityTier.L1_Micro: _whitePool.Add(ability); break;
@@ -42,12 +44,16 @@ public class AbilityPool : MonoBehaviour
 
     /// <summary>
     /// 执行基于概率的加权随机抽取
+    /// 保证不会因为重复抽取而陷入死循环，并在能力总数不足时提前结束。
     /// </summary>
     public List<AbilityData> GetRandomAbilities(int count)
     {
         List<AbilityData> result = new List<AbilityData>();
-        
-        for (int i = 0; i < count; i++)
+        if (count <= 0) return result;
+
+        List<AbilityData>[] pools = { _whitePool, _bluePool, _purplePool, _redPool };
+
+        while (result.Count < count)
         {
             // 设定出货率：白(60%)、蓝(25%)、紫(10%)、红(5%)
             int roll = Random.Range(0, 100);
@@ -58,16 +64,47 @@ public class AbilityPool : MonoBehaviour
                 _ => _redPool
             };
 
-            // 池子回退逻辑（防止某种品质能力被抽干）
-            if (targetPool.Count == 0) targetPool = _whitePool;
-            
-            if (targetPool.Count > 0)
+            AbilityData selected = PickUnused(targetPool, result);
+
+            // 目标品质已经被抽干，就按品质顺序回退到其他还有存货的池子
+            if (selected == null)
             {
-                AbilityData selected = targetPool[Random.Range(0, targetPool.Count)];
-                if (!result.Contains(selected)) result.Add(selected);
-                else i--; // 简单防重抽
+                foreach (var pool in pools)
+                {
+                    selected = PickUnused(pool, result);
+                    if (selected != null) break;
+                }
             }
+
+            if (selected == null) break; // 所有池子都抽空，提前结束
+
+            result.Add(selected);
         }
+
         return result;
+    }
+
+    /// <summary>
+    /// 从指定池中随机取一个尚未被选中的能力；没有可用项时返回 null。
+    /// </summary>
+    private static AbilityData PickUnused(List<AbilityData> pool, List<AbilityData> used)
+    {
+        int availableCount = 0;
+        foreach (var ability in pool)
+        {
+            if (ability != null && !used.Contains(ability)) availableCount++;
+        }
+
+        if (availableCount == 0) return null;
+
+        int pickIndex = Random.Range(0, availableCount);
+        foreach (var ability in pool)
+        {
+            if (ability == null || used.Contains(ability)) continue;
+            if (pickIndex == 0) return ability;
+            pickIndex--;
+        }
+
+        return null;
     }
 }
