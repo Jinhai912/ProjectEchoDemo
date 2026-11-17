@@ -17,6 +17,8 @@ public class LevelUpManager : MonoBehaviour
     
     private Transform player;
 
+    public GameObject Panel => levelUpPanel;
+
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -49,15 +51,42 @@ public class LevelUpManager : MonoBehaviour
     private void FindLevelUpUI()
     {
         GameObject panelGO = GameObject.FindWithTag("UIPanel_LevelUp");
-        if (panelGO != null)
+
+        // 面板在场景加载过程中可能已经被隐藏，FindWithTag 找不到未激活对象
+        if (panelGO == null)
         {
-            levelUpPanel = panelGO;
-            abilityCards.Clear();
-            abilityCards.AddRange(levelUpPanel.GetComponentsInChildren<AbilityCardUI>(true)); // true: 包括非激活的子对象
-            
-            // 找到后，就立刻隐藏它，自己管理自己
-            levelUpPanel.SetActive(false); 
+            AbilityCardUI[] cards = FindObjectsOfType<AbilityCardUI>(true);
+            foreach (AbilityCardUI card in cards)
+            {
+                if (card == null || !card.gameObject.scene.IsValid()) continue;
+
+                Transform current = card.transform;
+                while (current != null)
+                {
+                    if (current.CompareTag("UIPanel_LevelUp"))
+                    {
+                        panelGO = current.gameObject;
+                        break;
+                    }
+                    current = current.parent;
+                }
+
+                if (panelGO != null) break;
+            }
         }
+
+        if (panelGO == null)
+        {
+            Debug.LogError("LevelUpManager: 找不到 UIPanel_LevelUp！");
+            return;
+        }
+
+        levelUpPanel = panelGO;
+        abilityCards.Clear();
+        abilityCards.AddRange(levelUpPanel.GetComponentsInChildren<AbilityCardUI>(true)); // true: 包括非激活的子对象
+
+        // 找到后，就立刻隐藏它，自己管理自己
+        levelUpPanel.SetActive(false);
     }
 
     /// <summary>
@@ -104,10 +133,10 @@ public class LevelUpManager : MonoBehaviour
             }
         }
 
-        // 3. 兜底：没有 GameManager 时仍然确保面板可见
-        if (GameManager.Instance == null) levelUpPanel.SetActive(true);
+        // 3. 无论 UIManager 是否持有引用，都确保升级面板可见
+        levelUpPanel.SetActive(true);
 
-        Debug.Log("LevelUpManager 已显示升级选项。");
+        Debug.Log($"LevelUpManager 已显示升级选项，共 {chosenAbilities.Count} 张卡。");
     }
 
     /// <summary>
@@ -121,14 +150,16 @@ public class LevelUpManager : MonoBehaviour
             player.GetComponent<PlayerStates>()?.ApplyAbility(selectedAbility);
         }
 
-        // 1. 回到游戏状态，由 GameManager 统一恢复 timeScale 并隐藏面板
+        // 1. 先隐藏自己持有的面板，避免 UIManager 没拿到引用时面板残留
+        if (levelUpPanel != null) levelUpPanel.SetActive(false);
+
+        // 2. 回到游戏状态，由 GameManager 统一恢复 timeScale 和 HUD
         if (GameManager.Instance != null)
         {
             GameManager.Instance.UpdateGameState(GameManager.GameState.Playing);
         }
         else
         {
-            if (levelUpPanel != null) levelUpPanel.SetActive(false);
             Time.timeScale = 1f;
         }
 

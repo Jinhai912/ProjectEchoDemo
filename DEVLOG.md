@@ -94,3 +94,20 @@
   - Play Mode 启动 `MainFightScene` 后，`Canvas/EventPanel` 自动创建并带 `UIPanel_Event` 标签。
   - Console 显示 `MapManager: 从 Resources/Events 加载了 1 个事件。`
   - 完整节点点击、商店购买、事件选项流程待手动游玩验证。
+
+### #7 回归修复：升级选项不显示导致卡关
+
+- **状态**: 已修复，Unity 编译与场景引用验证通过，待游玩确认
+- **文件**:
+  - `Assets/Projects/Scripts/Global/LevelUpManager.cs`
+  - `Assets/Projects/Scripts/Global/UIManager.cs`
+- **问题**: `LevelUpPanel` 在场景中初始为激活，`LevelUpManager` 找到后立即隐藏。之后 `UIManager` / `LevelUpManager` 再用 `GameObject.FindWithTag` 查找时，未激活对象找不到，引用变成 `null`。升级时 `UIManager` 没有面板引用，`LevelUpManager` 又只在 `GameManager == null` 时激活面板，导致面板不显示、`timeScale = 0` 卡住。
+- **修改**:
+  - `LevelUpManager` 增加 `Panel` 属性，并通过 `AbilityCardUI` 反向查找面板，即使面板已隐藏也能拿到引用。
+  - `ShowLevelUpOptions` 结尾无条件 `levelUpPanel.SetActive(true)`。
+  - `SelectAbility` 先无条件隐藏面板，再切回 `Playing`。
+  - `UIManager` 优先使用 `LevelUpManager.Panel`，并用卡片反向查找兜底。
+- **验证**:
+  - Unity 编译通过（0 errors）。
+  - Play Mode 启动战斗场景后，`LevelUpManager.Panel` 指向 `LevelUpPanel`，三张 `AbilityCard` 均存在，Console 0 errors。
+  - 实际升级三选一待游玩确认。

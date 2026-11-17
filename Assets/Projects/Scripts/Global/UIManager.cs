@@ -56,7 +56,7 @@ public class UIManager : MonoBehaviour
             gameOverPanel = GameObject.FindWithTag("UIPanel_GameOver");
             inGameHUD = GameObject.FindWithTag("UIPanel_HUD");
             mapPanel = GameObject.FindWithTag("UIPanel_Map");
-            levelUpPanel = GameObject.FindWithTag("UIPanel_LevelUp");
+            levelUpPanel = FindLevelUpPanel();
             
             // --- 新增：寻找商店和事件面板 ---
             // 记得去 Unity 里给 Panel 设置 Tag！
@@ -122,6 +122,35 @@ public class UIManager : MonoBehaviour
             if (eventUI != null && eventUI.gameObject.scene.IsValid())
             {
                 return eventUI.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private GameObject FindLevelUpPanel()
+    {
+        GameObject taggedPanel = GameObject.FindWithTag("UIPanel_LevelUp");
+        if (taggedPanel != null) return taggedPanel;
+
+        if (LevelUpManager.Instance != null && LevelUpManager.Instance.Panel != null)
+        {
+            return LevelUpManager.Instance.Panel;
+        }
+
+        AbilityCardUI[] cards = FindObjectsOfType<AbilityCardUI>(true);
+        foreach (AbilityCardUI card in cards)
+        {
+            if (card == null || !card.gameObject.scene.IsValid()) continue;
+
+            Transform current = card.transform;
+            while (current != null)
+            {
+                if (current.CompareTag("UIPanel_LevelUp"))
+                {
+                    return current.gameObject;
+                }
+                current = current.parent;
             }
         }
 
