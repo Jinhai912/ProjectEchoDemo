@@ -46,7 +46,12 @@ public class EventUI : MonoBehaviour
             Debug.Log("获得事件奖励: " + option.rewardAbility.abilityName);
         }
 
-        // 处理代价 (如扣血) - 暂略
+        // 处理代价 (如扣血)
+        if (option.healthCost > 0)
+        {
+            PlayerStates.ApplyHealthCost(option.healthCost);
+            Debug.Log($"事件代价: 生命值 -{option.healthCost}");
+        }
 
         // 显示结果文本 (简单起见，这里直接关闭，你可以改成显示一页结果再关闭)
         CloseEvent();
@@ -58,6 +63,10 @@ public class EventUI : MonoBehaviour
         {
             currentSource.OnEventCompleted(); // 告诉物体事件做完了
         }
+
+        // 如果事件代价导致死亡，GameManager 已经切到 GameOver，不要再恢复 Playing
+        if (PlayerData.Instance != null && PlayerData.Instance.currentHealth <= 0) return;
+
         GameManager.Instance.ResumeGame(); // 恢复游戏
     }
 }

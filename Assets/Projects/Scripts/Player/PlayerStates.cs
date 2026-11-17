@@ -66,6 +66,23 @@ public class PlayerStates : MonoBehaviour
     }
 
     /// <summary>
+    /// 直接扣除生命值（不经过防御减免），用于事件选择等非战斗代价。
+    /// </summary>
+    public static void ApplyHealthCost(int amount)
+    {
+        if (PlayerData.Instance == null || amount <= 0) return;
+        if (PlayerData.Instance.currentHealth <= 0) return;
+
+        PlayerData.Instance.currentHealth = Mathf.Max(0, PlayerData.Instance.currentHealth - amount);
+        OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.MaxHealth);
+
+        if (PlayerData.Instance.currentHealth <= 0)
+        {
+            OnPlayerDied?.Invoke();
+        }
+    }
+
+    /// <summary>
     /// 计算将要造成的伤害。
     /// </summary>
     public float CalculateFinalDamage(out bool isCritical)

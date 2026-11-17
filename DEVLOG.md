@@ -57,3 +57,16 @@
 - **修改**: 删除这两个方法及无用 using。地图绘制统一走 `UIManager.ShowMapPanel → MapManager.PrepareAndDrawMap` 的现有路径。
 - **验证**: Unity 编译通过（0 errors）。删除的路径本来就不会执行，因此行为不变。
 - **备注**: 如果后续发现地图面板刚打开时节点挤在一起，需要单独处理“等待一帧布局完成”的问题，而不是恢复这段死代码。
+
+### #5 事件选项 healthCost 未生效
+
+- **状态**: 已修复，Unity 编译通过，待运行验证
+- **文件**:
+  - `Assets/Projects/Scripts/Player/PlayerStates.cs`
+  - `Assets/Projects/Scripts/Global/EventUI.cs`
+- **问题**: `EventData.EventOption.healthCost` 只有配置和注释，选择选项时从未扣除生命值；如果代价致死，`CloseEvent` 还会把状态恢复成 `Playing`，覆盖 `GameOver`。
+- **修改**:
+  - 新增 `PlayerStates.ApplyHealthCost(int)`：直接扣血、不走防御减免，并统一广播血量变化/死亡事件。
+  - `EventUI.SelectOption` 在 `healthCost > 0` 时调用。
+  - `EventUI.CloseEvent` 在玩家已死亡时不再调用 `ResumeGame`。
+- **验证**: Unity 编译通过（0 errors），运行验证待完成。
