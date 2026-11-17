@@ -1,8 +1,6 @@
 // MapManager.cs (最终的、逻辑清晰的正确版本)
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MapManager : MonoBehaviour
@@ -49,16 +47,6 @@ public class MapManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-    }
-
-
-    // 4. 每次场景加载后，都会自动调用这个方法
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (scene.name == "MainFightScene")
-        {
-            StartCoroutine(PrepareAndDrawMapRoutine());
-        }
     }
 
     /// <summary>
@@ -246,43 +234,4 @@ public class MapManager : MonoBehaviour
         }
         return layerNodes;
     }
-    
-    // --- 核心修改：新增这个协程方法 ---
-    private IEnumerator PrepareAndDrawMapRoutine()
-    {
-        // 尝试寻找 MapView
-        mapView = FindObjectOfType<MapView>();
-        
-        // 如果在当前帧没找到，可能是它还没被激活，再等一帧
-        if (mapView == null)
-        {
-            yield return null; // 等待下一帧
-            mapView = FindObjectOfType<MapView>();
-        }
-
-        // 如果最终还是找不到，就报错并终止
-        if (mapView == null)
-        {
-            Debug.LogError("MapManager 在 MainFightScene 中找不到 MapView 组件！");
-            yield break;
-        }
-
-        // --- 解决“挤在一起”问题的【关键代码】 ---
-        // 等待一帧，确保 Canvas 的布局系统已经完成了所有尺寸的计算
-        yield return null; 
-
-        // 现在，所有 UI 元素的尺寸都应该是正确的了，我们再开始绘制
-        if (mapNodes == null || mapNodes.Count == 0)
-        {
-            GenerateNewMap();
-        }
-        
-        // 调用你现有的、功能完备的 DrawMap 方法
-        mapView.DrawMap(mapNodes);
-        UpdateNodeStates();
-    }
-
-
-
-
 }

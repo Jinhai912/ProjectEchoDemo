@@ -48,3 +48,12 @@
   - 回收时通过 `PooledObject.SourcePrefab` 找回池子，重复回收会被 `IsInPool` 拦截。
   - 取出时跳过已被场景销毁的旧实例。
 - **验证**: Unity 编译通过（无 `error CS`），运行验证待完成。
+
+### #4 MapManager 未订阅的死代码
+
+- **状态**: 已修复，Unity 编译通过
+- **文件**: `Assets/Projects/Scripts/Map/MapManager.cs`
+- **问题**: `OnSceneLoaded` 从未被 `SceneManager.sceneLoaded` 订阅，`PrepareAndDrawMapRoutine` 只被这个死方法调用；同时留下了无用的 `System.Collections` / `UnityEngine.SceneManagement` 引用。
+- **修改**: 删除这两个方法及无用 using。地图绘制统一走 `UIManager.ShowMapPanel → MapManager.PrepareAndDrawMap` 的现有路径。
+- **验证**: Unity 编译通过（0 errors）。删除的路径本来就不会执行，因此行为不变。
+- **备注**: 如果后续发现地图面板刚打开时节点挤在一起，需要单独处理“等待一帧布局完成”的问题，而不是恢复这段死代码。
