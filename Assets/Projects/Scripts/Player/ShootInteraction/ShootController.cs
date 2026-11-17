@@ -22,6 +22,7 @@ public class ShootController : MonoBehaviour
     private Transform targetEnemy;       // 当前锁定的敌人
     private float fireCooldown = 0f;     // 射击冷却计时器
     private float retargetTimer = 0f;
+    private bool _wasOverheated;
     private Rigidbody rb;
     private bool canShoot = true; // 控制是否允许射击的开关
 
@@ -60,15 +61,41 @@ public class ShootController : MonoBehaviour
             retargetTimer = retargetInterval;
         }
 
-        if (targetEnemy != null && fireCooldown <= 0)
+        bool canFire = PlayerData.Instance == null || PlayerData.Instance.CanFire;
+        if (targetEnemy != null && fireCooldown <= 0 && canFire)
         {
             // Shoot() 方法现在变得更“干净”了
             Shoot();
 
             float currentFireRate = 1f;
             if (PlayerData.Instance != null) { currentFireRate = PlayerData.Instance.FireRate; }
-            fireCooldown = 1f / currentFireRate;
+            fireCooldown = 1f / Mathf.Max(0.05f, currentFireRate);
         }
+
+        UpdateOverheatFeedback();
+    }
+
+    private void UpdateOverheatFeedback()
+    {
+        if (PlayerData.Instance == null) return;
+
+        bool overheated = PlayerData.Instance.IsOverheated;
+        if (overheated && !_wasOverheated)
+        {
+            PlayerFeedbackManager.OnFeedbackRequested?.Invoke(
+                "过热！",
+                true,
+                transform.position + Vector3.up * 1.5f);
+        }
+        else if (!overheated && _wasOverheated)
+        {
+            PlayerFeedbackManager.OnFeedbackRequested?.Invoke(
+                "散热完成",
+                false,
+                transform.position + Vector3.up * 1.5f);
+        }
+
+        _wasOverheated = overheated;
     }
 
     void FindAndTargetEnemy()
@@ -136,47 +163,60 @@ public class ShootController : MonoBehaviour
 
     void Shoot()
     {
-        if (bulletPrefab == null || firePoint == null || playerStates == null) return;
-        if (targetEnemy == null) return;
+        if (targetEnemy == null || firePoint == null || playerStates == null) return;
 
-        // 1. 获取子弹总数
-        int totalProjectiles = 1;
-        if (PlayerData.Instance != null)
-        {
-            totalProjectiles = PlayerData.Instance.projectileCount;
-        }
+        HardwareBarrelSO barrel = PlayerData.Instance != null ? PlayerData.Instance.currentBarrel : null;
+        GameObject prefab = (barrel != null && barrel.bulletPrefab != null) ? barrel.bulletPrefab : bulletPrefab;
+        if (prefab == null) return;
 
-        // 2. 计算扇形角度 (如果大于1发)
-        float spreadAngle = 15f; // 每发间隔15度
-        float startAngle = 0f;
-        
+        // 1. 获取最终弹丸数（枪管基础 + 能力卡加成）
+        int totalProjectiles = PlayerData.Instance != null ? PlayerData.Instance.FinalProjectileCount : 1;
+        totalProjectiles = Mathf.Max(1, totalProjectiles);
+
+        // 2. 计算扇形角度
+        float totalSpread = 0f;
         if (totalProjectiles > 1)
         {
-            // 比如 3 发：-15, 0, +15
-            startAngle = -(totalProjectiles - 1) * spreadAngle / 2f;
+            totalSpread = (barrel != null && barrel.spreadAngle > 0f)
+                ? barrel.spreadAngle
+                : 15f * (totalProjectiles - 1);
         }
+
+        float step = totalProjectiles > 1 ? totalSpread / (totalProjectiles - 1) : 0f;
+        float startAngle = -totalSpread / 2f;
+        float speed = (barrel != null && barrel.bulletSpeed > 0f) ? barrel.bulletSpeed : bulletSpeed;
+        float heatPerProjectile = barrel != null
+            ? barrel.heatPerShot
+            : (PlayerData.Instance != null ? PlayerData.Instance.defaultHeatPerShot : 5f);
 
         // 3. 循环生成
         for (int i = 0; i < totalProjectiles; i++)
         {
             // 计算当前子弹的角度偏移
-            float currentAngleOffset = startAngle + (i * spreadAngle);
+            float currentAngleOffset = startAngle + (i * step);
             Quaternion rotationOffset = Quaternion.Euler(0, currentAngleOffset, 0);
 
             // 结合开火点当前的朝向
             Vector3 fireDirection = rotationOffset * (targetEnemy.position - firePoint.position).normalized;
 
             // 生成子弹
-            GameObject bulletGO = ObjectPooler.Instance.SpawnFromPool(bulletPrefab, firePoint.position, Quaternion.LookRotation(fireDirection));
-            
+            GameObject bulletGO = ObjectPooler.Instance != null
+                ? ObjectPooler.Instance.SpawnFromPool(prefab, firePoint.position, Quaternion.LookRotation(fireDirection))
+                : Instantiate(prefab, firePoint.position, Quaternion.LookRotation(fireDirection));
+
             // 初始化
-            Bullet bulletScript = bulletGO.GetComponent<Bullet>();
+            Bullet bulletScript = bulletGO != null ? bulletGO.GetComponent<Bullet>() : null;
             if (bulletScript != null)
             {
                 // 从 PlayerData 读取当前注入的介质属性，传给子弹
-                bulletScript.mediaType = PlayerData.Instance.currentBulletMedia;
-                bulletScript.Initialize(playerStates, fireDirection, bulletSpeed);
+                bulletScript.mediaType = PlayerData.Instance != null ? PlayerData.Instance.currentBulletMedia : PhysicalMediaType.None;
+                bulletScript.Initialize(playerStates, fireDirection, speed);
             }
+        }
+
+        if (PlayerData.Instance != null)
+        {
+            PlayerData.Instance.AddHeat(heatPerProjectile * totalProjectiles);
         }
     }
     

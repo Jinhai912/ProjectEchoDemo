@@ -24,7 +24,7 @@ public class Bullet : MonoBehaviour
         // 重新初始化穿透次数
         if (PlayerData.Instance != null)
         {
-            currentPierceCount = PlayerData.Instance.piercingCount;
+            currentPierceCount = PlayerData.Instance.FinalPierce;
         }
 
         _lifeTimer = Lifetime;

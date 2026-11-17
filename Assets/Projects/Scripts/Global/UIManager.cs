@@ -24,6 +24,8 @@ public class UIManager : MonoBehaviour
     private Slider healthSlider;
     private TextMeshProUGUI healthText;
     private TextMeshProUGUI gameOverTitleText;
+    private Image heatBarFill;
+    private TextMeshProUGUI heatLabel;
     public TextMeshProUGUI memoryText;
 
     void Awake()
@@ -34,6 +36,7 @@ public class UIManager : MonoBehaviour
         GameManager.OnGameStateChanged += HandleGameStateChange;
         PlayerStates.OnHealthChanged += UpdateHealthUI;
         PlayerData.OnMemoryChanged += UpdateMemoryUI;
+        PlayerData.OnHeatChanged += UpdateHeatUI;
     }
 
     void OnDestroy()
@@ -42,6 +45,7 @@ public class UIManager : MonoBehaviour
         GameManager.OnGameStateChanged -= HandleGameStateChange;
         PlayerStates.OnHealthChanged -= UpdateHealthUI;
         PlayerData.OnMemoryChanged -= UpdateMemoryUI;
+        PlayerData.OnHeatChanged -= UpdateHeatUI;
     }
 
     public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -113,6 +117,11 @@ public class UIManager : MonoBehaviour
                 Debug.Log("UIManager: 场景缺少 EventPanel，已创建运行时事件面板。");
             }
         }
+
+        if (storePanel != null && heatBarFill == null)
+        {
+            CreateHeatUI();
+        }
         
         // 初始关闭所有不需要的面板
         if (storePanel) storePanel.SetActive(false);
@@ -148,6 +157,81 @@ public class UIManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    private void CreateHeatUI()
+    {
+        if (inGameHUD == null) return;
+
+        GameObject labelObj = new GameObject("HeatLabel", typeof(RectTransform), typeof(TextMeshProUGUI));
+        labelObj.transform.SetParent(inGameHUD.transform, false);
+        RectTransform labelRect = labelObj.GetComponent<RectTransform>();
+        labelRect.anchorMin = new Vector2(0.77f, 0.11f);
+        labelRect.anchorMax = new Vector2(0.97f, 0.15f);
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
+
+        heatLabel = labelObj.GetComponent<TextMeshProUGUI>();
+        heatLabel.text = "热量";
+        heatLabel.fontSize = 18f;
+        heatLabel.alignment = TextAlignmentOptions.Right;
+        heatLabel.color = Color.white;
+        heatLabel.raycastTarget = false;
+
+        TMP_FontAsset font = RuntimeFontUtility.GetFont();
+        if (font != null) heatLabel.font = font;
+
+        GameObject barObj = new GameObject("HeatBar", typeof(RectTransform), typeof(Image));
+        barObj.transform.SetParent(inGameHUD.transform, false);
+        RectTransform barRect = barObj.GetComponent<RectTransform>();
+        barRect.anchorMin = new Vector2(0.77f, 0.06f);
+        barRect.anchorMax = new Vector2(0.97f, 0.10f);
+        barRect.offsetMin = Vector2.zero;
+        barRect.offsetMax = Vector2.zero;
+
+        Image barBackground = barObj.GetComponent<Image>();
+        barBackground.color = new Color(0.08f, 0.08f, 0.1f, 0.85f);
+        barBackground.raycastTarget = false;
+
+        GameObject fillObj = new GameObject("Fill", typeof(RectTransform), typeof(Image));
+        fillObj.transform.SetParent(barObj.transform, false);
+        RectTransform fillRect = fillObj.GetComponent<RectTransform>();
+        fillRect.anchorMin = Vector2.zero;
+        fillRect.anchorMax = Vector2.one;
+        fillRect.offsetMin = new Vector2(2f, 2f);
+        fillRect.offsetMax = new Vector2(-2f, -2f);
+
+        heatBarFill = fillObj.GetComponent<Image>();
+        heatBarFill.type = Image.Type.Filled;
+        heatBarFill.fillMethod = Image.FillMethod.Horizontal;
+        heatBarFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+        heatBarFill.fillAmount = 0f;
+        heatBarFill.color = new Color(0.2f, 0.8f, 1f);
+        heatBarFill.raycastTarget = false;
+
+        if (PlayerData.Instance != null)
+        {
+            UpdateHeatUI(PlayerData.Instance.currentHeat, PlayerData.Instance.HeatCapacity, PlayerData.Instance.IsOverheated);
+        }
+    }
+
+    private void UpdateHeatUI(float current, float max, bool overheated)
+    {
+        if (heatBarFill != null)
+        {
+            heatBarFill.fillAmount = max > 0f ? Mathf.Clamp01(current / max) : 0f;
+            heatBarFill.color = overheated
+                ? new Color(1f, 0.3f, 0.2f)
+                : new Color(0.2f, 0.8f, 1f);
+        }
+
+        if (heatLabel != null)
+        {
+            heatLabel.text = overheated ? "过热！" : "热量";
+            heatLabel.color = overheated
+                ? new Color(1f, 0.35f, 0.25f)
+                : Color.white;
+        }
     }
 
     private void WireButton(GameObject panel, string buttonName, UnityAction action)

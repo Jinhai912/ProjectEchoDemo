@@ -51,6 +51,7 @@ public class PlayerData : MonoBehaviour
     public float defaultCoolingRate = 25f;
     public float defaultCoolingDelay = 0.5f;
     public float defaultOverheatRecoveryTime = 2f;
+    public float defaultHeatPerShot = 5f;
 
     [Header("--- 机制状态 ---")]
     public int projectileCount = 1;     
@@ -74,6 +75,9 @@ public class PlayerData : MonoBehaviour
     public float CoolingRate => currentHeatSink != null ? currentHeatSink.coolingRate : defaultCoolingRate;
     public float CoolingDelay => currentHeatSink != null ? currentHeatSink.coolingDelay : defaultCoolingDelay;
     public float OverheatRecoveryTime => currentHeatSink != null ? currentHeatSink.overheatRecoveryTime : defaultOverheatRecoveryTime;
+    public float HeatPerShot => currentBarrel != null ? currentBarrel.heatPerShot : defaultHeatPerShot;
+    public int FinalProjectileCount => Mathf.Max(1, projectileCount + (currentBarrel != null ? currentBarrel.projectilesPerShot - 1 : 0));
+    public int FinalPierce => piercingCount + (currentBarrel != null ? currentBarrel.pierce : 0);
 
     public int Defense => bonusDefense;
     public float MoveSpeed => baseMoveSpeed * moveSpeedMultiplier;
@@ -96,6 +100,7 @@ public class PlayerData : MonoBehaviour
     private float _lastHeatTime = -999f;
 
     public bool CanFire => !isOverheated;
+    public bool IsOverheated => isOverheated;
 
     public List<AbilityData> installedProtocols = new List<AbilityData>();
     public List<AbilityData> permanentFirmwares = new List<AbilityData>();

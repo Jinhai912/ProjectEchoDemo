@@ -2041,6 +2041,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentCore: {fileID: 0}
   currentBarrel: {fileID: 0}
+  currentHeatSink: {fileID: 0}
+  startingCore: {fileID: 0}
+  startingBarrel: {fileID: 11400000, guid: 58d74dc0a04eb304f959171560d3826d, type: 2}
+  startingHeatSink: {fileID: 11400000, guid: cabcc1d9c23e4aa48b0dc177fbf9de4f, type: 2}
   bonusMaxHealth: 0
   bonusDefense: 0
   bonusAttack: 0
@@ -2055,12 +2059,20 @@ MonoBehaviour:
   baseMoveSpeed: 4
   baseFireRate: 1
   initialPickupRadius: 5
+  startingCurrency: 300
+  defaultHeatCapacity: 100
+  defaultCoolingRate: 25
+  defaultCoolingDelay: 0.5
+  defaultOverheatRecoveryTime: 2
+  defaultHeatPerShot: 5
   projectileCount: 1
   piercingCount: 0
   currentHealth: 0
   currentExperience: 0
   currentCurrency: 0
   currentUsedMemoryMB: 0
+  currentHeat: 0
+  isOverheated: 0
   installedProtocols: []
   permanentFirmwares: []
   currentBulletMedia: 0
@@ -2085,9 +2097,8 @@ MonoBehaviour:
   eliteCombatEncounters:
   - {fileID: 11400000, guid: 2bcd6a9416425a14da021802825fb125, type: 2}
   - {fileID: 11400000, guid: 6449184566570ff4bbf242f3eca33489, type: 2}
-  storeEncounters: []
-  eventEncounters: []
   bossEncounter: {fileID: 11400000, guid: 6093528807104b9448f1e27029e065ba, type: 2}
+  eventPool: []
   baseTotalLayers: 5
   baseMinNodesPerLayer: 2
   baseMaxNodesPerLayer: 3

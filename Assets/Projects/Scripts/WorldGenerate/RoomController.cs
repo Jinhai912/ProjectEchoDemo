@@ -52,6 +52,8 @@ public class RoomController : MonoBehaviour
     {
         Debug.Log("RoomController 开始关卡: " + encounter.title);
         currentEncounter = encounter;
+
+        if (PlayerData.Instance != null) PlayerData.Instance.ResetHeat();
         
         // 1. 先清场
         ClearPreviousEncounterObjects();
