@@ -34,3 +34,17 @@
   - `LevelUpManager` 改用 `UpdateGameState(InLevelUp/Playing)`，并保留没有 `GameManager` 时的兜底逻辑。
   - 升级面板显示时保留 HUD。
 - **验证**: 代码审查通过；Unity 编译通过（无 `error CS`），运行验证待完成。
+
+### #3 ObjectPooler 以 GameObject.name 分池
+
+- **状态**: 已修复，Unity 编译通过，待运行验证
+- **文件**:
+  - `Assets/Projects/Scripts/Global/ObjectPooler.cs`
+  - `Assets/Projects/Scripts/Global/PooledObject.cs`（新增）
+- **问题**: 池 key 使用 `prefab.name`，回收时再用 `obj.name` 找回池子。实例改名、预制体同名或对象被场景销毁后，可能回收到错误池；找不到 key 时会直接 `Destroy`。
+- **修改**:
+  - 新增 `PooledObject` 组件，在实例上记录来源预制体引用和是否在池中。
+  - `ObjectPooler` 改为 `Dictionary<GameObject, Queue<GameObject>>`，按预制体引用分池。
+  - 回收时通过 `PooledObject.SourcePrefab` 找回池子，重复回收会被 `IsInPool` 拦截。
+  - 取出时跳过已被场景销毁的旧实例。
+- **验证**: Unity 编译通过（无 `error CS`），运行验证待完成。

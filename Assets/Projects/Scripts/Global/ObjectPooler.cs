@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 /// <summary>
 /// 通用对象池管理器
-/// 描述：采用 Dictionary + Queue 架构，有效减少运行时 Instantiate 和 Destroy 产生的内存碎片。
+/// 描述：按“预制体引用”分池，避免依赖 GameObject.name 导致回收错池。
 /// </summary>
 public class ObjectPooler : MonoBehaviour
 {
     public static ObjectPooler Instance;
 
-    // 对象池容器：Key 为 Prefab 的名称，Value 为非激活对象队列
-    private Dictionary<string, Queue<GameObject>> _poolDictionary = new Dictionary<string, Queue<GameObject>>();
+    // 对象池容器：Key 为预制体引用，Value 为非激活对象队列
+    private readonly Dictionary<GameObject, Queue<GameObject>> _poolDictionary = new Dictionary<GameObject, Queue<GameObject>>();
 
     private void Awake()
     {
@@ -27,26 +27,32 @@ public class ObjectPooler : MonoBehaviour
     /// <returns>可用的 GameObject 实例</returns>
     public GameObject SpawnFromPool(GameObject prefab, Vector3 position, Quaternion rotation)
     {
-        string poolKey = prefab.name;
+        if (prefab == null) return null;
 
-        if (!_poolDictionary.ContainsKey(poolKey))
+        if (!_poolDictionary.TryGetValue(prefab, out Queue<GameObject> pool))
         {
-            _poolDictionary.Add(poolKey, new Queue<GameObject>());
+            pool = new Queue<GameObject>();
+            _poolDictionary.Add(prefab, pool);
         }
 
-        GameObject objectToSpawn;
-
-        if (_poolDictionary[poolKey].Count == 0)
+        GameObject objectToSpawn = null;
+        while (pool.Count > 0)
         {
-            // 池子为空时创建新实例
+            objectToSpawn = pool.Dequeue();
+            if (objectToSpawn != null) break; // 跳过已被场景销毁的旧实例
+        }
+
+        if (objectToSpawn == null)
+        {
             objectToSpawn = Instantiate(prefab);
-            objectToSpawn.name = poolKey; 
+
+            PooledObject pooled = objectToSpawn.GetComponent<PooledObject>();
+            if (pooled == null) pooled = objectToSpawn.AddComponent<PooledObject>();
+            pooled.Bind(prefab);
         }
-        else
-        {
-            // 复用池中已有的对象
-            objectToSpawn = _poolDictionary[poolKey].Dequeue();
-        }
+
+        PooledObject spawned = objectToSpawn.GetComponent<PooledObject>();
+        if (spawned != null) spawned.MarkOutOfPool();
 
         objectToSpawn.SetActive(true);
         objectToSpawn.transform.SetPositionAndRotation(position, rotation);
@@ -60,17 +66,21 @@ public class ObjectPooler : MonoBehaviour
     /// <param name="obj">需要回收的 GameObject</param>
     public void ReturnToPool(GameObject obj)
     {
-        obj.SetActive(false);
-        string poolKey = obj.name;
-        
-        if (_poolDictionary.ContainsKey(poolKey))
-        {
-            _poolDictionary[poolKey].Enqueue(obj);
-        }
-        else
+        if (obj == null) return;
+
+        PooledObject pooled = obj.GetComponent<PooledObject>();
+        if (pooled == null || pooled.SourcePrefab == null ||
+            !_poolDictionary.TryGetValue(pooled.SourcePrefab, out Queue<GameObject> pool))
         {
             // 容错处理：若该对象不属于任何池子则直接销毁
             Destroy(obj);
+            return;
         }
+
+        if (pooled.IsInPool) return; // 防止同一实例被重复入池
+
+        pooled.MarkInPool();
+        obj.SetActive(false);
+        pool.Enqueue(obj);
     }
 }
