@@ -179,3 +179,14 @@
 - **修改**: `UIManager.FindAndAssignUI` 在运行时找到两个面板里的 Main Menu 按钮，`RemoveAllListeners` 后重新绑定 `OnMainMenuButtonPressed`；`OnMainMenuButtonPressed` 增加日志。
 - **验证**: Play Mode 中打开暂停菜单，触发 `Main Menu` 按钮，Console 输出 `UIManager: 返回主菜单。`，场景切换到 MainMenu。GameOver 面板复用同一绑定逻辑。
 - **备注**: 测试时在 MainMenu 未保存场景里留下了一个 `Canvas/__TestKillPlayer` 测试按钮，需要删除或重载场景丢弃，不要保存。
+
+### #14 垂直切片收尾：Boss 强度与楼层成长
+
+- **状态**: 已实现，Unity 编译通过，待游玩验证
+- **问题**: `Encounter_Boss_01` 的敌人引用是普通近战怪（15 HP），两枪就死；普通/精英遭遇也不随楼层成长，三层难度几乎一样。
+- **修改**:
+  - `Encounter_Boss_01.encounterType` 改为 `Boss`。
+  - `RoomController.SpawnEnemy` 增加 `ApplyDifficultyScaling`：
+    - 每层敌人生命乘以 `1 + 0.5 × (floor - 1)`；
+    - Boss 额外乘以 20，并放大 1.8 倍、染红作为占位表现。
+- **验证**: Unity 编译 0 errors；`Encounter_Boss_01` 类型确认为 `Boss`。实际战斗强度待游玩验证。

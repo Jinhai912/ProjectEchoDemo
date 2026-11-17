@@ -177,8 +177,35 @@ public class RoomController : MonoBehaviour
     private void SpawnEnemy(GameObject enemyPrefabToSpawn)
     {
         Vector3 spawnPosition = GetRandomSpawnPosition();
-        Instantiate(enemyPrefabToSpawn, spawnPosition, Quaternion.identity);
+        GameObject enemy = Instantiate(enemyPrefabToSpawn, spawnPosition, Quaternion.identity);
+
+        ApplyDifficultyScaling(enemy);
         enemiesAlive++;
+    }
+
+    private void ApplyDifficultyScaling(GameObject enemy)
+    {
+        int floor = GameManager.Instance != null ? GameManager.Instance.currentFloor : 1;
+        float floorMultiplier = 1f + 0.5f * Mathf.Max(0, floor - 1);
+        bool isBoss = currentEncounter != null && currentEncounter.encounterType == EncounterType.Boss;
+
+        EnemyState state = enemy.GetComponent<EnemyState>();
+        if (state != null)
+        {
+            state.maxHealth *= floorMultiplier * (isBoss ? 20f : 1f);
+        }
+
+        if (isBoss)
+        {
+            // 占位 Boss 表现：放大并染红，后续替换正式 Boss 模型
+            enemy.transform.localScale *= 1.8f;
+
+            foreach (Renderer renderer in enemy.GetComponentsInChildren<Renderer>())
+            {
+                Material material = renderer.material;
+                material.color = new Color(1f, 0.35f, 0.35f);
+            }
+        }
     }
 
     // 提取出的通用随机位置算法

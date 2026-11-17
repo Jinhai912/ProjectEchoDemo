@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdb15f2495322d34f9ff726c46ebf48a, type: 3}
   m_Name: Encounter_Boss_01
   m_EditorClassIdentifier: 
-  encounterType: 0
+  encounterType: 2
   title: 
   description: "Boss\u5173\u5361"
   image: {fileID: 0}
