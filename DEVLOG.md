@@ -257,3 +257,10 @@
   - triangles: 15,596
   - totalAllocated: ~300 MB
 - **Windows 构建**: `Builds/Windows/ProjectEcho.exe`（StandaloneWindows64，两个场景均已打包）。
+
+### #21 修复物理反应飘字缺字
+
+- **状态**: 已修复
+- **问题**: 反应飘字使用 `【】`，LiberationSans 与 msyh SDF 的字形表都没有该字符，显示为方块并产生 TMP Warning。
+- **修改**: 改为 ASCII `[传导]` / `[过载]` / `[气化]` / `[爆燃]`，中文继续走 msyh fallback。
+- **验证**: Unity 编译 0 errors；待触发物理反应确认。

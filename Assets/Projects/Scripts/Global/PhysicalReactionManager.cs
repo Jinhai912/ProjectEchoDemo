@@ -60,10 +60,10 @@ public class PhysicalReactionManager : MonoBehaviour
     private void HandleVisualFeedback(string name, Vector3 pos)
     {
         string cnLabel = name switch {
-            "Conduction" => "【传导】",
-            "Overload" => "【过载】",
-            "Vaporization" => "【气化】",
-            "Ignition" => "【爆燃】",
+            "Conduction" => "[传导]",
+            "Overload" => "[过载]",
+            "Vaporization" => "[气化]",
+            "Ignition" => "[爆燃]",
             _ => name
         };
 
