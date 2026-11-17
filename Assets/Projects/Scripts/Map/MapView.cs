@@ -73,7 +73,7 @@ public class MapView : MonoBehaviour
             rect.anchoredPosition = new Vector2(xPos, yPos);
             
             // --- 你的图标和按钮绑定逻辑是完美的，保持不变 ---
-            Image nodeIcon = nodeGO.GetComponent<Image>();
+            Image nodeIcon = EnsureNodeIcon(nodeGO);
             Button nodeButton = nodeGO.GetComponent<Button>();
             nodeIcon.sprite = GetSpriteForNodeType(node.nodeType);
             nodeButton.onClick.RemoveAllListeners();
@@ -108,6 +108,8 @@ public class MapView : MonoBehaviour
         GameObject lineGO = Instantiate(linePrefab, container);
         RectTransform lineRect = lineGO.GetComponent<RectTransform>();
         lineGO.transform.SetAsFirstSibling();
+        Image lineImage = lineGO.GetComponent<Image>();
+        if (lineImage != null) lineImage.color = InkUI.Ink;
         
         Vector2 startPos = fromGO.GetComponent<RectTransform>().anchoredPosition;
         Vector2 endPos = toGO.GetComponent<RectTransform>().anchoredPosition;
@@ -134,6 +136,42 @@ public class MapView : MonoBehaviour
             case NodeType.Event: return eventIcon;
             default: return null;
         }
+    }
+
+    private static Image EnsureNodeIcon(GameObject nodeGO)
+    {
+        RectTransform nodeRect = nodeGO.GetComponent<RectTransform>();
+        if (nodeRect != null) nodeRect.sizeDelta = new Vector2(96f, 96f);
+
+        Image plate = nodeGO.GetComponent<Image>();
+        if (plate == null) plate = nodeGO.AddComponent<Image>();
+        plate.sprite = InkUI.PanelSprite;
+        plate.type = Image.Type.Sliced;
+        plate.color = InkUI.Paper;
+        plate.preserveAspect = true;
+        plate.raycastTarget = true;
+        Transform iconTransform = nodeGO.transform.Find("Icon");
+        Image icon;
+        if (iconTransform == null)
+        {
+            icon = InkUI.CreateImage(nodeGO.transform, "Icon", null, InkUI.Ink,
+                false, Image.Type.Simple);
+            RectTransform iconRect = icon.rectTransform;
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.sizeDelta = new Vector2(60f, 60f);
+            iconRect.anchoredPosition = Vector2.zero;
+        }
+        else
+        {
+            icon = iconTransform.GetComponent<Image>();
+        }
+
+        icon.color = InkUI.Ink;
+        icon.preserveAspect = true;
+        icon.raycastTarget = false;
+        return icon;
     }
 
     /// <summary>

@@ -9,6 +9,7 @@ public class StoreUI : MonoBehaviour
     public Transform itemsContainer;   // 商品列表的父物体 (Grid Layout)
     public GameObject itemButtonPrefab; // 商品按钮预制体
     public TextMeshProUGUI currencyText; // 显示当前金币
+    public bool useAuthoredLayout = false;
 
     private bool returnToMapOnClose;
 
@@ -16,7 +17,7 @@ public class StoreUI : MonoBehaviour
     {
         returnToMapOnClose = returnToMap;
 
-        EnsureRuntimeLayout();
+        if (!useAuthoredLayout) EnsureRuntimeLayout();
 
         if (itemsContainer == null || itemButtonPrefab == null)
         {
@@ -43,18 +44,25 @@ public class StoreUI : MonoBehaviour
             // 查找按钮下的文本组件 (假设预制体里有这些)
             // 建议结构: Button -> [NameText, PriceText, IconImage]
             Transform nameTransform = btnObj.transform.Find("NameText");
+            Transform typeTransform = btnObj.transform.Find("TypeText");
             Transform priceTransform = btnObj.transform.Find("PriceText");
             TextMeshProUGUI nameText = nameTransform != null ? nameTransform.GetComponent<TextMeshProUGUI>() : null;
+            TextMeshProUGUI typeText = typeTransform != null ? typeTransform.GetComponent<TextMeshProUGUI>() : null;
             TextMeshProUGUI priceText = priceTransform != null ? priceTransform.GetComponent<TextMeshProUGUI>() : null;
 
             int price = choice.Price;
 
             if (nameText)
             {
-                nameText.text = choice.DisplayName;
+                InkUI.SetText(nameText, choice.DisplayName);
                 nameText.color = choice.AccentColor;
             }
-            if (priceText) priceText.text = "$" + price;
+            if (typeText)
+            {
+                InkUI.SetText(typeText, choice.MemoryLabel);
+                typeText.color = InkUI.Muted;
+            }
+            if (priceText) priceText.text = price + " 碎片";
 
             // 4. 绑定购买点击事件
             if (btn != null)
@@ -227,6 +235,8 @@ public class StoreUI : MonoBehaviour
                 
                 // 购买后禁用按钮或移除
                 buttonObj.GetComponent<Button>().interactable = false;
+                InkButtonFeedback feedback = buttonObj.GetComponent<InkButtonFeedback>();
+                if (feedback != null) feedback.RefreshState();
                 if(buttonObj.transform.Find("PriceText"))
                     buttonObj.transform.Find("PriceText").GetComponent<TextMeshProUGUI>().text = "已购买";
             }
@@ -242,7 +252,7 @@ public class StoreUI : MonoBehaviour
     {
         if (PlayerData.Instance != null && currencyText != null)
         {
-            currencyText.text = "碎片: " + PlayerData.Instance.currentCurrency;
+            currencyText.text = "碎片 " + PlayerData.Instance.currentCurrency;
         }
     }
 

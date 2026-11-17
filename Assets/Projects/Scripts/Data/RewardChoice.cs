@@ -72,15 +72,15 @@ public struct RewardChoice
     {
         get
         {
-            if (hardware != null) return new Color(1f, 0.78f, 0.25f);
-            if (ability == null) return Color.white;
+            if (hardware != null) return new Color(0.08f, 0.08f, 0.08f);
+            if (ability == null) return new Color(0.08f, 0.08f, 0.08f);
             return ability.tier switch
             {
-                AbilityData.AbilityTier.L1_Micro => Color.white,
-                AbilityData.AbilityTier.L2_Driver => new Color(0.4f, 0.7f, 1f),
-                AbilityData.AbilityTier.L3_Logic => new Color(0.75f, 0.45f, 1f),
-                AbilityData.AbilityTier.L4_Core => new Color(1f, 0.35f, 0.3f),
-                _ => Color.white
+                AbilityData.AbilityTier.L1_Micro => new Color(0.42f, 0.42f, 0.42f),
+                AbilityData.AbilityTier.L2_Driver => new Color(0.28f, 0.28f, 0.28f),
+                AbilityData.AbilityTier.L3_Logic => new Color(0.16f, 0.16f, 0.16f),
+                AbilityData.AbilityTier.L4_Core => new Color(0.85f, 0.28f, 0.18f),
+                _ => new Color(0.42f, 0.42f, 0.42f)
             };
         }
     }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SW_Mag_B
   m_EditorClassIdentifier: 
   id: 'SW_P_204 '
-  abilityName: "\u8D2A\u5A6A\u6F29\u6DA1"
+  abilityName: "\u8D2A\u5A6A\u6DA1\u6D41"
   tier: 1
   isMemoryBound: 0
   memoryCost: 0

@@ -51,6 +51,11 @@ public class LevelUpManager : MonoBehaviour
         if (playerGO != null) player = playerGO.transform;
     }
 
+    public void RefreshUIReferences()
+    {
+        FindLevelUpUI();
+    }
+
     private void FindLevelUpUI()
     {
         GameObject panelGO = GameObject.FindWithTag("UIPanel_LevelUp");
@@ -97,6 +102,12 @@ public class LevelUpManager : MonoBehaviour
     /// </summary>
     public void ShowLevelUpOptions()
     {
+        if (levelUpPanel == null || abilityCards.Count == 0 ||
+            abilityCards.Exists(card => card == null))
+        {
+            FindLevelUpUI();
+        }
+
         // 健壮性检查
         if (levelUpPanel == null || abilityCards.Count == 0)
         {

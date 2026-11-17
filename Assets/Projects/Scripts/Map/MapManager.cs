@@ -189,7 +189,10 @@ public class MapManager : MonoBehaviour
             MapNode node = nodeObjectPair.Key;
             GameObject nodeGO = nodeObjectPair.Value;
             Button nodeButton = nodeGO.GetComponent<Button>();
-            Image nodeIcon = nodeGO.GetComponent<Image>(); // 我们需要获取 Image 来改变颜色
+            Transform iconTransform = nodeGO.transform.Find("Icon");
+            Image nodeIcon = iconTransform != null
+                ? iconTransform.GetComponent<Image>()
+                : nodeGO.GetComponent<Image>(); // 我们需要获取 Image 来改变颜色
             
             if(nodeButton == null || nodeIcon == null) continue;
 
@@ -199,7 +202,8 @@ public class MapManager : MonoBehaviour
             if (node == currentNode)
             {
                 nodeButton.interactable = false; // 当前节点不可点击
-                nodeIcon.color = Color.yellow; // 用醒目的颜色（比如黄色）来高亮当前节点
+                nodeIcon.color = InkUI.Accent;
+                nodeGO.transform.localScale = Vector3.one * 1.08f;
                 continue; // 处理完这个节点，就跳到下一个
             }
 
@@ -212,12 +216,13 @@ public class MapManager : MonoBehaviour
             // 规则 3：设置其他节点的外观
             if (isInteractable)
             {
-                nodeIcon.color = Color.white; // 可交互的节点是白色
+                nodeIcon.color = InkUI.Ink; // 可交互的节点是墨黑
             }
             else
             {
-                nodeIcon.color = new Color(0.5f, 0.5f, 0.5f, 1f); // 不可交互的节点是半透明的灰色
+                nodeIcon.color = InkUI.Disabled; // 不可交互的节点是浅灰
             }
+            nodeGO.transform.localScale = Vector3.one;
         }
     }
 

@@ -38,15 +38,17 @@ public class AbilityCardUI : MonoBehaviour
     {
         _assignedChoice = choice;
 
-        nameText.text = choice.DisplayName;
-        descriptionText.text = choice.Description;
+        InkUI.SetText(nameText, choice.DisplayName);
+        InkUI.SetText(descriptionText, choice.Description);
 
         if (memoryCostText != null)
         {
-            memoryCostText.text = choice.MemoryLabel;
+            InkUI.SetText(memoryCostText, choice.MemoryLabel);
             memoryCostText.color = choice.IsHardware
-                ? new Color(1f, 0.78f, 0.25f)
-                : (choice.ability != null && choice.ability.isMemoryBound ? Color.white : Color.green);
+                ? new Color(0.08f, 0.08f, 0.08f)
+                : (choice.ability != null && choice.ability.isMemoryBound
+                    ? new Color(0.42f, 0.42f, 0.42f)
+                    : new Color(0.08f, 0.08f, 0.08f));
         }
 
         if (iconImage != null)

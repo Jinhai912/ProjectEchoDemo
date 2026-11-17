@@ -22,8 +22,8 @@ public class EventUI : MonoBehaviour
         if (data == null) return;
 
         // 1. 填充文本
-        if (titleText != null) titleText.text = data.eventTitle;
-        if (bodyText != null) bodyText.text = data.eventBody;
+        InkUI.SetText(titleText, data.eventTitle);
+        InkUI.SetText(bodyText, data.eventBody);
         if (data.eventImage != null && eventImage != null) eventImage.sprite = data.eventImage;
 
         // 2. 清空旧选项
@@ -41,7 +41,7 @@ public class EventUI : MonoBehaviour
             if (btnObj == null) continue;
 
             TextMeshProUGUI btnText = btnObj.GetComponentInChildren<TextMeshProUGUI>(true);
-            if (btnText) btnText.text = option.buttonText ?? string.Empty;
+            if (btnText) InkUI.SetText(btnText, option.buttonText ?? string.Empty);
 
             Button btn = btnObj.GetComponent<Button>();
             if (btn != null) btn.onClick.AddListener(() => SelectOption(option));
@@ -64,7 +64,9 @@ public class EventUI : MonoBehaviour
         btnObj.transform.SetParent(optionsContainer, false);
 
         Image image = btnObj.GetComponent<Image>();
-        image.color = new Color(0.18f, 0.28f, 0.42f, 1f);
+        image.sprite = InkUI.PanelSprite;
+        image.type = Image.Type.Sliced;
+        image.color = InkUI.Paper;
 
         Button button = btnObj.GetComponent<Button>();
         button.targetGraphic = image;
@@ -83,7 +85,7 @@ public class EventUI : MonoBehaviour
         if (runtimeFont != null) text.font = runtimeFont;
         text.alignment = TextAlignmentOptions.Center;
         text.fontSize = 24f;
-        text.color = Color.white;
+        text.color = InkUI.Ink;
         text.enableWordWrapping = true;
 
         LayoutElement layout = btnObj.AddComponent<LayoutElement>();

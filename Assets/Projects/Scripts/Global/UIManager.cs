@@ -19,6 +19,7 @@ public class UIManager : MonoBehaviour
     // --- 新增面板 ---
     private GameObject storePanel;
     private GameObject eventPanel;
+    private HudView hudView;
 
     [Header("HUD 元素")]
     private Slider healthSlider;
@@ -66,7 +67,7 @@ public class UIManager : MonoBehaviour
 
             if (gameOverPanel != null)
             {
-                Transform overTransform = gameOverPanel.transform.Find("Over");
+                Transform overTransform = FindDeepChild(gameOverPanel.transform, "Over");
                 if (overTransform != null)
                 {
                     gameOverTitleText = overTransform.GetComponent<TextMeshProUGUI>();
@@ -83,8 +84,9 @@ public class UIManager : MonoBehaviour
             AssignIfFound(ref eventPanel, FindPanelByTagOrComponent<EventUI>("UIPanel_Event"));
             if (inGameHUD != null)
             {
+                hudView = inGameHUD.GetComponent<HudView>();
                 // transform.Find 是在子物体中按名字查找（注意名字要和 Hierarchy 里完全一致）
-                Transform memTransform = inGameHUD.transform.Find("MemoryText");
+                Transform memTransform = FindDeepChild(inGameHUD.transform, "MemoryText");
                 
                 if (memTransform != null)
                 {
@@ -120,7 +122,7 @@ public class UIManager : MonoBehaviour
             }
         }
 
-        if (storePanel != null && heatBarFill == null)
+        if (storePanel != null && heatBarFill == null && hudView == null)
         {
             CreateHeatUI();
         }
@@ -219,6 +221,12 @@ public class UIManager : MonoBehaviour
 
     private void UpdateHeatUI(float current, float max, bool overheated)
     {
+        if (hudView != null)
+        {
+            hudView.SetHeat(current, max, overheated);
+            return;
+        }
+
         if (heatBarFill != null)
         {
             heatBarFill.fillAmount = max > 0f ? Mathf.Clamp01(current / max) : 0f;
@@ -249,7 +257,7 @@ public class UIManager : MonoBehaviour
     {
         if (panel == null) return;
 
-        Transform buttonTransform = panel.transform.Find(buttonName);
+        Transform buttonTransform = FindDeepChild(panel.transform, buttonName);
         if (buttonTransform == null) return;
 
         Button button = buttonTransform.GetComponent<Button>();
@@ -258,6 +266,17 @@ public class UIManager : MonoBehaviour
         // 场景里的持久化监听器目标丢失（m_Target: 0），这里在运行时重新绑定
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(action);
+    }
+
+    private static Transform FindDeepChild(Transform parent, string name)
+    {
+        if (parent == null) return null;
+        foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name == name) return child;
+        }
+
+        return null;
     }
 
     public void UpdateHealthUI(int currentHealth, int maxHealth)
@@ -301,7 +320,7 @@ public class UIManager : MonoBehaviour
                 {
                     TMP_FontAsset victoryFont = RuntimeFontUtility.GetFont();
                     if (victoryFont != null) gameOverTitleText.font = victoryFont;
-                    gameOverTitleText.text = "通关！";
+                    gameOverTitleText.text = "通关";
                 }
                 break;
             case GameManager.GameState.MapSelection:
@@ -369,7 +388,7 @@ public class UIManager : MonoBehaviour
             if (used > max) 
                 memoryText.color = Color.red;
             else 
-                memoryText.color = Color.white;
+                memoryText.color = InkUI.Ink;
         }
     }
 
