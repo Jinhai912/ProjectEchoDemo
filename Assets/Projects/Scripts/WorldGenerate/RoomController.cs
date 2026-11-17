@@ -98,6 +98,8 @@ public class RoomController : MonoBehaviour
         EventInteractable eventConsole = FindObjectOfType<EventInteractable>(true);
         if (eventConsole != null) eventConsole.gameObject.SetActive(false);
 
+        ClearProjectiles();
+
         Debug.Log($"大扫除完毕：清理了 {oldTempObjects.Length} 个临时物体和 {remainingZones.Length} 个介质区域。");
     }
 
@@ -127,8 +129,27 @@ public class RoomController : MonoBehaviour
             yield return new WaitUntil(() => enemiesAlive <= 0);
         }
 
+        ClearProjectiles();
+
         Debug.Log("所有波次清空，关卡完成！");
         OnEncounterComplete?.Invoke(currentEncounter);
+    }
+
+    private void ClearProjectiles()
+    {
+        Bullet[] bullets = FindObjectsOfType<Bullet>();
+        foreach (Bullet bullet in bullets)
+        {
+            if (ObjectPooler.Instance != null) ObjectPooler.Instance.ReturnToPool(bullet.gameObject);
+            else Destroy(bullet.gameObject);
+        }
+
+        EnemyProjectile[] enemyProjectiles = FindObjectsOfType<EnemyProjectile>();
+        foreach (EnemyProjectile projectile in enemyProjectiles)
+        {
+            if (ObjectPooler.Instance != null) ObjectPooler.Instance.ReturnToPool(projectile.gameObject);
+            else Destroy(projectile.gameObject);
+        }
     }
 
     private IEnumerator RunSpecialEncounter(EncounterData encounter)

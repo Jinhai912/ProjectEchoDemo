@@ -14,6 +14,11 @@ public class Bullet : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            // 新枪管的弹速更高，避免离散碰撞穿透薄碰撞体
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        }
     }
 
     public void Initialize(PlayerStates stats, Vector3 direction, float speed)

@@ -320,3 +320,16 @@
   - `hardwarePool` 正确指向 GameManager，三组列表已序列化到 MainMenu。
   - 升级三选一（临时硬件概率 1）出现长枪管/装甲核心炉 + 能力卡混排；点击长枪管后 `currentBarrel=HW_B_Rail`，伤害 25 / 射速 0.8 / 穿透 2，面板回到 Playing。
   - 商店库存/购买路径编译通过，待游玩商店确认。
+
+### #26 修复新枪管子弹碰撞后残留
+
+- **状态**: 已修复并验证
+- **问题**: 新枪管弹速更高（长枪 30），子弹预制体是 Discrete 碰撞，薄碰撞体可能被穿透；遭遇结束后仍在飞的子弹会保留到 3 秒生命周期，在地图上可见。
+- **修改**:
+  - `Bullet.Awake` 设置 `ContinuousDynamic` 碰撞检测。
+  - `RoomController` 在遭遇完成/换场时 `ClearProjectiles()`，回收所有玩家子弹和敌方投射物。
+  - `ObjectPooler` 对缺失 `PooledObject` 的实例补组件并 `MarkOutOfPool()`，避免 `IsInPool` 残留导致不回收。
+- **验证**:
+  - Unity 编译 0 errors。
+  - Play Mode 中子弹 `collisionDetectionMode=ContinuousDynamic`；遭遇结束后 `BulletTest(Clone)` 的 `isActive=false`（已回池）。
+  - 长枪的穿透仍会让子弹在命中前 2 个敌人后继续飞，这是设计行为；地图/换场时会被清理。
