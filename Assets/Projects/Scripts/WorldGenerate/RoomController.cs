@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class RoomController : MonoBehaviour
 {
     public static event System.Action<EncounterData> OnEncounterComplete;
+    public static RoomController Instance { get; private set; }
     private EncounterData currentEncounter;
 
     [System.Serializable]
@@ -28,6 +29,16 @@ public class RoomController : MonoBehaviour
     private int enemiesAlive = 0;
     private bool canOperate = true;
     private Coroutine encounterCoroutine;
+
+    void Awake()
+    {
+        Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
 
     void OnEnable() { GameManager.OnGameStateChanged += HandleGameStateChange; }
     void OnDisable() { GameManager.OnGameStateChanged -= HandleGameStateChange; }

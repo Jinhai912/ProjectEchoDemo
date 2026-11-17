@@ -16,9 +16,12 @@ public class ShootController : MonoBehaviour
 
     [Header("进阶索敌设置")]
     public float barrelPriorityRange = 5f; // 木桶优先范围（在这个距离内先打桶）
+    [Tooltip("自动索敌的重寻间隔，降低全量遍历频率")]
+    public float retargetInterval = 0.1f;
 
     private Transform targetEnemy;       // 当前锁定的敌人
     private float fireCooldown = 0f;     // 射击冷却计时器
+    private float retargetTimer = 0f;
     private Rigidbody rb;
     private bool canShoot = true; // 控制是否允许射击的开关
 
@@ -49,7 +52,13 @@ public class ShootController : MonoBehaviour
     {
         if (!canShoot) { return; }
         if (fireCooldown > 0) { fireCooldown -= Time.deltaTime; }
-        FindAndTargetEnemy();
+
+        retargetTimer -= Time.deltaTime;
+        if (targetEnemy == null || retargetTimer <= 0f)
+        {
+            FindAndTargetEnemy();
+            retargetTimer = retargetInterval;
+        }
 
         if (targetEnemy != null && fireCooldown <= 0)
         {
@@ -64,17 +73,16 @@ public class ShootController : MonoBehaviour
 
     void FindAndTargetEnemy()
     {
-        // 获取射程内所有的可射击目标
-        Shootable[] allShootables = FindObjectsOfType<Shootable>();
-
         Transform nearestEnemy = null;
         float minEnemyDist = Mathf.Infinity;
 
         Transform nearestBarrel = null;
         float minBarrelDist = Mathf.Infinity;
 
-        foreach (Shootable s in allShootables)
+        foreach (Shootable s in Shootable.All)
         {
+            if (s == null) continue;
+
             float dist = Vector3.Distance(transform.position, s.transform.position);
             
             // 超出总射程的直接忽略
@@ -131,6 +139,7 @@ public class ShootController : MonoBehaviour
     void Shoot()
     {
         if (bulletPrefab == null || firePoint == null || playerStates == null) return;
+        if (targetEnemy == null) return;
 
         // 1. 获取子弹总数
         int totalProjectiles = 1;

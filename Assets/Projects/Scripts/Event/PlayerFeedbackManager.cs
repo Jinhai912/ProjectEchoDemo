@@ -42,7 +42,13 @@ public class PlayerFeedbackManager : MonoBehaviour
     {
         if (feedbackTextPrefab == null || _uiCanvas == null || _mainCamera == null) return;
 
-        GameObject textInstance = Instantiate(feedbackTextPrefab, _uiCanvas.transform);
+        GameObject textInstance = ObjectPooler.Instance != null
+            ? ObjectPooler.Instance.SpawnFromPool(feedbackTextPrefab, Vector3.zero, Quaternion.identity)
+            : Instantiate(feedbackTextPrefab);
+
+        if (textInstance == null) return;
+        textInstance.transform.SetParent(_uiCanvas.transform, false);
+
         Vector2 screenPos = _mainCamera.WorldToScreenPoint(worldPosition);
         
         // 稍微向上和左右偏移

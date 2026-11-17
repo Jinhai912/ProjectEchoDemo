@@ -8,9 +8,9 @@ public class CurrencyGem : Pickup
 {
     public int currencyAmount = 10;
 
-    protected override void Start()
+    protected override void OnEnable()
     {
-        base.Start();
+        base.OnEnable();
         Destroy(gameObject, 30f);
     }
 

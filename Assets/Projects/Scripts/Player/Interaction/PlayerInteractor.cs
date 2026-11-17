@@ -7,6 +7,8 @@ public class PlayerInteractor : MonoBehaviour
     public float interactionDistance = 2f; 
     [Tooltip("请在下拉菜单中只勾选 'Interactable' 层，不要勾选 Player 层")]
     public LayerMask interactableLayer;    
+
+    private readonly Collider[] _interactBuffer = new Collider[16];
     
     // 移除了不需要的 Camera 引用
 
@@ -18,15 +20,21 @@ public class PlayerInteractor : MonoBehaviour
     private void TryInteract()
     {
         // 探测周围
-        Collider[] colliders = Physics.OverlapSphere(transform.position, interactionDistance, interactableLayer);
+        int colliderCount = Physics.OverlapSphereNonAlloc(
+            transform.position,
+            interactionDistance,
+            _interactBuffer,
+            interactableLayer);
 
-        if (colliders.Length > 0)
+        if (colliderCount > 0)
         {
             Collider nearestCollider = null;
             float minDistance = float.MaxValue;
 
-            foreach (Collider col in colliders)
+            for (int i = 0; i < colliderCount; i++)
             {
+                Collider col = _interactBuffer[i];
+
                 // --- 关键修改：强制排除玩家自己 ---
                 // 即使你在 Inspector 里手滑勾选了 Player 层，这一行也能防止你跟自己交互
                 if (col.gameObject == gameObject) continue;

@@ -27,6 +27,7 @@ public class EnemyMoveControl : MonoBehaviour
     private EnemyState _currentState;
     private Rigidbody _rb;
     private Transform _target;             
+    private Transform _cachedTarget;
     private float _findTargetTimer;        
     private float _attackTimer;              
     #endregion
@@ -38,6 +39,9 @@ public class EnemyMoveControl : MonoBehaviour
         _currentState = EnemyState.Idle;
         _findTargetTimer = targetFindInterval;
         _attackTimer = 0f;
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null) _cachedTarget = player.transform;
     }
 
     void Update()
@@ -129,21 +133,16 @@ public class EnemyMoveControl : MonoBehaviour
 
     private void FindNearestTarget()
     {
-        Attackable[] targets = FindObjectsOfType<Attackable>();
-        Transform closest = null;
-        float minDistance = Mathf.Infinity;
-
-        foreach (Attackable t in targets)
+        if (_cachedTarget == null)
         {
-            float dist = Vector3.Distance(transform.position, t.transform.position);
-            if (dist < minDistance)
-            {
-                minDistance = dist;
-                closest = t.transform;
-            }
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null) _cachedTarget = player.transform;
         }
 
-        _target = (closest != null && minDistance <= chaseRange) ? closest : null;
+        _target = (_cachedTarget != null &&
+                   Vector3.Distance(transform.position, _cachedTarget.position) <= chaseRange)
+            ? _cachedTarget
+            : null;
     }
 
     private void PerformAttack()
@@ -153,7 +152,6 @@ public class EnemyMoveControl : MonoBehaviour
         if (player != null)
         {
             player.TakeDamage(attackDamage);
-            Debug.Log($"[战斗] {gameObject.name} 命中玩家，造成 {attackDamage} 伤害");
         }
     }
     #endregion

@@ -12,8 +12,9 @@ public abstract class Pickup : MonoBehaviour
     protected Transform player;
     protected bool isFollowing = false;
 
-    protected virtual void Start()
+    protected virtual void OnEnable()
     {
+        isFollowing = false;
         GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
         if (playerGO != null) player = playerGO.transform;
     }
@@ -42,6 +43,7 @@ public abstract class Pickup : MonoBehaviour
     protected virtual void OnPickedUp(GameObject picker)
     {
         // 基础拾取行为，子类可扩展
-        Destroy(gameObject);
+        if (ObjectPooler.Instance != null) ObjectPooler.Instance.ReturnToPool(gameObject);
+        else Destroy(gameObject);
     }
 }

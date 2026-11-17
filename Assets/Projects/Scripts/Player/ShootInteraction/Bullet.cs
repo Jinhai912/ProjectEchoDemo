@@ -1,14 +1,15 @@
 using UnityEngine;
-using System.Collections;
 
 public class Bullet : MonoBehaviour
 {
+    private const float Lifetime = 3f;
+
     private PlayerStates playerStats;
     private int currentPierceCount = 0;
     public PhysicalMediaType mediaType = PhysicalMediaType.None;
     
     private Rigidbody rb;
-    private Coroutine deactivationCoroutine;
+    private float _lifeTimer;
 
     void Awake()
     {
@@ -26,16 +27,15 @@ public class Bullet : MonoBehaviour
             currentPierceCount = PlayerData.Instance.piercingCount;
         }
 
-        // --- 核心修改：使用协程替代 Destroy ---
-        // 每次启用前先停止旧的回收协程，防止冲突
-        if (deactivationCoroutine != null) StopCoroutine(deactivationCoroutine);
-        deactivationCoroutine = StartCoroutine(ReturnToPoolAfterTime(3f)); // 3秒后回收
+        _lifeTimer = Lifetime;
     }
 
-    private IEnumerator ReturnToPoolAfterTime(float delay)
+    void Update()
     {
-        yield return new WaitForSeconds(delay);
-        Recycle();
+        if (_lifeTimer <= 0f) return;
+
+        _lifeTimer -= Time.deltaTime;
+        if (_lifeTimer <= 0f) Recycle();
     }
 
     void OnCollisionEnter(Collision collision)
@@ -78,7 +78,9 @@ public class Bullet : MonoBehaviour
     // 统一回收接口
     private void Recycle()
     {
-        if (deactivationCoroutine != null) StopCoroutine(deactivationCoroutine);
-        ObjectPooler.Instance.ReturnToPool(this.gameObject);
+        _lifeTimer = 0f;
+
+        if (ObjectPooler.Instance != null) ObjectPooler.Instance.ReturnToPool(gameObject);
+        else Destroy(gameObject);
     }
 }

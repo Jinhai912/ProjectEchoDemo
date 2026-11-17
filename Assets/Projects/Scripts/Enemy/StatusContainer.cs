@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 
 /// <summary>
 /// 物理状态容器
@@ -15,6 +14,7 @@ public class StatusContainer : MonoBehaviour
 
     private float _lastReactionTime = -99f; 
     private Dictionary<PhysicalMediaType, float> _activeStatusTimers = new Dictionary<PhysicalMediaType, float>();
+    private readonly List<PhysicalMediaType> _statusKeysBuffer = new List<PhysicalMediaType>();
     #endregion
 
     #region 生命周期
@@ -48,8 +48,10 @@ public class StatusContainer : MonoBehaviour
     #region 核心逻辑
     private void UpdateStatusTimers()
     {
-        var keys = _activeStatusTimers.Keys.ToList();
-        foreach (var type in keys)
+        _statusKeysBuffer.Clear();
+        _statusKeysBuffer.AddRange(_activeStatusTimers.Keys);
+
+        foreach (var type in _statusKeysBuffer)
         {
             _activeStatusTimers[type] -= Time.deltaTime;
             if (_activeStatusTimers[type] <= 0)

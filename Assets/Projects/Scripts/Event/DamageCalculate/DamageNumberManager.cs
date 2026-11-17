@@ -41,8 +41,14 @@ public class DamageNumberManager : MonoBehaviour
     {
         if (damageNumberPrefab == null || _uiCanvas == null || _mainCamera == null) return;
 
-        // 1. 实例化与坐标转换
-        GameObject numberInstance = Instantiate(damageNumberPrefab, _uiCanvas.transform);
+        // 1. 从对象池获取并挂到 Canvas
+        GameObject numberInstance = ObjectPooler.Instance != null
+            ? ObjectPooler.Instance.SpawnFromPool(damageNumberPrefab, Vector3.zero, Quaternion.identity)
+            : Instantiate(damageNumberPrefab);
+
+        if (numberInstance == null) return;
+        numberInstance.transform.SetParent(_uiCanvas.transform, false);
+
         Vector3 spawnWorldPos = worldPosition + Vector3.up * 1.5f;
         Vector2 screenPos = _mainCamera.WorldToScreenPoint(spawnWorldPos);
 

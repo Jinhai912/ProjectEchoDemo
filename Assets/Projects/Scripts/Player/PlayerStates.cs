@@ -33,11 +33,6 @@ public class PlayerStates : MonoBehaviour
         }
         // --- 核心修改：读取【计算后】的最终属性 ---
         OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.MaxHealth); // 使用 MaxHealth 属性
-    }
-
-    void Update()
-    {
-        // 每一帧都从 PlayerData 拉取最新数据来更新 Inspector 的显示
         SyncStatsForInspector();
     }
     #endregion
@@ -58,6 +53,7 @@ public class PlayerStates : MonoBehaviour
         
         // --- 核心修改：读取【计算后】的最终属性 ---
         OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.MaxHealth); // 使用 MaxHealth 属性
+        SyncStatsForInspector();
 
         if (PlayerData.Instance.currentHealth <= 0)
         {
@@ -111,6 +107,7 @@ public class PlayerStates : MonoBehaviour
         if (PlayerData.Instance == null) return;
         PlayerData.Instance.AddExperience(amount);
         PlayerFeedbackManager.OnFeedbackRequested?.Invoke("+" + amount + " XP", false, transform.position);
+        SyncStatsForInspector();
     }
 
     /// <summary>
@@ -134,6 +131,8 @@ public class PlayerStates : MonoBehaviour
         {
             OnHealthChanged?.Invoke(PlayerData.Instance.currentHealth, PlayerData.Instance.MaxHealth);
         }
+
+        SyncStatsForInspector();
     }
 
     #endregion

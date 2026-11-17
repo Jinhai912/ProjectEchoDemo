@@ -38,6 +38,7 @@ public class DamageNumberAnimator : MonoBehaviour
         _damageText.text = Mathf.RoundToInt(damageAmount).ToString();
         _isCrit = isCritical;
         _initialScale = Vector3.one; // 确保基准缩放正确
+        _timer = 0f;
 
         if (_isCrit)
         {
@@ -52,12 +53,18 @@ public class DamageNumberAnimator : MonoBehaviour
             transform.localScale = _initialScale;
         }
 
-        Destroy(gameObject, lifeTime); // 后续建议接入对象池
     }
 
     void Update()
     {
         _timer += Time.deltaTime;
+
+        if (_timer >= lifeTime)
+        {
+            if (ObjectPooler.Instance != null) ObjectPooler.Instance.ReturnToPool(gameObject);
+            else Destroy(gameObject);
+            return;
+        }
 
         // 1. 向上位移
         transform.Translate(Vector3.up * floatSpeed * Time.deltaTime);

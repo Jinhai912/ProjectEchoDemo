@@ -211,3 +211,18 @@
 - **状态**: 已完成
 - **删除**: `EventManager.cs`（空壳，无场景引用）、`SimpleUITester.cs`（调试遗留，无场景引用）。
 - **验证**: Unity 编译 0 errors。
+
+### #17 性能收尾：索敌、GC 与对象池
+
+- **状态**: 已实现并验证
+- **修改**:
+  - `Shootable` 增加全局注册表；`ShootController` 改为 10Hz 重寻，不再每帧 `FindObjectsOfType`。
+  - `EnemyMoveControl` 缓存玩家 Transform，移除每个敌人 0.5s 的 `FindObjectsOfType<Attackable>`。
+  - `StatusContainer` 用预分配 List 缓冲状态 key，移除每帧 `Keys.ToList()`。
+  - `PlayerStates` 移除每帧 Inspector 同步，改为数据变化时同步。
+  - `RoomController` 增加静态 Instance；`EnemyState` 优先从 Instance 取，减少生成时的全场景查找。
+  - 伤害飘字、拾取反馈、经验球接入 `ObjectPooler`；飘字/反馈用计时器回收，不再 `Instantiate/Destroy`。
+  - `Bullet` 用计时器替代每发协程/`WaitForSeconds`。
+  - `PlayerInteractor` / `PhysicalReactionManager` 的 `OverlapSphere` 改为 `NonAlloc`。
+  - 缓存 CurrencyGem 的共享材质，移除近战命中日志刷屏。
+- **验证**: Unity 编译 0 errors；Play Mode 自动击杀起始敌人，碎片 300→316，无 Console errors，掉落物正常拾取。

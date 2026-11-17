@@ -24,12 +24,14 @@ public class EnemyState : MonoBehaviour
     #endregion
 
     private RoomController _roomController;
+    private static Material _currencyMaterial;
 
     #region 生命周期
     void Start()
     {
         _currentHealth = maxHealth;
-        _roomController = FindObjectOfType<RoomController>();
+        _roomController = RoomController.Instance;
+        if (_roomController == null) _roomController = FindObjectOfType<RoomController>();
         if (_roomController == null) Debug.LogError("[系统] 场景中找不到 RoomController!");
     }
     #endregion
@@ -54,7 +56,14 @@ public class EnemyState : MonoBehaviour
 
         if (expGemPrefab)
         {
-            Instantiate(expGemPrefab, transform.position, Quaternion.identity);
+            if (ObjectPooler.Instance != null)
+            {
+                ObjectPooler.Instance.SpawnFromPool(expGemPrefab, transform.position, Quaternion.identity);
+            }
+            else
+            {
+                Instantiate(expGemPrefab, transform.position, Quaternion.identity);
+            }
         }
 
         SpawnCurrencyDrop();
@@ -79,14 +88,21 @@ public class EnemyState : MonoBehaviour
         Renderer gemRenderer = gem.GetComponent<Renderer>();
         if (gemRenderer != null)
         {
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Standard");
-
-            if (shader != null)
+            if (_currencyMaterial == null)
             {
-                Material material = new Material(shader);
-                material.color = new Color(0.2f, 0.8f, 1f);
-                gemRenderer.material = material;
+                Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+                if (shader == null) shader = Shader.Find("Standard");
+
+                if (shader != null)
+                {
+                    _currencyMaterial = new Material(shader);
+                    _currencyMaterial.color = new Color(0.2f, 0.8f, 1f);
+                }
+            }
+
+            if (_currencyMaterial != null)
+            {
+                gemRenderer.sharedMaterial = _currencyMaterial;
             }
         }
 

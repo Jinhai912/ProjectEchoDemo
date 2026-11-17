@@ -23,6 +23,8 @@ public class PhysicalReactionManager : MonoBehaviour
     public GameObject vfxOverload;   
     public GameObject vfxVaporization; 
     public GameObject vfxIgnition;     
+
+    private readonly Collider[] _reactionBuffer = new Collider[64];
     #endregion
 
     private void Awake()
@@ -87,9 +89,11 @@ public class PhysicalReactionManager : MonoBehaviour
     private void HandleConduction(Vector3 position, GameObject source)
     {
         float damage = PlayerData.Instance.FinalAttack;
-        Collider[] hits = Physics.OverlapSphere(position, conductionRadius);
-        foreach (var hit in hits)
+        int hitCount = Physics.OverlapSphereNonAlloc(position, conductionRadius, _reactionBuffer);
+
+        for (int i = 0; i < hitCount; i++)
         {
+            Collider hit = _reactionBuffer[i];
             if (hit.gameObject == source) continue;
             if (hit.TryGetComponent<StatusContainer>(out var status) && status.HasStatus(PhysicalMediaType.Liquid_Water))
             {
@@ -101,9 +105,11 @@ public class PhysicalReactionManager : MonoBehaviour
     private void HandleOverload(Vector3 position, GameObject source)
     {
         float damage = PlayerData.Instance.FinalAttack * 1.5f;
-        Collider[] hits = Physics.OverlapSphere(position, overloadExplosionRadius);
-        foreach (var hit in hits)
+        int hitCount = Physics.OverlapSphereNonAlloc(position, overloadExplosionRadius, _reactionBuffer);
+
+        for (int i = 0; i < hitCount; i++)
         {
+            Collider hit = _reactionBuffer[i];
             if (hit.TryGetComponent<EnemyState>(out var enemy)) enemy.TakeDamage(damage, false);
             if (hit.TryGetComponent<Rigidbody>(out var rb)) rb.AddExplosionForce(overloadForce, position, overloadExplosionRadius, 0.5f);
         }

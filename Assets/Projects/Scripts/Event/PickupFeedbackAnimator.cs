@@ -30,12 +30,20 @@ public class PickupFeedbackAnimator : MonoBehaviour
         else if (message.Contains("XP")) _text.color = experienceColor;
         else _text.color = defaultColor;
 
-        Destroy(gameObject, _lifeTime);
+        _timer = 0f;
     }
 
     void Update()
     {
         _timer += Time.deltaTime;
+
+        if (_timer >= _lifeTime)
+        {
+            if (ObjectPooler.Instance != null) ObjectPooler.Instance.ReturnToPool(gameObject);
+            else Destroy(gameObject);
+            return;
+        }
+
         transform.Translate(Vector3.up * 40f * Time.deltaTime);
 
         // 渐隐逻辑
