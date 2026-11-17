@@ -171,3 +171,11 @@
   - 新增 `CurrencyGem`（继承 `Pickup`）：飞向玩家、拾取后增加碎片并弹出 `+X 碎片` 反馈；30 秒未拾取自动销毁，并带 `TemporaryEncounterObject` 以便换场清理。
   - 掉落物先用运行时生成的小光球作为占位表现，后续替换正式模型/特效。
 - **验证**: Play Mode 起始敌人被自动击杀后，`currentCurrency` 从 300 变为 316（掉落 16），`CurrencyGem` 已被拾取，Console 0 errors。
+
+### #13 修复死亡后主菜单按钮无响应
+
+- **状态**: 已修复并验证
+- **问题**: `GameOverPanel` 和暂停菜单的 “Main Menu” 按钮，场景里的持久化监听器 `m_Target` 为 `{fileID: 0}`，点击不会调用 `UIManager.OnMainMenuButtonPressed`；日志中也没有对应调用记录。
+- **修改**: `UIManager.FindAndAssignUI` 在运行时找到两个面板里的 Main Menu 按钮，`RemoveAllListeners` 后重新绑定 `OnMainMenuButtonPressed`；`OnMainMenuButtonPressed` 增加日志。
+- **验证**: Play Mode 中打开暂停菜单，触发 `Main Menu` 按钮，Console 输出 `UIManager: 返回主菜单。`，场景切换到 MainMenu。GameOver 面板复用同一绑定逻辑。
+- **备注**: 测试时在 MainMenu 未保存场景里留下了一个 `Canvas/__TestKillPlayer` 测试按钮，需要删除或重载场景丢弃，不要保存。

@@ -66,6 +66,9 @@ public class UIManager : MonoBehaviour
                 }
             }
 
+            WireMainMenuButton(pauseMenuPanel, "Main Menu");
+            WireMainMenuButton(gameOverPanel, "MainMenu");
+
             AssignIfFound(ref mapPanel, FindPanelByTagOrComponent<MapView>("UIPanel_Map"));
             AssignIfFound(ref levelUpPanel, FindPanelByTagOrComponent<AbilityCardUI>("UIPanel_LevelUp"));
             AssignIfFound(ref storePanel, FindPanelByTagOrComponent<StoreUI>("UIPanel_Store"));
@@ -143,6 +146,21 @@ public class UIManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    private void WireMainMenuButton(GameObject panel, string buttonName)
+    {
+        if (panel == null) return;
+
+        Transform buttonTransform = panel.transform.Find(buttonName);
+        if (buttonTransform == null) return;
+
+        Button button = buttonTransform.GetComponent<Button>();
+        if (button == null) return;
+
+        // 场景里的持久化监听器目标丢失（m_Target: 0），这里在运行时重新绑定
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(OnMainMenuButtonPressed);
     }
 
     public void UpdateHealthUI(int currentHealth, int maxHealth)
@@ -262,7 +280,11 @@ public class UIManager : MonoBehaviour
     public void OnStartGameButtonPressed() { if (GameManager.Instance != null) GameManager.Instance.StartGame(); }
     public void OnPauseButtonPressed() { if (GameManager.Instance != null) GameManager.Instance.PauseGame(); }
     public void OnResumeButtonPressed() { if (GameManager.Instance != null) GameManager.Instance.ResumeGame(); }
-    public void OnMainMenuButtonPressed() { if (GameManager.Instance != null) GameManager.Instance.GoToMainMenu(); }
+    public void OnMainMenuButtonPressed()
+    {
+        Debug.Log("UIManager: 返回主菜单。");
+        if (GameManager.Instance != null) GameManager.Instance.GoToMainMenu();
+    }
     public void ShowMapPanel() { if (MapManager.Instance != null) MapManager.Instance.PrepareAndDrawMap(); GameManager.Instance.UpdateGameState(GameManager.GameState.MapSelection); }
     public void HideMapPanel() { if (mapPanel != null) mapPanel.SetActive(false); }
 }
