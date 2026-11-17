@@ -132,6 +132,26 @@
 - 材质：`Assets/Art/StyleTest/Materials/`
 - 全局 Volume：`Assets/Art/StyleTest/StyleTestVolume.asset`
 - 预览图：`Assets/Art/StyleTest/Preview.png`
+- 主场景动态预览：`Assets/Art/StyleTest/MainScenePreview.png`
 - 重建方式：Unity 菜单 `Tools > ECHO > Build Style Test`，会重建场景和占位材质。
 
 注意：当前 `StyleTest` 是纯渲染/构图验证，不包含正式 HUD 和音效；下一步再接入 UI Kit。
+
+## 15. 主场景风格覆盖（测试版）
+
+- `MainFightScene` 中有一个 `STYLE OVERRIDE` 根对象，包含：
+  - `StyleSceneApplier`：运行时材质覆盖。
+  - `Global Volume`：去饱和、对比度、暗角、颗粒。
+  - `Decor`：风扇、立柱、围挡、箱体、网点人群，全部无碰撞，仅作视觉参照。
+- 运行规则：
+  - `Ground` / `Floor` 替换为 `PaperGrid` 材质，保留空间参照。
+  - 玩家和敌人按原材质明度替换为黑/白墨线。
+  - 环境其余物体保留原材质，由全局 Volume 去饱和。
+  - 子弹、元素介质、拾取物、交互物和 UI 不强制换材质，避免破坏玩法可读性。
+  - HUD 的 CanvasScaler 在风格测试中临时改为 1920×1080，HUD 文字改为墨黑。
+- 测试开关：Play Mode 中按 `F8` 切换黑白风格/原始材质。
+- 移除方式：`Tools > ECHO > Remove Style From MainFightScene`。
+- 已知测试限制：
+  - `StyleSceneApplier` 每 0.5s 扫描一次 Renderer，仅用于原型验证；正式版应在敌人/道具生成时挂接风格组件，避免全场景扫描。
+  - 当前品红/彩色特效是占位 VFX，后续需要替换为符合调色板的元素颜色。
+  - HUD 仍是占位布局，正式 UI Kit 接入时会重做。

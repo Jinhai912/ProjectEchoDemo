@@ -379,3 +379,25 @@
   - 散射 + 标准仍为 3.18s 过热 / 2.01s 恢复。
   - 长枪 + 大容量仍为 14.52s 过热 / 3.00s 恢复。
   - 按 #28 的 600 HP 计算，三套 Build 对三层 Boss 的有效 DPS 仍为 16.5–17.7，TTK 约 34–36 秒，Boss 血量不需要再调。
+
+### #30 主场景黑白印刷风格覆盖（测试版）
+
+- **状态**: 已接入并验证；仅风格测试，未构建
+- **新增**:
+  - `StyleSceneApplier`：运行时把 `Ground/Floor` 替换为 `PaperGrid`，玩家/敌人按原材质明度替换为黑白墨线；其余环境保留原材质，由全局 Volume 去饱和。
+  - `PaperGrid` Shader：纸白底、细黑网格、5 格粗线、轻微棋盘明度差。
+  - `STYLE OVERRIDE` 根对象：`StyleSceneApplier` + `Global Volume` + 无碰撞装饰（风扇、立柱、围挡、箱体、网点人群）。
+  - F8 开关风格/原始材质；`Tools > ECHO > Remove Style From MainFightScene` 可整体移除。
+- **发现并修正**:
+  - 主场景环境几乎全压在一块 `Ground` 网格上，最初整体换成纸白后地面和空间参照消失；改为专用 `PaperGrid` 材质。
+  - 主战斗 HUD 的 CanvasScaler 仍是 800×600 参考分辨率，在 1080p 下被放大到占屏；测试版临时改为 1920×1080，并把 HUD 文字改为墨黑。
+  - 纯纸白背景 + 白色玩家会“白上加白”；因此环境保留原材质并整体去饱和，只把玩家/敌人换成黑白剪影。
+  - Volume 最初没有真正生效：Profile 的组件未写成子资产，且场景里赋的是 `profile` 而不是 `sharedProfile`。已改为 `AddObjectToAsset` + `sharedProfile`，去饱和/对比度/暗角/颗粒现在实际参与渲染。
+- **验证**:
+  - Unity 编译 0 errors。
+  - 从主菜单进入主战斗场景，StyleSceneApplier 日志正常，地面/角色/HUD/后处理均按预期切换。
+  - 主场景动态预览：`Assets/Art/StyleTest/MainScenePreview.png`。
+- **注意**:
+  - 每 0.5s 扫描 Renderer 仅用于原型验证，正式版应在生成时挂接风格组件，避免全场景扫描。
+  - 品红/彩色 VFX 是占位特效，后续替换为符合元素调色板的颜色。
+  - HUD 仍是占位布局，正式 UI Kit 接入时重做。

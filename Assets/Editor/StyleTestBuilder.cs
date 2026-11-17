@@ -327,34 +327,53 @@ public static class StyleTestBuilder
 
     private static void CreateVolume(Transform parent)
     {
-        AssetDatabase.DeleteAsset(VolumePath);
-        VolumeProfile profile = ScriptableObject.CreateInstance<VolumeProfile>();
-        AssetDatabase.CreateAsset(profile, VolumePath);
+        VolumeProfile profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumePath);
+        if (profile == null)
+        {
+            profile = ScriptableObject.CreateInstance<VolumeProfile>();
+            AssetDatabase.CreateAsset(profile, VolumePath);
+        }
 
-        ColorAdjustments color = profile.Add<ColorAdjustments>(true);
-        color.saturation.Override(-70f);
+        ColorAdjustments color = GetOrAddVolumeComponent<ColorAdjustments>(profile);
+        color.saturation.Override(-85f);
         color.contrast.Override(30f);
         color.postExposure.Override(0.05f);
 
-        Tonemapping tonemapping = profile.Add<Tonemapping>(true);
+        Tonemapping tonemapping = GetOrAddVolumeComponent<Tonemapping>(profile);
         tonemapping.mode.Override(TonemappingMode.Neutral);
 
-        Vignette vignette = profile.Add<Vignette>(true);
+        Vignette vignette = GetOrAddVolumeComponent<Vignette>(profile);
         vignette.intensity.Override(0.18f);
         vignette.smoothness.Override(0.5f);
         vignette.color.Override(Color.black);
 
-        FilmGrain grain = profile.Add<FilmGrain>(true);
+        FilmGrain grain = GetOrAddVolumeComponent<FilmGrain>(profile);
         grain.type.Override(FilmGrainLookup.Thin1);
         grain.intensity.Override(0.12f);
         grain.response.Override(0.8f);
+
+        EditorUtility.SetDirty(profile);
+        AssetDatabase.SaveAssets();
 
         GameObject volumeObject = new GameObject("Global Volume");
         volumeObject.transform.SetParent(parent);
         Volume volume = volumeObject.AddComponent<Volume>();
         volume.isGlobal = true;
         volume.priority = 1f;
-        volume.profile = profile;
+        volume.sharedProfile = profile;
+    }
+
+    private static T GetOrAddVolumeComponent<T>(VolumeProfile profile) where T : VolumeComponent
+    {
+        T component = profile.components.Find(item => item is T) as T;
+        if (component == null)
+        {
+            component = profile.Add<T>(true);
+            AssetDatabase.AddObjectToAsset(component, profile);
+        }
+
+        component.active = true;
+        return component;
     }
 
     private static Camera CreateCamera(Transform parent)
