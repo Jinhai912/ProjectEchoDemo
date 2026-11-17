@@ -26,6 +26,8 @@ public class UIManager : MonoBehaviour
     private TextMeshProUGUI gameOverTitleText;
     private Image heatBarFill;
     private TextMeshProUGUI heatLabel;
+    private int _lastHeatDisplay = -1;
+    private bool _lastOverheatDisplay;
     public TextMeshProUGUI memoryText;
 
     void Awake()
@@ -172,8 +174,8 @@ public class UIManager : MonoBehaviour
         labelRect.offsetMax = Vector2.zero;
 
         heatLabel = labelObj.GetComponent<TextMeshProUGUI>();
-        heatLabel.text = "热量";
-        heatLabel.fontSize = 18f;
+        heatLabel.text = "热量 0/100";
+        heatLabel.fontSize = 20f;
         heatLabel.alignment = TextAlignmentOptions.Right;
         heatLabel.color = Color.white;
         heatLabel.raycastTarget = false;
@@ -227,10 +229,19 @@ public class UIManager : MonoBehaviour
 
         if (heatLabel != null)
         {
-            heatLabel.text = overheated ? "过热！" : "热量";
-            heatLabel.color = overheated
-                ? new Color(1f, 0.35f, 0.25f)
-                : Color.white;
+            int displayHeat = Mathf.RoundToInt(current);
+            int displayMax = Mathf.RoundToInt(max);
+
+            if (displayHeat != _lastHeatDisplay || overheated != _lastOverheatDisplay)
+            {
+                heatLabel.text = overheated ? "过热！" : $"热量 {displayHeat}/{displayMax}";
+                heatLabel.color = overheated
+                    ? new Color(1f, 0.35f, 0.25f)
+                    : Color.white;
+
+                _lastHeatDisplay = displayHeat;
+                _lastOverheatDisplay = overheated;
+            }
         }
     }
 
