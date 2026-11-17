@@ -8,11 +8,19 @@ public class PlayerData : MonoBehaviour
 
     // 参数1: 当前已用内存, 参数2: 总上限
     public static event System.Action<int, int> OnMemoryChanged;
+    // 参数1: 当前热量, 参数2: 热容上限, 参数3: 是否过热
+    public static event System.Action<float, float, bool> OnHeatChanged;
 
     #region 1. 硬件插槽 (Hardware Slots)
     [Header("--- 当前硬件挂载 ---")]
     public HardwareCoreSO currentCore;     // 核心炉：决定内存和血量加成
     public HardwareBarrelSO currentBarrel; // 枪管：决定攻击形态、伤害、射速
+    public HardwareHeatSinkSO currentHeatSink; // 散热器：决定热容和散热
+
+    [Header("--- 初始硬件 (新开局使用) ---")]
+    public HardwareCoreSO startingCore;
+    public HardwareBarrelSO startingBarrel;
+    public HardwareHeatSinkSO startingHeatSink;
     #endregion
 
     #region 2. 基础属性与加成 (数值层)
@@ -38,6 +46,12 @@ public class PlayerData : MonoBehaviour
     [Tooltip("每局开始时获得的回声碎片，用于商店购买")]
     public int startingCurrency = 300;
 
+    [Header("--- 默认散热参数 (无散热器时) ---")]
+    public float defaultHeatCapacity = 100f;
+    public float defaultCoolingRate = 25f;
+    public float defaultCoolingDelay = 0.5f;
+    public float defaultOverheatRecoveryTime = 2f;
+
     [Header("--- 机制状态 ---")]
     public int projectileCount = 1;     
     public int piercingCount = 0; 
@@ -56,6 +70,11 @@ public class PlayerData : MonoBehaviour
     // 最终射速：核心枪管射速 * 软件倍率
     public float FireRate => (currentBarrel != null ? currentBarrel.baseFireRate : baseFireRate) * fireRateMultiplier;
 
+    public float HeatCapacity => currentHeatSink != null ? currentHeatSink.heatCapacity : defaultHeatCapacity;
+    public float CoolingRate => currentHeatSink != null ? currentHeatSink.coolingRate : defaultCoolingRate;
+    public float CoolingDelay => currentHeatSink != null ? currentHeatSink.coolingDelay : defaultCoolingDelay;
+    public float OverheatRecoveryTime => currentHeatSink != null ? currentHeatSink.overheatRecoveryTime : defaultOverheatRecoveryTime;
+
     public int Defense => bonusDefense;
     public float MoveSpeed => baseMoveSpeed * moveSpeedMultiplier;
     public float FinalCritRate => critRateBonus;
@@ -69,7 +88,14 @@ public class PlayerData : MonoBehaviour
     public int currentHealth;
     public int currentExperience;
     public int currentCurrency; // 回声碎片
-    public int currentUsedMemoryMB = 0; 
+    public int currentUsedMemoryMB = 0;
+    public float currentHeat;
+    public bool isOverheated;
+
+    private float _overheatTimer;
+    private float _lastHeatTime = -999f;
+
+    public bool CanFire => !isOverheated;
 
     public List<AbilityData> installedProtocols = new List<AbilityData>();
     public List<AbilityData> permanentFirmwares = new List<AbilityData>();
@@ -83,6 +109,31 @@ public class PlayerData : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+    }
+
+    void Update()
+    {
+        if (isOverheated)
+        {
+            _overheatTimer -= Time.deltaTime;
+            if (_overheatTimer <= 0f)
+            {
+                isOverheated = false;
+                currentHeat = 0f;
+                OnHeatChanged?.Invoke(currentHeat, HeatCapacity, false);
+            }
+            return;
+        }
+
+        if (currentHeat <= 0f) return;
+        if (Time.time - _lastHeatTime < CoolingDelay) return;
+
+        float newHeat = Mathf.Max(0f, currentHeat - CoolingRate * Time.deltaTime);
+        if (!Mathf.Approximately(newHeat, currentHeat))
+        {
+            currentHeat = newHeat;
+            OnHeatChanged?.Invoke(currentHeat, HeatCapacity, false);
+        }
     }
 
     // --- 硬件更换接口 ---
@@ -102,6 +153,40 @@ public class PlayerData : MonoBehaviour
         Debug.Log($"<color=orange>[硬件] 枪管已更新: {newBarrel.hardwareName}</color>");
     }
 
+    public void EquipHeatSink(HardwareHeatSinkSO newHeatSink)
+    {
+        if (newHeatSink == null) return;
+        currentHeatSink = newHeatSink;
+        ResetHeat();
+        Debug.Log($"<color=cyan>[硬件] 散热器已更新: {newHeatSink.hardwareName}</color>");
+    }
+
+    public void AddHeat(float amount)
+    {
+        if (amount <= 0f) return;
+
+        currentHeat = Mathf.Min(currentHeat + amount, HeatCapacity);
+        _lastHeatTime = Time.time;
+
+        if (!isOverheated && currentHeat >= HeatCapacity - 0.001f)
+        {
+            isOverheated = true;
+            _overheatTimer = OverheatRecoveryTime;
+            Debug.Log($"<color=red>[过热] 散热保护启动，{OverheatRecoveryTime:0.0}s 后恢复。</color>");
+        }
+
+        OnHeatChanged?.Invoke(currentHeat, HeatCapacity, isOverheated);
+    }
+
+    public void ResetHeat()
+    {
+        currentHeat = 0f;
+        isOverheated = false;
+        _overheatTimer = 0f;
+        _lastHeatTime = -999f;
+        OnHeatChanged?.Invoke(currentHeat, HeatCapacity, false);
+    }
+
     // --- 重置逻辑 ---
     public void InitializeForNewRun()
     {
@@ -113,10 +198,15 @@ public class PlayerData : MonoBehaviour
         currentExperience = 0;
         currentCurrency = startingCurrency;
         currentUsedMemoryMB = 0;
+
+        currentCore = startingCore;
+        currentBarrel = startingBarrel;
+        currentHeatSink = startingHeatSink;
         
         installedProtocols.Clear();
         permanentFirmwares.Clear();
         currentBulletMedia = PhysicalMediaType.None;
+        ResetHeat();
 
         // 最后初始化血量和UI
         currentHealth = MaxHealth; 

@@ -5,7 +5,7 @@ using UnityEngine;
 /// 描述：定义机器人的动力源，决定基础内存容量 (MB) 与生存属性。
 /// </summary>
 [CreateAssetMenu(fileName = "HW_C_", menuName = "Game/Hardware/Core")]
-public class HardwareCoreSO : ScriptableObject
+public class HardwareCoreSO : HardwareData
 {
     #region 核心标识
     [Header("系统标识")]
@@ -14,6 +14,11 @@ public class HardwareCoreSO : ScriptableObject
 
     [Tooltip("核心炉型号名称")]
     public string hardwareName;
+
+    [TextArea(2, 4)]
+    public string description;
+
+    public Sprite icon;
     #endregion
 
     #region 性能参数
@@ -27,4 +32,7 @@ public class HardwareCoreSO : ScriptableObject
     [Tooltip("机体基础能量恢复速率")]
     public float energyRegen = 10f;   
     #endregion
+
+    public override HardwareSlot Slot => HardwareSlot.Core;
+    public override string DisplayName => hardwareName;
 }

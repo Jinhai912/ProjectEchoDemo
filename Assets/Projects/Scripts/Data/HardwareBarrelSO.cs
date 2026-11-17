@@ -5,7 +5,7 @@ using UnityEngine;
 /// 描述：决定机器人的攻击形态、基础火力数值以及热量产生系数。
 /// </summary>
 [CreateAssetMenu(fileName = "HW_B_", menuName = "Game/Hardware/Barrel")]
-public class HardwareBarrelSO : ScriptableObject
+public class HardwareBarrelSO : HardwareData
 {
     #region 核心标识
     [Header("系统标识")]
@@ -14,6 +14,11 @@ public class HardwareBarrelSO : ScriptableObject
 
     [Tooltip("枪管型号名称")]
     public string hardwareName;
+
+    [TextArea(2, 4)]
+    public string description;
+
+    public Sprite icon;
     #endregion
 
     #region 战斗参数
@@ -26,6 +31,19 @@ public class HardwareBarrelSO : ScriptableObject
 
     [Tooltip("基础射速 (每秒发射次数)")]
     public float baseFireRate = 2f;   
+
+    [Header("弹道形态")]
+    [Tooltip("每次射击的弹丸数量")]
+    public int projectilesPerShot = 1;
+
+    [Tooltip("多弹丸时的总扇形角度")]
+    public float spreadAngle = 0f;
+
+    [Tooltip("弹丸飞行速度")]
+    public float bulletSpeed = 20f;
+
+    [Tooltip("基础穿透次数")]
+    public int pierce = 0;
     #endregion
 
     #region 物理反馈
@@ -33,4 +51,7 @@ public class HardwareBarrelSO : ScriptableObject
     [Tooltip("每发射一枚弹丸产生的基础热量值 (用于过载构筑)")]
     public float heatPerShot = 5f;    
     #endregion
+
+    public override HardwareSlot Slot => HardwareSlot.Barrel;
+    public override string DisplayName => hardwareName;
 }

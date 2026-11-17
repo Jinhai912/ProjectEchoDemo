@@ -264,3 +264,17 @@
 - **问题**: 反应飘字使用 `【】`，LiberationSans 与 msyh SDF 的字形表都没有该字符，显示为方块并产生 TMP Warning。
 - **修改**: 改为 ASCII `[传导]` / `[过载]` / `[气化]` / `[爆燃]`，中文继续走 msyh fallback。
 - **验证**: Unity 编译 0 errors；待触发物理反应确认。
+
+### #22 里程碑 1：硬件三槽数据层与过热逻辑
+
+- **状态**: 已实现，Unity 编译通过，ScriptableObject API 验证通过
+- **新增**:
+  - `HardwareData` 基类 + `HardwareSlot`；核心炉/枪管继承，新增 `HardwareHeatSinkSO`。
+  - 枪管新增弹形字段：`projectilesPerShot` / `spreadAngle` / `bulletSpeed` / `pierce`。
+  - `PlayerData` 新增 `currentHeatSink`、`startingCore/Barrel/HeatSink`、热量/过热状态、热容/散热/冷却延迟/过热恢复、`AddHeat` / `ResetHeat` / `EquipHeatSink`、`OnHeatChanged`。
+  - 新开局重置硬件与热量。
+  - 样本散热器 `Assets/Data/Hardware/HeatSinks/HW_H_Standard.asset`。
+- **验证**:
+  - Unity 编译 0 errors。
+  - 旧枪管资产字段完整，`Slot=Barrel`，`DisplayName` 正常。
+  - ScriptableObject API 创建散热器并批量写入 7 个字段成功；`Slot=HeatSink`，`DisplayName=标准散热器`。
