@@ -205,3 +205,9 @@
 - **验证**:
   - Unity 编译 0 errors。
   - Play Mode 中暂停后触发 `Resume`，`currentState` 从 `Paused` 回到 `Playing`。
+
+### #16 清理未使用的空壳/调试脚本
+
+- **状态**: 已完成
+- **删除**: `EventManager.cs`（空壳，无场景引用）、`SimpleUITester.cs`（调试遗留，无场景引用）。
+- **验证**: Unity 编译 0 errors。
