@@ -71,7 +71,8 @@ public static class RuntimeEventPanelBuilder
         textObj.transform.SetParent(parent, false);
 
         TextMeshProUGUI text = textObj.GetComponent<TextMeshProUGUI>();
-        if (TMP_Settings.defaultFontAsset != null) text.font = TMP_Settings.defaultFontAsset;
+        TMP_FontAsset runtimeFont = RuntimeFontUtility.GetFont();
+        if (runtimeFont != null) text.font = runtimeFont;
         text.fontSize = fontSize;
         text.alignment = alignment;
         text.color = Color.white;

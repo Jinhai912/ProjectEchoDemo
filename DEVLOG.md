@@ -137,3 +137,12 @@
   - Console 0 errors；运行时中文缺字警告已定位。
 - **修改**: 在 `Assets/TextMesh Pro/Resources/TMP Settings.asset` 的 `m_fallbackFontAssets` 加入 `msyh SDF`（GUID `1fc33eee782440942a13fc2aded163c4`），让默认字体缺字时回退到中文字体。
 - **待办**: 玩家初始碎片为 0，商店只能提示“钱不够”。需要决定初始碎片、敌人掉落或事件奖励中的一种来源。
+
+### #10 初始碎片与运行时中文字体
+
+- **状态**: 已实现，Unity 编译通过
+- **修改**:
+  - `PlayerData` 新增 `startingCurrency`（默认 300），`InitializeForNewRun` 用它初始化 `currentCurrency`。
+  - 新增 `RuntimeFontUtility`，运行时创建的 UI 文本直接使用 TMP 全局 fallback 列表里的中文字体（当前为 `msyh SDF`），不再依赖默认 LiberationSans 的逐字回退。
+  - `StoreUI` / `EventUI` / `RuntimeEventPanelBuilder` 创建文本时统一调用该工具。
+- **验证**: Unity 编译 0 errors；`startingCurrency` 在 Inspector 中为 300。中文显示待再跑一次商店确认。

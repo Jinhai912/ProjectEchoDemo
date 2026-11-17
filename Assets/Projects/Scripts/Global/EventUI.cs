@@ -79,7 +79,8 @@ public class EventUI : MonoBehaviour
         textRect.offsetMax = new Vector2(-12f, -4f);
 
         TextMeshProUGUI text = textObj.GetComponent<TextMeshProUGUI>();
-        if (TMP_Settings.defaultFontAsset != null) text.font = TMP_Settings.defaultFontAsset;
+        TMP_FontAsset runtimeFont = RuntimeFontUtility.GetFont();
+        if (runtimeFont != null) text.font = runtimeFont;
         text.alignment = TextAlignmentOptions.Center;
         text.fontSize = 24f;
         text.color = Color.white;

@@ -183,7 +183,8 @@ public class StoreUI : MonoBehaviour
         go.transform.SetParent(parent, false);
 
         TextMeshProUGUI tmp = go.GetComponent<TextMeshProUGUI>();
-        if (TMP_Settings.defaultFontAsset != null) tmp.font = TMP_Settings.defaultFontAsset;
+        TMP_FontAsset runtimeFont = RuntimeFontUtility.GetFont();
+        if (runtimeFont != null) tmp.font = runtimeFont;
         tmp.text = text;
         tmp.fontSize = fontSize;
         tmp.alignment = alignment;

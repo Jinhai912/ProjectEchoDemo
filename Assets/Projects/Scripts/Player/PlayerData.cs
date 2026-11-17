@@ -34,6 +34,10 @@ public class PlayerData : MonoBehaviour
     public float baseFireRate = 1f;
     public float initialPickupRadius = 5f;
 
+    [Header("--- 初始资源 ---")]
+    [Tooltip("每局开始时获得的回声碎片，用于商店购买")]
+    public int startingCurrency = 300;
+
     [Header("--- 机制状态 ---")]
     public int projectileCount = 1;     
     public int piercingCount = 0; 
@@ -107,7 +111,7 @@ public class PlayerData : MonoBehaviour
         
         projectileCount = 1; piercingCount = 0;
         currentExperience = 0;
-        currentCurrency = 0;
+        currentCurrency = startingCurrency;
         currentUsedMemoryMB = 0;
         
         installedProtocols.Clear();
