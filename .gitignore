@@ -101,3 +101,6 @@ InitTestScene*.unity*
 # Local play-mode screenshots
 /Assets/Screenshots/
 /Assets/Screenshots.meta
+
+# Local UnitySkills package junction
+/Packages/com.besty.unity-skills/
