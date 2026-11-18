@@ -164,12 +164,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 392e734a082e17342b105a988915af4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 2.1
+  moveSpeed: 1.7
   chaseRange: 20
   stopChasingRange: 26
   attackRange: 2.2
   targetFindInterval: 0.5
   attackCooldown: 2.2
+  turnSpeedDegreesPerSecond: 60
   attackDamage: 8
 --- !u!114 &8597678066617763080
 MonoBehaviour:

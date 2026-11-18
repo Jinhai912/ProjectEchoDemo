@@ -17,6 +17,7 @@ public class EnemyMoveControl : MonoBehaviour
     [Header("频率控制")]
     [SerializeField] private float targetFindInterval = 0.5f; 
     [SerializeField] private float attackCooldown = 1.5f;     
+    [SerializeField] private float turnSpeedDegreesPerSecond = 0f;
 
     [Header("攻击设定")]
     [SerializeField] private int attackDamage = 10;           
@@ -122,7 +123,13 @@ public class EnemyMoveControl : MonoBehaviour
             if (direction != Vector3.zero)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(direction);
-                _rb.MoveRotation(Quaternion.Slerp(_rb.rotation, targetRotation, 0.1f));
+                Quaternion nextRotation = turnSpeedDegreesPerSecond > 0f
+                    ? Quaternion.RotateTowards(
+                        _rb.rotation,
+                        targetRotation,
+                        turnSpeedDegreesPerSecond * Time.fixedDeltaTime)
+                    : Quaternion.Slerp(_rb.rotation, targetRotation, 0.1f);
+                _rb.MoveRotation(nextRotation);
             }
         }
         else

@@ -113,11 +113,12 @@ public static class EnemyContentBuilder
         if (move != null)
         {
             SerializedObject serialized = new SerializedObject(move);
-            SetFloat(serialized, "moveSpeed", 2.1f);
+            SetFloat(serialized, "moveSpeed", 1.7f);
             SetFloat(serialized, "chaseRange", 20f);
             SetFloat(serialized, "stopChasingRange", 26f);
             SetFloat(serialized, "attackRange", 2.2f);
             SetFloat(serialized, "attackCooldown", 2.2f);
+            SetFloat(serialized, "turnSpeedDegreesPerSecond", 60f);
             SerializedProperty damage = serialized.FindProperty("attackDamage");
             if (damage != null) damage.intValue = 8;
             serialized.ApplyModifiedPropertiesWithoutUndo();
