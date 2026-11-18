@@ -97,7 +97,7 @@ public class PhysicalReactionManager : MonoBehaviour
             if (hit.gameObject == source) continue;
             if (hit.TryGetComponent<StatusContainer>(out var status) && status.HasStatus(PhysicalMediaType.Liquid_Water))
             {
-                if (hit.TryGetComponent<EnemyState>(out var enemy)) enemy.TakeDamage(damage, false);
+                if (hit.TryGetComponent<EnemyState>(out var enemy)) enemy.TakeDamage(damage, false, position);
             }
         }
     }
@@ -110,7 +110,7 @@ public class PhysicalReactionManager : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             Collider hit = _reactionBuffer[i];
-            if (hit.TryGetComponent<EnemyState>(out var enemy)) enemy.TakeDamage(damage, false);
+            if (hit.TryGetComponent<EnemyState>(out var enemy)) enemy.TakeDamage(damage, false, position);
             if (hit.TryGetComponent<Rigidbody>(out var rb)) rb.AddExplosionForce(overloadForce, position, overloadExplosionRadius, 0.5f);
         }
     }

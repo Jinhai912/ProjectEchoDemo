@@ -44,7 +44,7 @@ public class StyleSceneApplier : MonoBehaviour
         "bullet", "projectile", "muzzle", "flash", "trail", "particle", "effect",
         "impact", "water", "oil", "fire", "puddle", "media", "zone", "damage",
         "text", "gem", "experience", "xp", "portal", "chest", "stairs", "door",
-        "button", "icon", "health", "bar", "ui", "warning", "laser"
+        "button", "icon", "health", "bar", "ui", "warning", "laser", "telegraph"
     };
 
     private struct CameraStyleState

@@ -17,14 +17,18 @@ MonoBehaviour:
   description: "\u666E\u901A\u5173\u5361\uFF0C\u8FDC\u7A0B\u5C0F\u5175"
   image: {fileID: 0}
   waves:
-  - waveName: 
+  - waveName: "\u8FDC\u7A0B"
     enemyPrefab: {fileID: 8620879191517598444, guid: 8e6ebd4c505d79640a1e97d6f0148bb4, type: 3}
     enemyCount: 2
     spawnInterval: 1
-  - waveName: 
-    enemyPrefab: {fileID: 8620879191517598444, guid: 8e6ebd4c505d79640a1e97d6f0148bb4, type: 3}
-    enemyCount: 3
-    spawnInterval: 0.3
+  - waveName: "\u51B2\u950B"
+    enemyPrefab: {fileID: 4427842924163928692, guid: b19d4e397fe42534d8dc6e39e987cefd, type: 3}
+    enemyCount: 2
+    spawnInterval: 1
+  - waveName: "\u62A4\u76FE"
+    enemyPrefab: {fileID: 1576147551519897417, guid: 67a983e8f0cc3f04585f97e995e54db3, type: 3}
+    enemyCount: 2
+    spawnInterval: 1.2
   customExitPrefab: {fileID: 0}
   barrelPrefabs:
   - {fileID: 4413940533639602160, guid: dd6a38762931a9249a07b74930d512d3, type: 3}
@@ -32,3 +36,4 @@ MonoBehaviour:
   minBarrels: 3
   maxBarrels: 4
   choices: []
+  eventData: {fileID: 0}

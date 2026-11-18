@@ -27,7 +27,7 @@ public class TemporaryZoneLogic : MonoBehaviour
             timer += Time.deltaTime;
             if (timer >= 0.5f) // 每0.5秒跳一次伤害
             {
-                enemy.TakeDamage(damagePerTick, false);
+                enemy.TakeDamage(damagePerTick, false, transform.position);
                 timer = 0;
             }
             // 并且持续给怪挂“热”状态

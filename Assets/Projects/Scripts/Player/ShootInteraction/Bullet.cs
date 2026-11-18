@@ -10,6 +10,8 @@ public class Bullet : MonoBehaviour
     
     private Rigidbody rb;
     private float _lifeTimer;
+    private Vector3 _travelVelocity;
+    private bool _restoreTravelVelocity;
 
     void Awake()
     {
@@ -24,7 +26,8 @@ public class Bullet : MonoBehaviour
     public void Initialize(PlayerStates stats, Vector3 direction, float speed)
     {
         playerStats = stats;
-        rb.velocity = direction * speed;
+        _travelVelocity = direction.normalized * speed;
+        rb.velocity = _travelVelocity;
 
         // 重新初始化穿透次数
         if (PlayerData.Instance != null)
@@ -43,6 +46,14 @@ public class Bullet : MonoBehaviour
         if (_lifeTimer <= 0f) Recycle();
     }
 
+    void FixedUpdate()
+    {
+        if (!_restoreTravelVelocity) return;
+
+        rb.velocity = _travelVelocity;
+        _restoreTravelVelocity = false;
+    }
+
     void OnCollisionEnter(Collision collision)
     {
         EnemyState enemy = collision.gameObject.GetComponent<EnemyState>();
@@ -55,12 +66,25 @@ public class Bullet : MonoBehaviour
             {
                 bool isCritical;
                 float damage = playerStats.CalculateFinalDamage(out isCritical);
-                enemy.TakeDamage(damage, isCritical);
+                Vector3 hitPoint = collision.contactCount > 0
+                    ? collision.GetContact(0).point
+                    : transform.position;
+                enemy.TakeDamage(damage, isCritical, hitPoint);
             }
 
             if (currentPierceCount > 0)
             {
                 currentPierceCount--;
+                // 物理求解器会在接触面阻挡子弹；穿透时越过当前碰撞体并恢复原飞行向量。
+                Vector3 direction = _travelVelocity.normalized;
+                Bounds bounds = collision.collider.bounds;
+                float projectedDepth =
+                    Mathf.Abs(direction.x) * bounds.extents.x +
+                    Mathf.Abs(direction.y) * bounds.extents.y +
+                    Mathf.Abs(direction.z) * bounds.extents.z;
+                rb.position += direction * (projectedDepth * 2f + 0.05f);
+                rb.velocity = _travelVelocity;
+                _restoreTravelVelocity = true;
             }
             else
             {

@@ -40,7 +40,19 @@ public class EnemyState : MonoBehaviour
     #region 公共接口
     public void TakeDamage(float damage, bool isCritical)
     {
+        // 没有命中点时无法可靠判断方向；按非正面伤害处理，避免把世界原点误当成攻击来源。
+        TakeDamage(damage, isCritical, transform.position);
+    }
+
+    public void TakeDamage(float damage, bool isCritical, Vector3 hitPoint)
+    {
         if (_currentHealth <= 0) return;
+
+        FrontShield shield = GetComponent<FrontShield>();
+        if (shield != null)
+        {
+            damage = shield.ModifyDamage(damage, hitPoint);
+        }
 
         _currentHealth -= damage;
         OnDamageTaken?.Invoke(damage, isCritical, transform.position);
