@@ -2110,6 +2110,8 @@ MonoBehaviour:
   normalCombatEncounters:
   - {fileID: 11400000, guid: 7f25641799abc7840a3ca1325eaa4a7f, type: 2}
   - {fileID: 11400000, guid: dd3aba9b59d75bc4c84edba028d17935, type: 2}
+  - {fileID: 11400000, guid: c1728f7d66f8fe04399ce91d5369badc, type: 2}
+  - {fileID: 11400000, guid: 237490acaceb3514cb7ed4a7f5f55df4, type: 2}
   eliteCombatEncounters:
   - {fileID: 11400000, guid: 2bcd6a9416425a14da021802825fb125, type: 2}
   - {fileID: 11400000, guid: 6449184566570ff4bbf242f3eca33489, type: 2}

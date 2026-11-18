@@ -9,12 +9,40 @@ public class RoomController : MonoBehaviour
     private EncounterData currentEncounter;
 
     [System.Serializable]
+    public class EnemySpawnEntry
+    {
+        public GameObject enemyPrefab;
+        public int enemyCount;
+        public float spawnInterval = 1f;
+    }
+
+    [System.Serializable]
     public class Wave
     {
         public string waveName;
         public GameObject enemyPrefab;
         public int enemyCount;
         public float spawnInterval;
+
+        [Tooltip("填写后优先使用混编条目，可让多个兵种在同一波次同时生成。")]
+        public EnemySpawnEntry[] mixedEnemies;
+
+        public bool HasMixedEnemies
+        {
+            get
+            {
+                if (mixedEnemies == null) return false;
+                for (int i = 0; i < mixedEnemies.Length; i++)
+                {
+                    EnemySpawnEntry entry = mixedEnemies[i];
+                    if (entry != null && entry.enemyPrefab != null && entry.enemyCount > 0)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
     }
 
     [Header("物理对齐设置")]
@@ -118,11 +146,18 @@ public class RoomController : MonoBehaviour
             Wave currentWave = waves[i];
             Debug.Log($"波次 {i + 1} 开始: {currentWave.waveName}");
 
-            for (int j = 0; j < currentWave.enemyCount; j++)
+            if (currentWave.HasMixedEnemies)
             {
-                if (!canOperate) yield return new WaitUntil(() => canOperate);
-                SpawnEnemy(currentWave.enemyPrefab);
-                yield return new WaitForSeconds(currentWave.spawnInterval);
+                yield return SpawnMixedWave(currentWave);
+            }
+            else
+            {
+                for (int j = 0; j < currentWave.enemyCount; j++)
+                {
+                    if (!canOperate) yield return new WaitUntil(() => canOperate);
+                    SpawnEnemy(currentWave.enemyPrefab);
+                    yield return new WaitForSeconds(currentWave.spawnInterval);
+                }
             }
 
             // 等待当前波次清空
@@ -133,6 +168,52 @@ public class RoomController : MonoBehaviour
 
         Debug.Log("所有波次清空，关卡完成！");
         OnEncounterComplete?.Invoke(currentEncounter);
+    }
+
+    private IEnumerator SpawnMixedWave(Wave wave)
+    {
+        EnemySpawnEntry[] entries = wave.mixedEnemies;
+        int[] spawned = new int[entries.Length];
+        float[] timers = new float[entries.Length];
+        int remaining = 0;
+
+        for (int i = 0; i < entries.Length; i++)
+        {
+            EnemySpawnEntry entry = entries[i];
+            if (entry == null || entry.enemyPrefab == null || entry.enemyCount <= 0)
+            {
+                spawned[i] = entry != null ? entry.enemyCount : 0;
+                continue;
+            }
+
+            remaining += entry.enemyCount;
+            timers[i] = 0f;
+        }
+
+        while (remaining > 0)
+        {
+            while (!canOperate) yield return null;
+
+            for (int i = 0; i < entries.Length; i++)
+            {
+                EnemySpawnEntry entry = entries[i];
+                if (entry == null || entry.enemyPrefab == null ||
+                    entry.enemyCount <= 0 || spawned[i] >= entry.enemyCount)
+                {
+                    continue;
+                }
+
+                timers[i] -= Time.deltaTime;
+                if (timers[i] > 0f) continue;
+
+                SpawnEnemy(entry.enemyPrefab);
+                spawned[i]++;
+                remaining--;
+                timers[i] = Mathf.Max(0.05f, entry.spawnInterval);
+            }
+
+            yield return null;
+        }
     }
 
     private void ClearProjectiles()

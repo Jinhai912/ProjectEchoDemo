@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdb15f2495322d34f9ff726c46ebf48a, type: 3}
+  m_Name: Encounter_Normal_03
+  m_EditorClassIdentifier: 
+  encounterType: 0
+  title: "\u94B3\u5F62\u653B\u52BF"
+  description: "\u51B2\u950B\u5175\u4E0E\u62A4\u76FE\u5175\u5728\u540C\u6CE2\u51FA\u73B0\uFF0C\u5148\u4ECE\u4FA7\u7FFC\u538B\u7F29\u7A7A\u95F4\uFF0C\u518D\u4EE5\u589E\u63F4\u5C01\u9501\u6B63\u9762\u3002"
+  image: {fileID: 0}
+  waves:
+  - waveName: "\u8BD5\u63A2"
+    enemyPrefab: {fileID: 0}
+    enemyCount: 0
+    spawnInterval: 0
+    mixedEnemies:
+    - enemyPrefab: {fileID: 4427842924163928692, guid: b19d4e397fe42534d8dc6e39e987cefd, type: 3}
+      enemyCount: 1
+      spawnInterval: 0.9
+    - enemyPrefab: {fileID: 1576147551519897417, guid: 67a983e8f0cc3f04585f97e995e54db3, type: 3}
+      enemyCount: 1
+      spawnInterval: 1.2
+    - enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
+      enemyCount: 1
+      spawnInterval: 1
+  - waveName: "\u589E\u63F4"
+    enemyPrefab: {fileID: 0}
+    enemyCount: 0
+    spawnInterval: 0
+    mixedEnemies:
+    - enemyPrefab: {fileID: 4427842924163928692, guid: b19d4e397fe42534d8dc6e39e987cefd, type: 3}
+      enemyCount: 2
+      spawnInterval: 0.65
+    - enemyPrefab: {fileID: 1576147551519897417, guid: 67a983e8f0cc3f04585f97e995e54db3, type: 3}
+      enemyCount: 2
+      spawnInterval: 1
+    - enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
+      enemyCount: 1
+      spawnInterval: 0.9
+  customExitPrefab: {fileID: 0}
+  barrelPrefabs:
+  - {fileID: 5786562570900789114, guid: 42a01d07ad9f22a439b37bdd5271ddfe, type: 3}
+  - {fileID: 4413940533639602160, guid: dd6a38762931a9249a07b74930d512d3, type: 3}
+  minBarrels: 2
+  maxBarrels: 3
+  choices: []
+  eventData: {fileID: 0}

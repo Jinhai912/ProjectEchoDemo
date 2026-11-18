@@ -12,23 +12,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdb15f2495322d34f9ff726c46ebf48a, type: 3}
   m_Name: Encounter_Elite_002
   m_EditorClassIdentifier: 
-  encounterType: 0
-  title: 
-  description: "\u7CBE\u82F1\u5173\u5361\uFF0C\u602A\u6D77"
+  encounterType: 1
+  title: "\u91CD\u88C5\u7A81\u88AD"
+  description: "\u8FD1\u6218\u3001\u8FDC\u7A0B\u3001\u51B2\u950B\u5175\u4E0E\u62A4\u76FE\u5175\u5206\u5C42\u63A8\u8FDB\uFF0C\u8003\u9A8C\u76EE\u6807\u4F18\u5148\u7EA7\u548C\u7ED5\u540E\u8DEF\u7EBF\u3002"
   image: {fileID: 0}
   waves:
-  - waveName: 
+  - waveName: "\u524D\u538B"
     enemyPrefab: {fileID: 4413850821519583235, guid: 9726ec4fcce9a25468150f27173ede37, type: 3}
-    enemyCount: 20
-    spawnInterval: 1
-  - waveName: 
+    enemyCount: 6
+    spawnInterval: 0.7
+    mixedEnemies: []
+  - waveName: "\u63A9\u62A4"
     enemyPrefab: {fileID: 8620879191517598444, guid: 8e6ebd4c505d79640a1e97d6f0148bb4, type: 3}
-    enemyCount: 10
+    enemyCount: 2
+    spawnInterval: 0.9
+    mixedEnemies: []
+  - waveName: "\u7A81\u8FDB"
+    enemyPrefab: {fileID: 4427842924163928692, guid: b19d4e397fe42534d8dc6e39e987cefd, type: 3}
+    enemyCount: 4
+    spawnInterval: 0.75
+    mixedEnemies: []
+  - waveName: "\u5C01\u9501"
+    enemyPrefab: {fileID: 1576147551519897417, guid: 67a983e8f0cc3f04585f97e995e54db3, type: 3}
+    enemyCount: 3
     spawnInterval: 1
+    mixedEnemies: []
   customExitPrefab: {fileID: 0}
   barrelPrefabs:
-  - {fileID: 4413940533639602160, guid: dd6a38762931a9249a07b74930d512d3, type: 3}
   - {fileID: 5786562570900789114, guid: 42a01d07ad9f22a439b37bdd5271ddfe, type: 3}
+  - {fileID: 4413940533639602160, guid: dd6a38762931a9249a07b74930d512d3, type: 3}
   minBarrels: 4
   maxBarrels: 5
   choices: []
+  eventData: {fileID: 0}
